@@ -36,12 +36,15 @@
 ## 実装状況
 
 * observable
+* connectable observable
 * subscription
 * just
 * range
 * flat_map
 * map
 * take
+* publish
+* subject
 
 ## 使用方法
 
@@ -232,5 +235,92 @@ void test_take() {
   while(x.is_subscribed()) {}
 
   log() << "test_take -- end" << std::endl << std::endl;
+}
+```
+
+### connectable observable
+
+```cpp
+void test_connectable() {
+  log() << "test_connectable -- begin" << std::endl;
+
+  auto o = observable<>::create<int>([](subscriber<int> s){
+    std::thread([s](){
+      for(int i = 0; i < 100; i++){
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        s.on_next(i);
+      }
+      s.on_completed();
+    }).detach();
+  });
+
+  auto oo = o | publish();
+  auto s1 = doSubscribe(oo);
+  auto s2 = doSubscribe(oo);
+  auto s3 = doSubscribe(oo);
+
+  wait(800);
+  s1.unsubscribe();
+
+  wait(800);
+  s2.unsubscribe();
+
+  auto s4 = doSubscribe(oo);
+
+  wait(800);
+  s3.unsubscribe();
+
+  wait(3000);
+  s4.unsubscribe();
+
+  log() << "test_connectable -- end" << std::endl << std::endl;
+}
+```
+
+### subject
+
+```cpp
+void test_subject() {
+  log() << "test_subject -- begin" << std::endl;
+
+  auto sbj = std::make_shared<subjects::subject<int>>();
+
+  std::weak_ptr<subjects::subject<int>> weak_sbj = sbj;
+  std::thread([weak_sbj]() mutable {
+    for(int i = 0; i < 100; i++){
+      std::this_thread::sleep_for(std::chrono::seconds(1));
+      auto p = weak_sbj.lock();
+      if(p) p->as_subscriber().on_next(i);
+    }
+    auto p = weak_sbj.lock();
+    if(p) p->as_subscriber().on_completed();
+  }).detach();
+
+  wait(2500);
+  auto s1 = doSubscribe(sbj->as_observable());
+
+  wait(1000);
+  auto s2 = doSubscribe(sbj->as_observable());
+
+  wait(1000);
+  auto s3 = doSubscribe(sbj->as_observable());
+
+  wait(500);
+  s1.unsubscribe();
+
+  wait(500);
+  s2.unsubscribe();
+
+  wait(500);
+  s3.unsubscribe();
+
+  wait(1000);
+  auto s4 = doSubscribe(sbj->as_observable());
+
+  wait(2000);
+
+  sbj.reset();
+
+  log() << "test_subject -- end" << std::endl << std::endl;
 }
 ```

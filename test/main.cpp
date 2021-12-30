@@ -4,6 +4,7 @@
 #include "common.h"
 
 int main() {
+  log() << "**** start ****" << std::endl;
 
   extern void test_observable();
   test_observable();
@@ -22,6 +23,12 @@ int main() {
 
   extern void test_map();
   test_map();
+
+  extern void test_connectable();
+  test_connectable();
+
+  extern void test_subject();
+  test_subject();
 
   log() << "**** finish ****" << std::endl;
 

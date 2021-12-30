@@ -2,6 +2,7 @@
 #define __h_observer__
 
 #include <functional>
+#include <memory>
 
 namespace another_rxcpp {
 

@@ -18,6 +18,7 @@ private:
   std::shared_ptr<std::condition_variable> cond_;
 
 public:
+  subscription() = default;
   subscription(discard_fn_t discard_fn, is_subscribed_fn_t is_subscribed_fn) :
     discard_fn_(discard_fn),
     is_subscribed_fn_(is_subscribed_fn),
@@ -33,7 +34,7 @@ public:
   }
 
   bool is_subscribed() const {
-    return is_subscribed_fn_();
+    return is_subscribed_fn_ ? is_subscribed_fn_() : false;
   }
 
   auto unsubscribe_notice() { return cond_; }

@@ -38,12 +38,15 @@ public:
 private:
   source_creator_fn_t source_creator_fn_;
 
+protected:
+  observable() = default;
+
 public: 
   observable(source_creator_fn_t source_creator) :
     source_creator_fn_(source_creator) {}
   virtual ~observable() = default;
 
-  subscription subscribe(observer_type ob) {
+  virtual subscription subscribe(observer_type ob) {
     return source_creator_fn_()->subscribe(ob);
   }
 
