@@ -17,23 +17,28 @@ template <typename F> auto flat_map(F f)
       auto src_ = src;
       src_.subscribe({
         .on_next = [s, f, bUpstreamCompleted, fxCounter](auto&& x){
-          (*fxCounter)++;
-          f(std::move(x))
-          .subscribe({
-            .on_next = [s](auto&& x){
-              s.on_next(std::move(x));
-            },
-            .on_error = [s, fxCounter](std::exception_ptr err){
-              (*fxCounter)--;
-              s.on_error(err);
-            },
-            .on_completed = [s, bUpstreamCompleted, fxCounter](){
-              (*fxCounter)--;
-              if(*bUpstreamCompleted && (*fxCounter) == 0){
-                s.on_completed();
+          try{
+            (*fxCounter)++;
+            f(std::move(x))
+            .subscribe({
+              .on_next = [s](auto&& x){
+                s.on_next(std::move(x));
+              },
+              .on_error = [s, fxCounter](std::exception_ptr err){
+                (*fxCounter)--;
+                s.on_error(err);
+              },
+              .on_completed = [s, bUpstreamCompleted, fxCounter](){
+                (*fxCounter)--;
+                if(*bUpstreamCompleted && (*fxCounter) == 0){
+                  s.on_completed();
+                }
               }
-            }
-          });
+            });
+          }
+          catch(...){
+            s.on_error(std::current_exception());
+          }
         },
         .on_error = [s](std::exception_ptr err){
           s.on_error(err);
