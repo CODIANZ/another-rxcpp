@@ -39,9 +39,12 @@
 * connectable observable
 * subscription
 * just
+* never
+* error
 * range
-* flat_map
 * map
+* flat_map
+* on_error_resume_next
 * take
 * publish
 * subject
