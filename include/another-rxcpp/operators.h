@@ -6,5 +6,6 @@
 #include "operators/take.h"
 #include "operators/publish.h"
 #include "operators/on_error_resume_next.h"
+#include "operators/retry.h"
 
 #endif /* !defined(__h_operators__) */
