@@ -3,5 +3,6 @@
 
 #include "observables/just.h"
 #include "observables/range.h"
+#include "observables/connectable.h"
 
 #endif /* !defined(__h_observables__) */

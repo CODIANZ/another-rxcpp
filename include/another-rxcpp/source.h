@@ -55,6 +55,9 @@ private:
   source() = default;
   sp shared_this() { return std::dynamic_pointer_cast<source<T>>(shared_base()); }
 
+protected:
+  emitter_fn_t emitter() { return emitter_fn_; }
+
 public:
   source(emitter_fn_t emitter_fn) : emitter_fn_(emitter_fn) {}
   source(source_base::sp upstream, emitter_fn_t emitter_fn) :

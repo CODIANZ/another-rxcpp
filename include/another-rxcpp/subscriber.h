@@ -17,6 +17,7 @@ private:
   mutable std::weak_ptr<observer_type>  observer_;
 
 public:
+  subscriber() = default;
   template <typename SOURCE_SP>
     subscriber(SOURCE_SP source, typename observer_type::sp observer) :
       source_(source->shared_from_this()), observer_(observer) {}
