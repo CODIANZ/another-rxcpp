@@ -27,6 +27,9 @@ int main() {
   extern void test_connectable();
   test_connectable();
 
+  extern void test_subject();
+  test_subject();
+
   log() << "**** finish ****" << std::endl;
 
   std::cout << "wait for some worker threads destruct objects (eg: sources in subscription)" << std::endl;

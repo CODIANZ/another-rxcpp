@@ -84,9 +84,8 @@ private:
     });
   }
 
-  connectable() {}
-
 public: 
+  connectable() {}
   virtual ~connectable() = default;
 
   virtual subscription subscribe(observer_type ob) override {
