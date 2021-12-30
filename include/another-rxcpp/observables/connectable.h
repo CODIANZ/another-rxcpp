@@ -30,8 +30,8 @@ public:
 private:
 
   struct sink {
-    subscription  subscription;
-    observer_type observer;
+    subscription  subscription_;
+    observer_type observer_;
   };
 
   using sinks_type  = std::unordered_map<int, sink>;
@@ -57,7 +57,7 @@ private:
       std::vector<observer_type> ret(sinks->size());
       auto ret_it = ret.begin();
       for(auto it = sinks->begin(); it != sinks->end(); it++, ret_it++){
-        *ret_it = it->second.observer;
+        *ret_it = it->second.observer_;
       }
       return std::move(ret);
     };
@@ -105,8 +105,8 @@ public:
     {
       std::lock_guard<std::mutex> lock(*mtx);
       sinks->insert({serial, {
-        .subscription = sbsc,
-        .observer = ob
+        .subscription_ = sbsc,
+        .observer_ = ob
       }});
     }
     return std::move(sbsc);

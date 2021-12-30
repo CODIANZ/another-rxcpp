@@ -13,7 +13,12 @@ template <typename F> auto map(F f)
       auto src_ = src;
       src_.subscribe({
         .on_next = [s, f](auto&& x){
-          s.on_next(f(std::move(x)));
+          try{
+            s.on_next(f(std::move(x)));
+          }
+          catch(...){
+            s.on_error(std::current_exception());
+          }
         },
         .on_error = [s](std::exception_ptr err){
           s.on_error(err);

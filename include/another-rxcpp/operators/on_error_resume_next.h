@@ -1,25 +1,27 @@
-#if !defined(__h_flat_map__)
-#define __h_flat_map__
+#if !defined(__h_on_error_resume_next__)
+#define __h_on_error_resume_next__
 
 #include "../observable.h"
-#include <atomic>
 
 namespace another_rxcpp {
 
-template <typename F> auto flat_map(F f)
+template <typename NEXT_FN> auto on_error_resume_next(NEXT_FN f)
 {
-  using OUT_OB = decltype(f({}));
-  using OUT = typename OUT_OB::value_type;
   return [f](auto src){
+    using OUT_OB = decltype(src);
+    using OUT = typename OUT_OB::value_type;
     return observable<>::create<OUT>([src, f](subscriber<OUT> s) {
       auto bUpstreamCompleted = std::make_shared<std::atomic_bool>(false);
       auto fxCounter = std::make_shared<std::atomic_int>(0);
       auto src_ = src;
       src_.subscribe({
-        .on_next = [s, f, bUpstreamCompleted, fxCounter](auto&& x){
+        .on_next = [s](auto&& x){
+          s.on_next(std::move(x));
+        },
+        .on_error = [s, f, bUpstreamCompleted, fxCounter](std::exception_ptr err){
           try{
             (*fxCounter)++;
-            f(std::move(x))
+            f(err)
             .subscribe({
               .on_next = [s](auto&& x){
                 s.on_next(std::move(x));
@@ -40,9 +42,6 @@ template <typename F> auto flat_map(F f)
             s.on_error(std::current_exception());
           }
         },
-        .on_error = [s](std::exception_ptr err){
-          s.on_error(err);
-        },
         .on_completed = [s, bUpstreamCompleted, fxCounter](){
           *bUpstreamCompleted = true;
           if(*bUpstreamCompleted && (*fxCounter) == 0){
@@ -51,9 +50,9 @@ template <typename F> auto flat_map(F f)
         }
       });
     });
-  };
+  };  
 }
 
 } /* namespace another_rxcpp */
 
-#endif /* !defined(__h_flat_map__) */
+#endif /* !defined(__h_on_error_resume_next__) */
