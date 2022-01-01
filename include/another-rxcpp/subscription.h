@@ -39,6 +39,7 @@ public:
       cond_->notify_all();
     }
     on_unsubscribe_fn_ = {};
+    sp_keeper_.clear();
   }
 
   bool is_subscribed() const {
