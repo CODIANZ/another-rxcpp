@@ -45,6 +45,9 @@ int main() {
   extern void test_retry();
   test_retry();
 
+  extern void test_observe_on();
+  test_observe_on();
+
   log() << "**** finish ****" << std::endl;
 
   std::cout << "wait for some worker threads destruct objects (eg: sources in subscription)" << std::endl;
