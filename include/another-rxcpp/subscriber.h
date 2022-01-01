@@ -61,6 +61,11 @@ public:
       });
     }
   }
+
+  bool is_subscribed() const {
+    auto s = source_.lock();
+    return s ? s->is_subscribed() : false;
+  }
 };
 
 } /* namespace another_rxcpp */

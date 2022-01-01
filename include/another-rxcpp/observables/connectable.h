@@ -2,6 +2,7 @@
 #define __h_connectable_observable__
 
 #include "../observable.h"
+#include "../tools/any_sp_keeper.h"
 #include <unordered_map>
 #include <algorithm>
 
@@ -40,7 +41,7 @@ private:
   using serrial_sp  = std::shared_ptr<std::atomic_int>;
 
   sinks_sp      sinks_;
-  subscription  upstream_subscription_;
+  source_sp     upstream_;
   mutex_sp      mtx_;
   serrial_sp    serial_;
 
@@ -62,7 +63,8 @@ private:
       return std::move(ret);
     };
 
-    upstream_subscription_ = ob.subscribe({
+    upstream_  = ob.create_source();
+    upstream_->subscribe({
       .on_next = [collect](value_type&& x) {
         auto obs = collect();
         std::for_each(obs.begin(), obs.end(), [&](auto ob){
@@ -92,16 +94,22 @@ public:
     const auto serial = serial_->fetch_add(1);
     auto mtx    = mtx_;
     auto sinks  = sinks_;
-    auto ups    = upstream_subscription_;
-    subscription sbsc([serial, mtx, sinks, ups]() mutable{
-      std::lock_guard<std::mutex> lock(*mtx);
-      sinks->erase(serial);
-      if(sinks->size() == 0) ups.unsubscribe();
-    }, [serial, mtx, sinks, ups]() {
-      std::lock_guard<std::mutex> lock(*mtx);
-      auto it = sinks->find(serial);
-      return it != sinks->end() && ups.is_subscribed();
-    });
+    auto ups    = upstream_;
+    subscription sbsc(
+      any_sp_keeper::create(),
+      /* is_subscribed() */
+      [serial, mtx, sinks, ups]() {
+        std::lock_guard<std::mutex> lock(*mtx);
+        auto it = sinks->find(serial);
+        return it != sinks->end() && ups->is_subscribed();
+      },
+      /* on_unsubscribe */
+      [serial, mtx, sinks, ups]() mutable{
+        std::lock_guard<std::mutex> lock(*mtx);
+        sinks->erase(serial);
+        if(sinks->size() == 0) ups->unsubscribe();
+      }
+    );
     {
       std::lock_guard<std::mutex> lock(*mtx);
       sinks->insert({serial, {

@@ -14,9 +14,9 @@ template <typename F> auto flat_map(F f)
     return observable<>::create<OUT>([src, f](subscriber<OUT> s) {
       auto bUpstreamCompleted = std::make_shared<std::atomic_bool>(false);
       auto fxCounter = std::make_shared<std::atomic_int>(0);
-      auto src_ = src;
-      src_.subscribe({
-        .on_next = [s, f, bUpstreamCompleted, fxCounter](auto&& x){
+      auto upstream = src.create_source();
+      upstream->subscribe({
+        .on_next = [s, f, upstream, bUpstreamCompleted, fxCounter](auto&& x){
           try{
             (*fxCounter)++;
             f(std::move(x))
@@ -24,8 +24,9 @@ template <typename F> auto flat_map(F f)
               .on_next = [s](auto&& x){
                 s.on_next(std::move(x));
               },
-              .on_error = [s, fxCounter](std::exception_ptr err){
+              .on_error = [s, upstream, fxCounter](std::exception_ptr err){
                 (*fxCounter)--;
+                upstream->unsubscribe();
                 s.on_error(err);
               },
               .on_completed = [s, bUpstreamCompleted, fxCounter](){
@@ -37,6 +38,7 @@ template <typename F> auto flat_map(F f)
             });
           }
           catch(...){
+            upstream->unsubscribe();
             s.on_error(std::current_exception());
           }
         },

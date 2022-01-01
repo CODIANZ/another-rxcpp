@@ -10,17 +10,19 @@ template <typename F> auto map(F f)
   using OUT = decltype(f({}));
   return [f](auto src){
     return observable<>::create<OUT>([src, f](subscriber<OUT> s) {
-      auto src_ = src;
-      src_.subscribe({
-        .on_next = [s, f](auto&& x){
+      auto upstream = src.create_source();
+      upstream->subscribe({
+        .on_next = [s, f, upstream](auto&& x){
           try{
             s.on_next(f(std::move(x)));
           }
           catch(...){
+            upstream->unsubscribe();
             s.on_error(std::current_exception());
           }
         },
-        .on_error = [s](std::exception_ptr err){
+        .on_error = [s, upstream](std::exception_ptr err){
+          upstream->unsubscribe();
           s.on_error(err);
         },
         .on_completed = [s](){

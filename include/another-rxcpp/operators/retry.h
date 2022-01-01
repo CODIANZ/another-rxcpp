@@ -13,12 +13,13 @@ inline auto retry()
     return observable<>::create<OUT>([src](subscriber<OUT> s) {
       auto proceed = std::make_shared<std::function<void()>>();
       *proceed = [src, s, proceed]() {
-        auto src_ = src;
-        src_.subscribe({
+        auto upstream = src.create_source();
+        upstream->subscribe({
           .on_next = [s](auto&& x){
             s.on_next(std::move(x));
           },
-          .on_error = [proceed](std::exception_ptr){
+          .on_error = [proceed, upstream](std::exception_ptr){
+            upstream->unsubscribe();
             (*proceed)();
           },
           .on_completed = [s](){
