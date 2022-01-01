@@ -1,7 +1,7 @@
 #if !defined(__h_observable__)
 #define __h_observable__
 
-#include "source.h"
+#include "internal/source/source.h"
 
 namespace another_rxcpp {
 
@@ -36,7 +36,7 @@ public:
   using source_creator_fn_t = std::function<source_sp()>;
 
 private:
-  source_creator_fn_t source_creator_fn_;
+  mutable source_creator_fn_t source_creator_fn_;
 
 protected:
   observable() = default;
@@ -56,6 +56,8 @@ public:
     /** F -> observable<OUT> f(observable<IN>) */
     return f(*this);
   }
+
+  source_sp create_source() const { return source_creator_fn_(); }
 };
 
 } /* namespace another_rxcpp */

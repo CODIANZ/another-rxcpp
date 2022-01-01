@@ -13,9 +13,9 @@ inline auto take(std::size_t n)
     return observable<>::create<OUT>([src, n](subscriber<OUT> s) {
       auto counter = std::make_shared<std::size_t>(0);
       auto mtx = std::make_shared<std::mutex>();
-      auto src_ = src;
-      src_.subscribe({
-        .on_next = [s, n, counter, mtx](auto&& x){
+      auto upstream = src.create_source();
+      upstream->subscribe({
+        .on_next = [s, n, upstream, counter, mtx](auto&& x){
           const bool bNext = [&](){
             std::lock_guard<std::mutex> lock(*mtx);
             return *counter < n;
@@ -32,7 +32,10 @@ inline auto take(std::size_t n)
               return *counter == n;
             }
           }();
-          if(bComplete) s.on_completed();
+          if(bComplete) {
+            upstream->unsubscribe();
+            s.on_completed();
+          }
         },
         .on_error = [s](std::exception_ptr err){
           s.on_error(err);

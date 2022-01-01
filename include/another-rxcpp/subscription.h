@@ -4,33 +4,41 @@
 #include <functional>
 #include <memory>
 #include <condition_variable>
+#include "internal/tools/any_sp_keeper.h"
 
 namespace another_rxcpp {
 
+class source_base;
 class subscription {
 public:
-  using discard_fn_t        = std::function<void()>;
   using is_subscribed_fn_t  = std::function<bool()>;
+  using on_unsubscribe_fn_t = std::function<void()>;
 
 private:
-  discard_fn_t        discard_fn_;
+  any_sp_keeper       sp_keeper_;
   is_subscribed_fn_t  is_subscribed_fn_;
+  on_unsubscribe_fn_t on_unsubscribe_fn_;
   std::shared_ptr<std::condition_variable> cond_;
 
 public:
   subscription() = default;
-  subscription(discard_fn_t discard_fn, is_subscribed_fn_t is_subscribed_fn) :
-    discard_fn_(discard_fn),
+  subscription(
+    any_sp_keeper       sp_keeper,
+    is_subscribed_fn_t  is_subscribed_fn,
+    on_unsubscribe_fn_t on_unsubscribe_fn
+  ) :
+    sp_keeper_(sp_keeper),
     is_subscribed_fn_(is_subscribed_fn),
+    on_unsubscribe_fn_(on_unsubscribe_fn),
     cond_(std::make_shared<std::condition_variable>()) {};
   ~subscription() = default;
 
-  void unsubscribe(){
-    if(discard_fn_){
-      discard_fn_();
+  void unsubscribe() {
+    if(on_unsubscribe_fn_){
+      on_unsubscribe_fn_();
       cond_->notify_all();
     }
-    discard_fn_ = {};
+    on_unsubscribe_fn_ = {};
   }
 
   bool is_subscribed() const {

@@ -8,10 +8,11 @@
 #include <unordered_map>
 #include <exception>
 
-#include "subscriber.h"
-#include "observer.h"
+#include "../../subscriber.h"
+#include "../../observer.h"
+#include "../../subscription.h"
 #include "source_base.h"
-#include "subscription.h"
+#include "../tools/any_sp_keeper.h"
 
 namespace another_rxcpp {
 
@@ -50,7 +51,7 @@ public:
   using emitter_fn_t      = std::function<void(sp, subscriber_type)>;
 
 private:
-  emitter_fn_t emitter_fn_;
+  emitter_fn_t  emitter_fn_;
 
   source() = default;
   sp shared_this() { return std::dynamic_pointer_cast<source<T>>(shared_base()); }
@@ -70,16 +71,19 @@ public:
     std::weak_ptr<source<value_type>> WEAK_THIS = shared_this();
     subscriber_type subscriber(THIS, obs);
     subscription sbsc(
-      [THIS, obs]() mutable {
-        THIS->remove_subscriptions();
-      },
+      any_sp_keeper::create(THIS, obs),
+      /* is_subscribed() */
       [WEAK_THIS]() {
         auto p = WEAK_THIS.lock();
         if(!p) return false;
         return p->state() == state::active;
+      },
+      /* on_unsubscribe */
+      [THIS]() {
+        THIS->set_state_unsubscribed();
       }
     );
-    add_subscription(sbsc);
+    set_subscription(sbsc);
     try{
       emitter_fn_(THIS, subscriber);
     }
