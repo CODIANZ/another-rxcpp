@@ -2,7 +2,7 @@
 #define __h_subscriber__
 
 #include "observer.h"
-#include "source_base.h"
+#include "internal/source/source_base.h"
 #include <cassert>
 
 namespace another_rxcpp {

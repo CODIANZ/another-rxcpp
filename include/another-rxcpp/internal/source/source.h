@@ -8,11 +8,11 @@
 #include <unordered_map>
 #include <exception>
 
-#include "subscriber.h"
-#include "observer.h"
+#include "../../subscriber.h"
+#include "../../observer.h"
+#include "../../subscription.h"
 #include "source_base.h"
-#include "subscription.h"
-#include "tools/any_sp_keeper.h"
+#include "../tools/any_sp_keeper.h"
 
 namespace another_rxcpp {
 

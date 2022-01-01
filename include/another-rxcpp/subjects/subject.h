@@ -1,7 +1,7 @@
 #if !defined(__h_subject__)
 #define __h_subject__
 
-#include "../source.h"
+#include "../internal/source/source.h"
 #include "../observables.h"
 
 namespace another_rxcpp {

@@ -2,7 +2,7 @@
 #define __h_connectable_observable__
 
 #include "../observable.h"
-#include "../tools/any_sp_keeper.h"
+#include "../internal/tools/any_sp_keeper.h"
 #include <unordered_map>
 #include <algorithm>
 

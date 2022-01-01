@@ -4,7 +4,7 @@
 #include <functional>
 #include <memory>
 #include <condition_variable>
-#include "tools/any_sp_keeper.h"
+#include "internal/tools/any_sp_keeper.h"
 
 namespace another_rxcpp {
 

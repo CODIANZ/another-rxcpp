@@ -2,7 +2,7 @@
 #define __h_range__
 
 #include "../observable.h"
-#include "../util.h"
+#include "../internal/tools/util.h"
 
 namespace another_rxcpp {
 namespace observables {
