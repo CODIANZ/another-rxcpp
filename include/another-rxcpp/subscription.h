@@ -8,7 +8,6 @@
 
 namespace another_rxcpp {
 
-class source_base;
 class subscription {
 public:
   using is_subscribed_fn_t  = std::function<bool()>;
