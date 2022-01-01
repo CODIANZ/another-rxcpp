@@ -22,7 +22,6 @@ template <typename F> auto map(F f)
           }
         },
         .on_error = [s, upstream](std::exception_ptr err){
-          upstream->unsubscribe();
           s.on_error(err);
         },
         .on_completed = [s](){
