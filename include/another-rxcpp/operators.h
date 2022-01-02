@@ -9,5 +9,6 @@
 #include "operators/retry.h"
 #include "operators/observe_on.h"
 #include "operators/subscribe_on.h"
+#include "operators/take_until.h"
 
 #endif /* !defined(__h_operators__) */

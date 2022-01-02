@@ -46,7 +46,7 @@ public:
     source_creator_fn_(source_creator) {}
   virtual ~observable() = default;
 
-  virtual subscription subscribe(observer_type ob) {
+  subscription subscribe(observer_type ob) {
     return source_creator_fn_()->subscribe(ob);
   }
 

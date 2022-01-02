@@ -53,19 +53,17 @@ public:
 private:
   emitter_fn_t  emitter_fn_;
 
-  source() = default;
   sp shared_this() { return std::dynamic_pointer_cast<source<T>>(shared_base()); }
 
 protected:
+  source() = default;
   emitter_fn_t emitter() { return emitter_fn_; }
 
 public:
   source(emitter_fn_t emitter_fn) : emitter_fn_(emitter_fn) {}
-  source(source_base::sp upstream, emitter_fn_t emitter_fn) :
-    source_base(upstream), emitter_fn_(emitter_fn) {}
   virtual ~source() = default;
 
-  subscription subscribe(observer_type ob) {
+  virtual subscription subscribe(observer_type ob) {
     auto THIS = shared_this();
     auto obs = ob.to_shared();
     std::weak_ptr<source<value_type>> WEAK_THIS = shared_this();

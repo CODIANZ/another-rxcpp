@@ -3,6 +3,7 @@
 
 #include "../internal/source/source.h"
 #include "../observables.h"
+#include "../observable.h"
 
 namespace another_rxcpp {
 namespace subjects {
@@ -24,7 +25,7 @@ protected:
 public:
   subject()
   {
-    source_ = observable<>::create<value_type>([&](subscriber<value_type> s){
+    source_ = observable<>::create<value_type>([&](subscriber_type s){
       subscriber_ = s;
     }) | operators::publish();
     subscription_ = source_.subscribe({
