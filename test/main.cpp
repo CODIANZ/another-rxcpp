@@ -54,6 +54,9 @@ int main() {
   extern void test_new_thread_scheduler();
   test_new_thread_scheduler();
 
+  extern void test_take_until();
+  test_take_until();
+
   #if defined(SUPPORTS_OPERATORS_IN_OBSERVABLE)
     extern void test_operators_in_observable();
     test_operators_in_observable();

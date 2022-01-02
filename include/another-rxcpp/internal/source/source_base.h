@@ -32,8 +32,7 @@ protected:
   }
 
 public:
-  source_base(source_base::sp upstream = {}) :
-    state_(state::active) {}
+  source_base() : state_(state::active) {}
   virtual ~source_base() = default;
 
   /** conditional emitters */
