@@ -1,34 +1,32 @@
-#if !defined(__h_retry__)
-#define __h_retry__
+#if !defined(__h_subscribe_on__)
+#define __h_subscribe_on__
 
 #include "../observable.h"
+#include "../schedulers/scheduler.h"
 
 namespace another_rxcpp {
 namespace operators {
 
-inline auto retry()
+inline auto subscribe_on(schedulers::scheduler scdl)
 {
-  return [](auto src){
+  return [scdl](auto src){
     using OUT_OB = decltype(src);
     using OUT = typename OUT_OB::value_type;
-    return observable<>::create<OUT>([src](subscriber<OUT> s) {
-      auto proceed = std::make_shared<std::function<void()>>();
-      *proceed = [src, s, proceed]() {
+    return observable<>::create<OUT>([src, scdl](subscriber<OUT> s) {
+      scdl.run([s, src]() mutable {
         auto upstream = src.create_source();
         upstream->subscribe({
           .on_next = [s](auto&& x){
             s.on_next(std::move(x));
           },
-          .on_error = [proceed, upstream](std::exception_ptr){
-            upstream->unsubscribe();
-            (*proceed)();
+          .on_error = [s](std::exception_ptr err){
+            s.on_error(err);
           },
           .on_completed = [s](){
             s.on_completed();
           }
         });
-      };
-      (*proceed)();
+      });
     });
   };  
 }
@@ -36,4 +34,4 @@ inline auto retry()
 } /* namespace operators */
 } /* namespace another_rxcpp */
 
-#endif /* !defined(__h_retry__) */
+#endif /* !defined(__h_subscribe_on__) */

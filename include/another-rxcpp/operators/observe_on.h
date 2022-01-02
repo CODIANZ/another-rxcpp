@@ -5,6 +5,7 @@
 #include "../schedulers/scheduler.h"
 
 namespace another_rxcpp {
+namespace operators {
 
 inline auto observe_on(schedulers::scheduler scdl)
 {
@@ -34,6 +35,7 @@ inline auto observe_on(schedulers::scheduler scdl)
   };  
 }
 
+} /* namespace operators */
 } /* namespace another_rxcpp */
 
 #endif /* !defined(__h_observe_on__) */

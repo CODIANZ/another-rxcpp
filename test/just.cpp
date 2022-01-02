@@ -4,6 +4,7 @@
 #include "common.h"
 
 using namespace another_rxcpp;
+using namespace another_rxcpp::operators;
 
 void test_just() {
   log() << "test_just -- begin" << std::endl;

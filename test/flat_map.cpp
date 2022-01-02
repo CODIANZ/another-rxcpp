@@ -3,6 +3,7 @@
 #include "common.h"
 
 using namespace another_rxcpp;
+using namespace another_rxcpp::operators;
 
 void test_flat_map() {
   log() << "test_flat_map -- begin" << std::endl;

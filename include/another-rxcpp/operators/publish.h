@@ -4,6 +4,7 @@
 #include "../observables.h"
 
 namespace another_rxcpp {
+namespace operators {
 
 inline auto publish()
 {
@@ -14,6 +15,7 @@ inline auto publish()
   };
 }
 
+} /* namespace operators */
 } /* namespace another_rxcpp */
 
 #endif /* !defined(__h_publish__) */

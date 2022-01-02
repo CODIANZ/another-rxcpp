@@ -58,8 +58,37 @@ public:
   }
 
   source_sp create_source() const { return source_creator_fn_(); }
+
+  #if defined(SUPPORTS_OPERATORS_IN_OBSERVABLE)
+    #include "internal/supports/operators_in_observables_decl.inc"
+  #endif /* defined(SUPPORTS_OPERATORS_IN_OBSERVABLE) */
+
+  #if defined(SUPPORTS_RXCPP_COMPATIBLE)
+
+    auto as_dynamic() -> observable<value_type>
+    {
+      return *this;
+    }
+  
+    subscription subscribe(
+      std::function<void(value_type)>         on_next = {},
+      std::function<void(std::exception_ptr)> on_error = {},
+      std::function<void()>                   on_completed = {}
+    ) {
+      return source_creator_fn_()->subscribe({
+        .on_next      = on_next,
+        .on_error     = on_error,
+        .on_completed = on_completed
+      });
+    }
+  
+  #endif /* defined(SUPPORTS_RXCPP_COMPATIBLE) */
 };
 
 } /* namespace another_rxcpp */
+
+#if defined(SUPPORTS_OPERATORS_IN_OBSERVABLE)
+  #include "internal/supports/operators_in_observables_impl.inc"
+#endif /* SUPPORTS_OPERATORS_IN_OBSERVABLE */
 
 #endif /* !defined(__h_observable__) */

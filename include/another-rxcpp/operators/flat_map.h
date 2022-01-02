@@ -5,6 +5,7 @@
 #include <atomic>
 
 namespace another_rxcpp {
+namespace operators {
 
 template <typename F> auto flat_map(F f)
 {
@@ -56,6 +57,7 @@ template <typename F> auto flat_map(F f)
   };
 }
 
+} /* namespace operators */
 } /* namespace another_rxcpp */
 
 #endif /* !defined(__h_flat_map__) */

@@ -26,7 +26,7 @@ public:
   {
     source_ = observable<>::create<value_type>([&](subscriber<value_type> s){
       subscriber_ = s;
-    }) | publish();
+    }) | operators::publish();
     subscription_ = source_.subscribe({
       .on_next = [](value_type&&) {},
       .on_error = [](std::exception_ptr) {},

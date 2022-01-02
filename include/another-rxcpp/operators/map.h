@@ -4,6 +4,7 @@
 #include "../observable.h"
 
 namespace another_rxcpp {
+namespace operators {
 
 template <typename F> auto map(F f)
 {
@@ -32,6 +33,7 @@ template <typename F> auto map(F f)
   };
 }
 
+} /* namespace operators */
 } /* namespace another_rxcpp */
 
 #endif /* !defined(__h_map__) */
