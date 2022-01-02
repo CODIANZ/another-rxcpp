@@ -19,6 +19,8 @@
 * `Observable` に上流の `Type` を持たせないことで、 `as_dynamic()` を不要としました。これにより、コンパイル時間とデバッガへの負荷を軽減できれば嬉しいです。
 * `Take` などのオペレータをスレッドセーフにしました。
 * `C++` のマルチスレッディングを利用した機能を追加しました。（`subscription::unsubscribe_notice()` など）
+* `SUPPORTS＿OPERATORS_IN_OBSERVABLE` を定義することで、従来のメソッドチェーンをサポートします。（型推論が効くメリットがありますが、observableの型ごとの関数インスタンス量がが増えるデメリットがあります）
+* `SUPPORTS_RXCPP_COMPATIBLE` を定義することで、`subscribe()` が `RxCpp` に準じた引数を使用することができます。また、`as_dynamic()` も実装されます。（`as_dynamic()`は本当になにも行わず `observable` をコピーして返却するだけです）
 
 ## デメリット・懸念点
 
@@ -27,11 +29,7 @@
 
 ## 目標・やること
 
-* 未実装機能の中でも重要な実装を早めに行いたいです。（`Scheduler`や`Subject`など）
-* `RxCpp` と `another-rxcpp` を混在する仕組みがあると嬉しい。
 * `JavaScript` の `Promise` を `C++` で実装した [jpromise](https://github.com/CODIANZ/jpromise) との相互運用ができるようにしたい。
-* バージョン番号管理をちゃんとしたい。
-* `noexcept` を適宜追加する。
 
 ## 実装状況
 
@@ -49,6 +47,11 @@
 * publish
 * subject
 * retry
+* scheduler
+* default_scheduler
+* new_thread_scheduler (observe_on_new_thread)
+* observe_on
+* subscribe_on
 
 ## 使用方法
 

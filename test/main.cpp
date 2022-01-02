@@ -45,6 +45,25 @@ int main() {
   extern void test_retry();
   test_retry();
 
+  extern void test_observe_on();
+  test_observe_on();
+
+  extern void test_subscribe_on();
+  test_subscribe_on();
+
+  extern void test_new_thread_scheduler();
+  test_new_thread_scheduler();
+
+  #if defined(SUPPORTS_OPERATORS_IN_OBSERVABLE)
+    extern void test_operators_in_observable();
+    test_operators_in_observable();
+  #endif /* defined(SUPPORTS_OPERATORS_IN_OBSERVABLE) */
+
+  #if defined(SUPPORTS_RXCPP_COMPATIBLE)
+    extern void test_rxcpp_compatible();
+    test_rxcpp_compatible();
+  #endif /* defined(SUPPORTS_RXCPP_COMPATIBLE) */
+
   log() << "**** finish ****" << std::endl;
 
   std::cout << "wait for some worker threads destruct objects (eg: sources in subscription)" << std::endl;

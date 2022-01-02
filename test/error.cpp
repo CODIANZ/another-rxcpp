@@ -4,6 +4,7 @@
 #include "common.h"
 
 using namespace another_rxcpp;
+using namespace another_rxcpp::operators;
 
 void test_error() {
   log() << "test_error -- begin" << std::endl;

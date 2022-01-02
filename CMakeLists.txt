@@ -10,6 +10,9 @@ file(GLOB sources
   ./test/*.cpp
 )
 
+add_definitions(-DSUPPORTS_OPERATORS_IN_OBSERVABLE)
+add_definitions(-DSUPPORTS_RXCPP_COMPATIBLE)
+
 add_executable(another-rxcpp ${sources})
 
 set(CMAKE_CXX_FLAGS "-std=c++14")

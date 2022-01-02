@@ -3,9 +3,10 @@
 #include "common.h"
 
 using namespace another_rxcpp;
+using namespace another_rxcpp::operators;
 
 void test_on_error_resume_next() {
-  log() << "test_flat_map -- begin" << std::endl;
+  log() << "test_on_error_resume_next -- begin" << std::endl;
 
   auto o = ovalue(1)
   | flat_map([](int&& x){

@@ -4,6 +4,7 @@
 #include "../observable.h"
 
 namespace another_rxcpp {
+namespace operators {
 
 inline auto take(std::size_t n)
 {
@@ -48,6 +49,7 @@ inline auto take(std::size_t n)
   };  
 }
 
+} /* namespace operators */
 } /* namespace another_rxcpp */
 
 #endif /* !defined(__h_take__) */

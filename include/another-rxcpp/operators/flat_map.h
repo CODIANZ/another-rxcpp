@@ -2,14 +2,17 @@
 #define __h_flat_map__
 
 #include "../observable.h"
+#include "../internal/tools/util.h"
 #include <atomic>
+#include <type_traits>
 
 namespace another_rxcpp {
+namespace operators {
 
 template <typename F> auto flat_map(F f)
 {
-  using OUT_OB = decltype(f({}));
-  using OUT = typename OUT_OB::value_type;
+  using OUT_OB  = lambda_invoke_result_t<F>;
+  using OUT     = typename OUT_OB::value_type;
   return [f](auto src){
     return observable<>::create<OUT>([src, f](subscriber<OUT> s) {
       auto bUpstreamCompleted = std::make_shared<std::atomic_bool>(false);
@@ -56,6 +59,7 @@ template <typename F> auto flat_map(F f)
   };
 }
 
+} /* namespace operators */
 } /* namespace another_rxcpp */
 
 #endif /* !defined(__h_flat_map__) */

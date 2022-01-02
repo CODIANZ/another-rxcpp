@@ -8,7 +8,6 @@
 
 namespace another_rxcpp {
 
-class source_base;
 class subscription {
 public:
   using is_subscribed_fn_t  = std::function<bool()>;
@@ -39,6 +38,7 @@ public:
       cond_->notify_all();
     }
     on_unsubscribe_fn_ = {};
+    sp_keeper_.clear();
   }
 
   bool is_subscribed() const {
