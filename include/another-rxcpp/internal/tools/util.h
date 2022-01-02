@@ -1,13 +1,38 @@
 #if !defined(__h_util__)
 #define __h_util__
 
-#include <functional>
+#include <tuple>
+#include <type_traits>
 
 namespace another_rxcpp {
 
 template <typename T> struct strip_const_referece {
   using type = typename std::remove_const<typename std::remove_reference<T>::type>::type;
 };
+
+template<typename RET, typename...ARGS>
+struct lambda_traits_impl {
+  using return_type  = RET;
+  using args         = std::tuple<ARGS...>;
+};
+
+template <typename T>
+  struct lambda_traits :
+    lambda_traits<decltype(&T::operator())> {};
+
+template <typename FUNC, typename RET, typename...ARGS>
+  struct lambda_traits<RET(FUNC::*)(ARGS...) const> :
+    lambda_traits_impl<RET, ARGS...> {};
+
+template <typename FUNC, typename RET, typename...ARGS>
+  struct lambda_traits<RET(FUNC::*)(ARGS...)> :
+    lambda_traits_impl<RET, ARGS...> {};
+
+template <typename FUNC>
+  using lambda_invoke_result_t = typename lambda_traits<FUNC>::return_type;
+
+template <typename FUNC, std::size_t N>
+  using lambda_arg_t = typename std::tuple_element<N, typename lambda_traits<FUNC>::args>::type;
 
 } /* namespace another_rxcpp */
 

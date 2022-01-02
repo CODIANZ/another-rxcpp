@@ -2,13 +2,14 @@
 #define __h_map__
 
 #include "../observable.h"
+#include "../internal/tools/util.h"
 
 namespace another_rxcpp {
 namespace operators {
 
 template <typename F> auto map(F f)
 {
-  using OUT = decltype(f({}));
+  using OUT = lambda_invoke_result_t<F>;
   return [f](auto src){
     return observable<>::create<OUT>([src, f](subscriber<OUT> s) {
       auto upstream = src.create_source();
