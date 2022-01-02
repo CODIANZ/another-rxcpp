@@ -51,6 +51,9 @@ int main() {
   extern void test_subscribe_on();
   test_subscribe_on();
 
+  extern void test_new_thread_scheduler();
+  test_new_thread_scheduler();
+
   #if defined(SUPPORTS_OPERATORS_IN_OBSERVABLE)
     extern void test_operators_in_observable();
     test_operators_in_observable();
