@@ -29,11 +29,7 @@
 
 ## 目標・やること
 
-* 未実装機能の中でも重要な実装を早めに行いたいです。（`Scheduler`や`Subject`など）
-* `RxCpp` と `another-rxcpp` を混在する仕組みがあると嬉しい。
 * `JavaScript` の `Promise` を `C++` で実装した [jpromise](https://github.com/CODIANZ/jpromise) との相互運用ができるようにしたい。
-* バージョン番号管理をちゃんとしたい。
-* `noexcept` を適宜追加する。
 
 ## 実装状況
 
@@ -51,6 +47,11 @@
 * publish
 * subject
 * retry
+* scheduler
+* default_scheduler
+* new_thread_scheduler (observe_on_new_thread)
+* observe_on
+* subscribe_on
 
 ## 使用方法
 
