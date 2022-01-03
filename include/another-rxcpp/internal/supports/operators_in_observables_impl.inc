@@ -87,4 +87,11 @@ namespace another_rxcpp {
     return *this | operators::amb(args...);
   }
 
+  template <typename T>
+    auto observable<T>::distinct_until_changed()
+      -> observable<value_type>
+  {
+    return *this | distinct_until_changed();
+  }
+
 } /* namespace another_rxcpp */

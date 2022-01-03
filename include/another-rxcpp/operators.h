@@ -12,5 +12,6 @@
 #include "operators/take_until.h"
 #include "operators/merge.h"
 #include "operators/amb.h"
+#include "operators/distinct_until_changed.h"
 
 #endif /* !defined(__h_operators__) */
