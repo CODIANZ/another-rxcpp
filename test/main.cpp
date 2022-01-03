@@ -63,6 +63,9 @@ int main() {
   extern void test_amb();
   test_amb();
 
+  extern void test_behavior_subject();
+  test_behavior_subject();
+
   #if defined(SUPPORTS_OPERATORS_IN_OBSERVABLE)
     extern void test_operators_in_observable();
     test_operators_in_observable();
