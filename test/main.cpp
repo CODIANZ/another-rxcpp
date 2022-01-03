@@ -57,6 +57,9 @@ int main() {
   extern void test_take_until();
   test_take_until();
 
+  extern void test_merge();
+  test_merge();
+
   #if defined(SUPPORTS_OPERATORS_IN_OBSERVABLE)
     extern void test_operators_in_observable();
     test_operators_in_observable();

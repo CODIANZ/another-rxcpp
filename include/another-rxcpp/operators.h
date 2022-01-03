@@ -10,5 +10,6 @@
 #include "operators/observe_on.h"
 #include "operators/subscribe_on.h"
 #include "operators/take_until.h"
+#include "operators/merge.h"
 
 #endif /* !defined(__h_operators__) */
