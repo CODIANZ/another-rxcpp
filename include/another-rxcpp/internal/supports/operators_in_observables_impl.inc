@@ -79,4 +79,12 @@ namespace another_rxcpp {
     return *this | operators::merge(args...);
   }
 
+  template <typename T>
+    template <typename...ARGS>
+      auto observable<T>::amb(ARGS...args)
+        -> observable<value_type>
+  {
+    return *this | operators::amb(args...);
+  }
+
 } /* namespace another_rxcpp */

@@ -9,3 +9,4 @@ auto observe_on(scheduler scl) -> observable<value_type>;
 auto subscribe_on(scheduler scl) -> observable<value_type>;
 template <typename OB> auto take_until(OB ob) -> observable<value_type>;
 template <typename...ARGS> auto merge(ARGS...args) -> observable<value_type>;
+template <typename...ARGS> auto amb(ARGS...args) -> observable<value_type>;

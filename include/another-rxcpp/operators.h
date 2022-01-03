@@ -11,5 +11,6 @@
 #include "operators/subscribe_on.h"
 #include "operators/take_until.h"
 #include "operators/merge.h"
+#include "operators/amb.h"
 
 #endif /* !defined(__h_operators__) */

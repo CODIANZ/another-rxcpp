@@ -60,6 +60,9 @@ int main() {
   extern void test_merge();
   test_merge();
 
+  extern void test_amb();
+  test_amb();
+
   #if defined(SUPPORTS_OPERATORS_IN_OBSERVABLE)
     extern void test_operators_in_observable();
     test_operators_in_observable();
