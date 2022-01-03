@@ -57,6 +57,18 @@ int main() {
   extern void test_take_until();
   test_take_until();
 
+  extern void test_merge();
+  test_merge();
+
+  extern void test_amb();
+  test_amb();
+
+  extern void test_behavior_subject();
+  test_behavior_subject();
+
+  extern void test_distinct_until_changed();
+  test_distinct_until_changed();
+
   #if defined(SUPPORTS_OPERATORS_IN_OBSERVABLE)
     extern void test_operators_in_observable();
     test_operators_in_observable();

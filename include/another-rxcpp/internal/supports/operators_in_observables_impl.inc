@@ -62,4 +62,36 @@ namespace another_rxcpp {
   {
     return *this | subscribe_on(scl);
   }
+
+  template <typename T>
+    template <typename OB>
+      auto observable<T>::take_until(OB ob)
+        -> observable<value_type>
+  {
+    return *this | operators::take_until(ob);
+  }
+
+  template <typename T>
+    template <typename...ARGS>
+      auto observable<T>::merge(ARGS...args)
+        -> observable<value_type>
+  {
+    return *this | operators::merge(args...);
+  }
+
+  template <typename T>
+    template <typename...ARGS>
+      auto observable<T>::amb(ARGS...args)
+        -> observable<value_type>
+  {
+    return *this | operators::amb(args...);
+  }
+
+  template <typename T>
+    auto observable<T>::distinct_until_changed()
+      -> observable<value_type>
+  {
+    return *this | distinct_until_changed();
+  }
+
 } /* namespace another_rxcpp */

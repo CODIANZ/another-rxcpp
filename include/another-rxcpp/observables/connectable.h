@@ -24,7 +24,7 @@ public:
   connectable(observable<T> src) : 
     observable<T>([src](){
       return std::dynamic_pointer_cast<
-        typename observable<T>::souce_type
+        typename observable<T>::source_type
       >(
         std::make_shared<connectable_source<T>>(
           src.create_source()

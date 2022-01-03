@@ -43,7 +43,7 @@ public:
     return subscriber_;
   }
 
-  auto as_observable() {
+  virtual observable<T> as_observable() {
     return source_;
   }
 };

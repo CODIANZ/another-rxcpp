@@ -42,26 +42,41 @@
 
 ## 実装状況
 
+### observable
+
 * observable
 * connectable observable
-* subscription
 * just
 * never
 * error
 * range
+
+### operator
 * map
 * flat_map
 * on_error_resume_next
 * take
 * take_until
 * publish
-* subject
 * retry
+* distinct_until_changed
+* merge
+* amb
+* observe_on
+* subscribe_on
+* take_until
+
+### subject
+
+* subject
+* behavior subject
+
+### scheduler
+
 * scheduler
 * default_scheduler
 * new_thread_scheduler (observe_on_new_thread)
-* observe_on
-* subscribe_on
+
 
 ## 使用方法
 

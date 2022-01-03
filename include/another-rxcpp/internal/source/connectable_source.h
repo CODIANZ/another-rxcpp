@@ -20,9 +20,9 @@ namespace another_rxcpp {
 template <typename T> class connectable_source : public source<T> {
 private:
   using value_type    = T;
-  using souce_type    = source<value_type>;
-  using source_sp     = typename souce_type::sp;
-  using observer_type = typename souce_type::observer_type;
+  using source_type   = source<value_type>;
+  using source_sp     = typename source_type::sp;
+  using observer_type = typename source_type::observer_type;
   using source_creator_fn_t = std::function<source_sp()>;
 
   struct sink {

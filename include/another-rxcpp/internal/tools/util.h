@@ -10,7 +10,10 @@ template <typename T> struct strip_const_referece {
   using type = typename std::remove_const<typename std::remove_reference<T>::type>::type;
 };
 
-template<typename RET, typename...ARGS>
+template <typename T> struct is_observable : std::false_type {};
+template <typename T> struct is_observable<observable<T>> : std::true_type {};
+
+template <typename RET, typename...ARGS>
 struct lambda_traits_impl {
   using return_type  = RET;
   using args         = std::tuple<ARGS...>;
