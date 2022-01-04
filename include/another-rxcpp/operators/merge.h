@@ -12,7 +12,7 @@ namespace operators {
 
 namespace internal {
   template <typename T, typename OB>
-  auto merge(schedulers::scheduler scl, std::vector<observable<T>>& arr, OB ob){
+  auto merge(scheduler scl, std::vector<observable<T>>& arr, OB ob){
     arr.push_back(ob);
     return [scl, arr](auto src) mutable {
       return observable<>::create<T>([src, scl, arr](subscriber<T> s) mutable {
@@ -51,7 +51,7 @@ namespace internal {
   }
 
   template <typename T, typename OB, typename...ARGS>
-  auto merge(schedulers::scheduler scl, std::vector<observable<T>>& arr, OB ob, ARGS...args){
+  auto merge(scheduler scl, std::vector<observable<T>>& arr, OB ob, ARGS...args){
     arr.push_back(ob);
     return merge(scl, arr, args...);
   }
@@ -65,7 +65,7 @@ auto merge(OB ob, ARGS...args) {
 }
 
 template <typename OB, typename...ARGS>
-auto merge(schedulers::scheduler scl, OB ob, ARGS...args) {
+auto merge(scheduler scl, OB ob, ARGS...args) {
   using T = typename OB::value_type;
   std::vector<observable<T>> arr;
   return internal::merge<T>(scl, arr, ob, args...);

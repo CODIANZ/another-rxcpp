@@ -2,12 +2,12 @@
 #define __h_observe_on__
 
 #include "../observable.h"
-#include "../schedulers/scheduler.h"
+#include "../scheduler.h"
 
 namespace another_rxcpp {
 namespace operators {
 
-inline auto observe_on(schedulers::scheduler scdl)
+inline auto observe_on(scheduler scdl)
 {
   return [scdl](auto src){
     using OUT_OB = decltype(src);
