@@ -291,6 +291,9 @@ void test_connectable() {
   auto s2 = doSubscribe(oo);
   auto s3 = doSubscribe(oo);
 
+  wait(1000);
+  oo.connect();
+
   wait(800);
   s1.unsubscribe();
 
