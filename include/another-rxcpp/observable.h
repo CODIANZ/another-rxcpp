@@ -36,7 +36,7 @@ public:
   using source_creator_fn_t = std::function<source_sp()>;
 
 private:
-  mutable source_creator_fn_t source_creator_fn_;
+  source_creator_fn_t source_creator_fn_;
 
 protected:
   observable() = default;
@@ -46,11 +46,11 @@ public:
     source_creator_fn_(source_creator) {}
   virtual ~observable() = default;
 
-  subscription subscribe(observer_type ob) {
+  virtual subscription subscribe(observer_type ob) const {
     return source_creator_fn_()->subscribe(ob);
   }
 
-  template <typename F> auto operator | (F f)
+  template <typename F> auto operator | (F f) const
     -> decltype(f(std::declval<observable<value_type>>()))
   {
     /** F -> observable<OUT> f(observable<IN>) */
@@ -65,7 +65,7 @@ public:
 
   #if defined(SUPPORTS_RXCPP_COMPATIBLE)
 
-    auto as_dynamic() -> observable<value_type>
+    auto as_dynamic() const -> observable<value_type>
     {
       return *this;
     }
@@ -74,8 +74,8 @@ public:
       std::function<void(value_type)>         on_next = {},
       std::function<void(std::exception_ptr)> on_error = {},
       std::function<void()>                   on_completed = {}
-    ) {
-      return source_creator_fn_()->subscribe({
+    ) const {
+      return subscribe({
         .on_next      = on_next,
         .on_error     = on_error,
         .on_completed = on_completed
