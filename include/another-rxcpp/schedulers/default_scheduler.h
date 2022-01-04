@@ -1,7 +1,7 @@
 #if !defined(__h_default_scheduler__)
 #define __h_default_scheduler__
 
-#include "scheduler.h"
+#include "../scheduler.h"
 
 namespace another_rxcpp {
 namespace schedulers {

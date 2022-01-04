@@ -5,7 +5,6 @@
 #include <iostream>
 
 namespace another_rxcpp {
-namespace schedulers {
 
 class scheduler_interface {
 public:
@@ -15,7 +14,6 @@ public:
   virtual void run(function_type) = 0;
 };
 
-} /* namespace schedulers */
 } /* namespace another_rxcpp */
 
 #endif /* !defined(__h_scheduler_interface__) */

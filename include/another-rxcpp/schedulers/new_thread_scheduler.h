@@ -1,7 +1,7 @@
 #if !defined(__h_new_thread_scheduler__)
 #define __h_new_thread_scheduler__
 
-#include "scheduler.h"
+#include "../scheduler.h"
 #include <thread>
 #include <queue>
 

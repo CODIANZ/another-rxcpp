@@ -10,10 +10,10 @@ namespace subjects {
 
 template <typename T> class subject {
 public:
-  using value_type = T;
-  using source_type       = observables::connectable<value_type>;
-  using observer_type     = observer<value_type>;
-  using subscriber_type   = subscriber<value_type>;
+  using value_type      = T;
+  using source_type     = observables::connectable<value_type>;
+  using observer_type   = observer<value_type>;
+  using subscriber_type = subscriber<value_type>;
 
 private:
   source_type     source_;
@@ -28,24 +28,37 @@ public:
     source_ = observable<>::create<value_type>([&](subscriber_type s){
       subscriber_ = s;
     }) | operators::publish();
-    subscription_ = source_.subscribe({
-      .on_next = [](value_type&&) {},
-      .on_error = [](std::exception_ptr) {},
-      .on_completed = []() {},
-    });
+    subscription_ = source_.connect();
   }
 
   virtual ~subject() {
     subscription_.unsubscribe();
   }
 
-  auto as_subscriber() {
+  auto as_subscriber() const {
     return subscriber_;
   }
 
-  virtual observable<T> as_observable() {
-    return source_;
+  virtual observable<T> as_observable() const {
+    return observable<>::create<value_type>([=](subscriber_type s){
+      source_.subscribe({
+        .on_next = [s](value_type&& x){
+          s.on_next(std::move(x));
+        },
+        .on_error = [s](std::exception_ptr err){
+          s.on_error(err);
+        },
+        .on_completed = [s](){
+          s.on_completed();
+        },
+      });
+    });
   }
+
+  #if defined(SUPPORTS_RXCPP_COMPATIBLE)
+    auto get_subscriber() const { return as_subscriber(); }
+    auto get_observable() const { return as_observable(); }
+  #endif /* defined(SUPPORTS_RXCPP_COMPATIBLE) */
 };
 
 } /* namespace subjects */

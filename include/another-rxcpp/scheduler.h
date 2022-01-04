@@ -5,7 +5,6 @@
 #include <memory>
 
 namespace another_rxcpp {
-namespace schedulers {
 
 class scheduler {
 public:
@@ -25,7 +24,6 @@ public:
   }
 };
 
-} /* namespace schedulers */
 } /* namespace another_rxcpp */
 
 #endif /* !defined(__h_scheduler__) */
