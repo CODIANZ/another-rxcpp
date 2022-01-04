@@ -39,9 +39,6 @@ int main() {
   extern void test_on_error_resume_next();
   test_on_error_resume_next();
 
-  extern void test_connectable();
-  test_connectable();
-
   extern void test_retry();
   test_retry();
 
