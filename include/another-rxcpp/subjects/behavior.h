@@ -11,17 +11,25 @@ namespace subjects {
 
 template <typename T> class behavior : public subject<T> {
 private:
-  std::atomic<T>  last_;
+  struct member {
+    T          last_;
+    std::mutex mtx_;
+  };
+  std::shared_ptr<member> m_;
   subscription    behavior_subscription_;
 
 protected:
 
 public:
   behavior(T initial_value) :
-    last_(std::move(initial_value))
+    m_(new member{
+      .last_ = std::move(initial_value)
+    })
   {
-    behavior_subscription_ = as_observable().subscribe([=](T&& x){
-      last_ = std::move(x);
+    auto m = m_; 
+    behavior_subscription_ = as_observable().subscribe([m](T&& x){
+      std::lock_guard<std::mutex> lock(m->mtx_);
+      m->last_ = std::move(x);
     }, [](std::exception_ptr) {
     }, [](){
     });
@@ -32,9 +40,13 @@ public:
   }
 
   virtual observable<T> as_observable() const override {
-    return observable<>::create<T>([=](subscriber<T> s){
-      auto src = subject<T>::as_observable();
-      s.on_next(last_.load());
+    auto src = subject<T>::as_observable();
+    auto m = m_;
+    return observable<>::create<T>([src, m](subscriber<T> s){
+      s.on_next([m](){
+        std::lock_guard<std::mutex> lock(m->mtx_);
+        return m->last_;
+      }());
       src.subscribe({
         .on_next = [s](T&& x){
           s.on_next(std::move(x));
