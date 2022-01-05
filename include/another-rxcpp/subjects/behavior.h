@@ -11,34 +11,32 @@ namespace subjects {
 
 template <typename T> class behavior : public subject<T> {
 private:
-  std::shared_ptr<std::mutex> mtx_;
-  std::shared_ptr<T>          last_;
+  std::atomic<T>  last_;
+  subscription    behavior_subscription_;
 
 protected:
 
 public:
   behavior(T initial_value) :
-    last_(new T(std::move(initial_value))),
-    mtx_(new std::mutex())
-  {}
+    last_(std::move(initial_value))
+  {
+    behavior_subscription_ = as_observable().subscribe([=](T&& x){
+      last_ = std::move(x);
+    }, [](std::exception_ptr) {
+    }, [](){
+    });
+  }
 
-  virtual ~behavior() = default;
+  virtual ~behavior(){
+    behavior_subscription_.unsubscribe();
+  }
 
   virtual observable<T> as_observable() const override {
     return observable<>::create<T>([=](subscriber<T> s){
       auto src = subject<T>::as_observable();
-      auto last = last_;
-      auto mtx = mtx_;
-      s.on_next([last, mtx](){
-        std::lock_guard<std::mutex> lock(*mtx);
-        return *last;
-      }());
+      s.on_next(last_.load());
       src.subscribe({
-        .on_next = [s, last, mtx](auto&& x){
-          {
-            std::lock_guard<std::mutex> lock(*mtx);
-            *last = x;
-          }
+        .on_next = [s](T&& x){
           s.on_next(std::move(x));
         },
         .on_error = [s](std::exception_ptr err){
