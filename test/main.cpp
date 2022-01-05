@@ -28,6 +28,7 @@ int main() {
   DO(test_behavior_subject)
   DO(test_distinct_until_changed)
   DO(test_interval)
+  DO(test_delay)
 
   #if defined(SUPPORTS_OPERATORS_IN_OBSERVABLE)
     DO(test_operators_in_observable)

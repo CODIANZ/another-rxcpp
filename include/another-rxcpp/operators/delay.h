@@ -11,14 +11,14 @@ namespace operators {
 
 inline auto delay(std::chrono::milliseconds msec)
 {
-  /** TODO: not implemented */
-  return [](auto src){
+  return [msec](auto src){
     using OUT_OB = decltype(src);
     using OUT = typename OUT_OB::value_type;
-    return observable<>::create<OUT>([src](subscriber<OUT> s) {
+    return observable<>::create<OUT>([src, msec](subscriber<OUT> s) {
       auto upstream = src.create_source();
       upstream->subscribe({
-        .on_next = [s, upstream](auto&& x){
+        .on_next = [s, upstream, msec](auto&& x){
+          std::this_thread::sleep_for(msec);
           s.on_next(std::move(x));
         },
         .on_error = [s, upstream](std::exception_ptr err){
