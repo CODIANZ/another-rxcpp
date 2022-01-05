@@ -12,7 +12,9 @@ void test_behavior_subject() {
   subjects::behavior<int> sbj(100);
   doSubscribe(sbj.as_observable());
   sbj.as_subscriber().on_next(1);
+  doSubscribe(sbj.as_observable());  
   sbj.as_subscriber().on_next(2);
+  doSubscribe(sbj.as_observable());  
   sbj.as_subscriber().on_completed();
 
   log() << "test_behavior_subject -- end" << std::endl << std::endl;
