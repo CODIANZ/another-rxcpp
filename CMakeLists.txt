@@ -16,7 +16,7 @@ add_definitions(-DSUPPORTS_RXCPP_COMPATIBLE)
 add_executable(another-rxcpp ${sources})
 
 set(CMAKE_CXX_FLAGS "-std=c++14")
-set(CMAKE_CXX_FLAGS "-pthread") # for gcc
+#set(CMAKE_CXX_FLAGS "-pthread") # for gcc
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
 include(CPack)

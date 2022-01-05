@@ -12,11 +12,11 @@ namespace operators {
 
 namespace internal {
   template <typename T, typename OB>
-  auto amb(scheduler scl, std::vector<observable<T>>& arr, OB ob){
+  auto amb(scheduler scdl, std::vector<observable<T>>& arr, OB ob){
     arr.push_back(ob);
-    return [scl, arr](auto src) mutable {
-      return observable<>::create<T>([src, scl, arr](subscriber<T> s) mutable {
-        scl.run([src, scl, arr, s](){
+    return [scdl, arr](auto src) mutable {
+      return observable<>::create<T>([src, scdl, arr](subscriber<T> s) mutable {
+        scdl.run([src, arr, s, scdl /* keep-alive */](){
           using source_sp = typename OB::source_sp;
           using source_type = typename OB::source_type;
 
@@ -65,9 +65,9 @@ namespace internal {
   }
 
   template <typename T, typename OB, typename...ARGS>
-  auto amb(scheduler scl, std::vector<observable<T>>& arr, OB ob, ARGS...args){
+  auto amb(scheduler scdl, std::vector<observable<T>>& arr, OB ob, ARGS...args){
     arr.push_back(ob);
-    return amb(scl, arr, args...);
+    return amb(scdl, arr, args...);
   }
 } /* namespace internal */
 
@@ -79,10 +79,10 @@ auto amb(OB ob, ARGS...args) {
 }
 
 template <typename OB, typename...ARGS>
-auto amb(scheduler scl, OB ob, ARGS...args) {
+auto amb(scheduler scdl, OB ob, ARGS...args) {
   using T = typename OB::value_type;
   std::vector<observable<T>> arr;
-  return internal::amb<T>(scl, arr, ob, args...);
+  return internal::amb<T>(scdl, arr, ob, args...);
 }
 
 } /* namespace operators */

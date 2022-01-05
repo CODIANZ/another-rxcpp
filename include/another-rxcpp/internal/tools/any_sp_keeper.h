@@ -47,7 +47,7 @@ public:
   template <typename...ARGS> static any_sp_keeper create(ARGS...args) {
     any_sp_keeper keeper;
     create_internal(keeper.ptrs_, args...);
-    return std::move(keeper);
+    return keeper;
   }
 };
 

@@ -6,9 +6,11 @@
 namespace another_rxcpp {
 namespace observables {
 
-template <typename T> auto never() -> observable<T> {
-  return observable<>::create<T>([](subscriber<T>){
-  });
+template <typename T>
+  auto never()
+    -> observable<T>
+{
+  return observable<>::never<T>();
 }
 
 } /* namespace observables */

@@ -11,7 +11,7 @@ void test_take_until() {
 
   log() << "test_take_until -- begin" << std::endl;
 
-  subjects::subject<int> trigger;
+  auto trigger = std::make_shared<subjects::subject<int>>();
 
   auto emitter = observable<>::create<int>([](subscriber<int> s){
     std::thread([s](){
@@ -25,13 +25,13 @@ void test_take_until() {
   });
 
 
-  auto o = emitter | take_until(trigger.as_observable());
+  auto o = emitter | take_until(trigger->as_observable());
 
   auto x = doSubscribe(o);
 
-  setTimeout([&](){
-    trigger.as_subscriber().on_next(1);
-    trigger.as_subscriber().on_completed();
+  setTimeout([trigger](){
+    trigger->as_subscriber().on_next(1);
+    trigger->as_subscriber().on_completed();
   }, 2000);
 
   while(x.is_subscribed()) {}

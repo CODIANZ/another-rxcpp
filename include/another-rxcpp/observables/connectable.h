@@ -64,7 +64,7 @@ public:
       for(auto it = sinks->begin(); it != sinks->end(); it++, ret_it++){
         *ret_it = it->second.observer_;
       }
-      return std::move(ret);
+      return ret;
     };
 
     return upstream_->subscribe({
@@ -116,7 +116,7 @@ public:
         .observer_ = ob
       }});
     }
-    return std::move(sbsc);
+    return sbsc;
   }
 };
 

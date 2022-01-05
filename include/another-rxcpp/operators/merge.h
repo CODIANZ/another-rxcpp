@@ -12,11 +12,11 @@ namespace operators {
 
 namespace internal {
   template <typename T, typename OB>
-  auto merge(scheduler scl, std::vector<observable<T>>& arr, OB ob){
+  auto merge(scheduler scdl, std::vector<observable<T>>& arr, OB ob){
     arr.push_back(ob);
-    return [scl, arr](auto src) mutable {
-      return observable<>::create<T>([src, scl, arr](subscriber<T> s) mutable {
-        scl.run([src, scl, arr, s](){
+    return [scdl, arr](auto src) mutable {
+      return observable<>::create<T>([src, scdl, arr](subscriber<T> s) mutable {
+        scdl.run([src, arr, s, scdl /* keep-alive */](){
           using source_sp = typename OB::source_sp;
           std::vector<source_sp> sources;
           sources.push_back(src.create_source());
@@ -51,9 +51,9 @@ namespace internal {
   }
 
   template <typename T, typename OB, typename...ARGS>
-  auto merge(scheduler scl, std::vector<observable<T>>& arr, OB ob, ARGS...args){
+  auto merge(scheduler scdl, std::vector<observable<T>>& arr, OB ob, ARGS...args){
     arr.push_back(ob);
-    return merge(scl, arr, args...);
+    return merge(scdl, arr, args...);
   }
 } /* namespace internal */
 
@@ -65,10 +65,10 @@ auto merge(OB ob, ARGS...args) {
 }
 
 template <typename OB, typename...ARGS>
-auto merge(scheduler scl, OB ob, ARGS...args) {
+auto merge(scheduler scdl, OB ob, ARGS...args) {
   using T = typename OB::value_type;
   std::vector<observable<T>> arr;
-  return internal::merge<T>(scl, arr, ob, args...);
+  return internal::merge<T>(scdl, arr, ob, args...);
 }
 
 } /* namespace operators */

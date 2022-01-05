@@ -16,17 +16,17 @@ inline auto observe_on(scheduler scdl)
       auto upstream = src.create_source();
       upstream->subscribe({
         .on_next = [s, scdl](auto&& x){
-          scdl.run([s, x]() mutable {
+          scdl.run([s, x, scdl /* keep-alive */]() mutable {
             s.on_next(std::move(x));
           });
         },
-        .on_error = [s, scdl](std::exception_ptr err){
-          scdl.run([s, err]() mutable {
+        .on_error = [s, scdl /* keep-alive */](std::exception_ptr err){
+          scdl.run([s, err, scdl /* keep-alive */]() mutable {
             s.on_error(err);
           });
         },
-        .on_completed = [s, scdl](){
-          scdl.run([s]() mutable {
+        .on_completed = [s, scdl /* keep-alive */](){
+          scdl.run([s, scdl /* keep-alive */]() mutable {
             s.on_completed();
           });
         }
