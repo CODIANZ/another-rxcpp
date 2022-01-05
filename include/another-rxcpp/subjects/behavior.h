@@ -20,7 +20,7 @@ public:
 
   virtual ~behavior() = default;
 
-  virtual observable<T> as_observable() {
+  virtual observable<T> as_observable() const override {
     return observable<>::create<T>([=](subscriber<T> s){
       auto src = subject<T>::as_observable();
       s.on_next(last_);
