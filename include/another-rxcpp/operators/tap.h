@@ -7,9 +7,15 @@
 namespace another_rxcpp {
 namespace operators {
 
-template <typename OBSERVER> auto tap(OBSERVER obs)
+template <typename T>
+struct tap_observer{
+  std::function<void(T)>                  on_next;
+  std::function<void(std::exception_ptr)> on_error;
+  std::function<void()>                   on_completed;
+};
+
+template <typename T> auto tap(tap_observer<T> obs)
 {
-  /** TODO: not implemented */
   return [obs](auto src){
     using OUT_OB = decltype(src);
     using OUT = typename OUT_OB::value_type;

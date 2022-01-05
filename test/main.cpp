@@ -29,6 +29,7 @@ int main() {
   DO(test_distinct_until_changed)
   DO(test_interval)
   DO(test_delay)
+  DO(test_tap)
 
   #if defined(SUPPORTS_OPERATORS_IN_OBSERVABLE)
     DO(test_operators_in_observable)

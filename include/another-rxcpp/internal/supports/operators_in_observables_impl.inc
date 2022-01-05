@@ -104,7 +104,7 @@ namespace another_rxcpp {
       std::function<void()>                   on_completed
     ) const
   {
-    return *this | operators::tap({
+    return *this | operators::tap<value_type>({
       .on_next      = on_next,
       .on_error     = on_error,
       .on_completed = on_completed

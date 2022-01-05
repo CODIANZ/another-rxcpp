@@ -14,11 +14,11 @@
 #include "operators/amb.h"
 #include "operators/distinct_until_changed.h"
 #include "operators/delay.h"
+#include "operators/tap.h"
 
 #include "operators/finally.h"
 #include "operators/last.h"
 #include "operators/take_last.h"
-#include "operators/tap.h"
 #include "operators/timeout.h"
 
 #endif /* !defined(__h_operators__) */
