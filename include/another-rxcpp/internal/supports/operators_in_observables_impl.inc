@@ -45,15 +45,15 @@ namespace another_rxcpp {
   }
 
   template <typename T>
-    auto observable<T>::observe_on(scheduler scl) const
+    auto observable<T>::observe_on(scheduler::creator_fn sccr) const
   {
-    return *this | operators::observe_on(scl);
+    return *this | operators::observe_on(sccr);
   }
 
   template <typename T>
-    auto observable<T>::subscribe_on(scheduler scl) const
+    auto observable<T>::subscribe_on(scheduler::creator_fn sccr) const
   {
-    return *this | operators::subscribe_on(scl);
+    return *this | operators::subscribe_on(sccr);
   }
 
   template <typename T>
@@ -65,9 +65,9 @@ namespace another_rxcpp {
 
   template <typename T>
     template <typename...ARGS>
-      auto observable<T>::merge(scheduler, ARGS...args) const
+      auto observable<T>::merge(scheduler::creator_fn sccr, ARGS...args) const
   {
-    return *this | operators::merge(args...);
+    return *this | operators::merge(sccr, args...);
   }
 
   template <typename T>
@@ -79,9 +79,9 @@ namespace another_rxcpp {
 
   template <typename T>
     template <typename...ARGS>
-      auto observable<T>::amb(scheduler, ARGS...args) const
+      auto observable<T>::amb(scheduler::creator_fn sccr, ARGS...args) const
   {
-    return *this | operators::amb(args...);
+    return *this | operators::amb(sccr, args...);
   }
 
   template <typename T>

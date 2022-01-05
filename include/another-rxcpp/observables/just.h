@@ -9,10 +9,10 @@ namespace another_rxcpp {
 namespace observables {
 
 template <typename T>
-  auto just(T&& value, scheduler scl = schedulers::default_scheduler())
+  auto just(T&& value, scheduler::creator_fn sccr = schedulers::default_scheduler())
     -> observable<typename strip_const_referece<T>::type>
 {
-  return observable<>::just(value, scl);
+  return observable<>::just(value, sccr);
 }
 
 } /* namespace observables */

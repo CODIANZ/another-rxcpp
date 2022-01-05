@@ -23,7 +23,7 @@ public:
   }
 
   template <typename T>
-    static auto just(T&& value, scheduler scl = schedulers::default_scheduler())
+    static auto just(T&& value, scheduler::creator_fn sccr = schedulers::default_scheduler())
       -> observable<typename strip_const_referece<T>::type>
   {
     using TT = typename strip_const_referece<T>::type;

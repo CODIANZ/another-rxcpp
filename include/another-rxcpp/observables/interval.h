@@ -9,11 +9,22 @@ namespace another_rxcpp {
 namespace observables {
 
 template <typename T = int>
-  auto interval(std::chrono::milliseconds msec, scheduler scl = schedulers::default_scheduler())
+  auto interval(std::chrono::milliseconds msec, scheduler::creator_fn sccr = schedulers::default_scheduler())
     -> observable<T>
 {
-  return observable<>::create<T>([](subscriber<T> s){
-    /** TODO: not implemented */
+  return observable<>::create<T>([msec, sccr](subscriber<T> s){
+    auto scdl = sccr();
+    scdl.run([s, msec](){
+      T n = 0;
+      while(true){
+        std::this_thread::sleep_for(msec);
+        if(!s.is_subscribed()){
+          break;
+        }
+        s.on_next(n);
+        n++;
+      }
+    });
   });
 }
 

@@ -7,22 +7,23 @@
 namespace another_rxcpp {
 namespace operators {
 
-inline auto subscribe_on(scheduler scdl)
+inline auto subscribe_on(scheduler::creator_fn sccr)
 {
-  return [scdl](auto src){
+  return [sccr](auto src){
     using OUT_OB = decltype(src);
     using OUT = typename OUT_OB::value_type;
-    return observable<>::create<OUT>([src, scdl](subscriber<OUT> s) {
-      scdl.run([s, src, scdl /* keep-alive */]() mutable {
+    return observable<>::create<OUT>([src, sccr](subscriber<OUT> s) {
+      auto scdl = sccr();
+      scdl.run([s, src]() mutable {
         auto upstream = src.create_source();
         upstream->subscribe({
-          .on_next = [s,  scdl /* keep-alive */](auto&& x){
+          .on_next = [s](auto&& x){
             s.on_next(std::move(x));
           },
-          .on_error = [s,  scdl /* keep-alive */](std::exception_ptr err){
+          .on_error = [s](std::exception_ptr err){
             s.on_error(err);
           },
-          .on_completed = [s,  scdl /* keep-alive */](){
+          .on_completed = [s](){
             s.on_completed();
           }
         });

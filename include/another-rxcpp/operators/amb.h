@@ -12,11 +12,12 @@ namespace operators {
 
 namespace internal {
   template <typename T, typename OB>
-  auto amb(scheduler scdl, std::vector<observable<T>>& arr, OB ob){
+  auto amb(scheduler::creator_fn sccr, std::vector<observable<T>>& arr, OB ob){
     arr.push_back(ob);
-    return [scdl, arr](auto src) mutable {
-      return observable<>::create<T>([src, scdl, arr](subscriber<T> s) mutable {
-        scdl.run([src, arr, s, scdl /* keep-alive */](){
+    return [sccr, arr](auto src) mutable {
+      return observable<>::create<T>([src, sccr, arr](subscriber<T> s) mutable {
+        auto scdl = sccr();
+        scdl.run([src, arr, s](){
           using source_sp = typename OB::source_sp;
           using source_type = typename OB::source_type;
 
@@ -65,9 +66,9 @@ namespace internal {
   }
 
   template <typename T, typename OB, typename...ARGS>
-  auto amb(scheduler scdl, std::vector<observable<T>>& arr, OB ob, ARGS...args){
+  auto amb(scheduler::creator_fn sccr, std::vector<observable<T>>& arr, OB ob, ARGS...args){
     arr.push_back(ob);
-    return amb(scdl, arr, args...);
+    return amb(sccr, arr, args...);
   }
 } /* namespace internal */
 
@@ -79,10 +80,10 @@ auto amb(OB ob, ARGS...args) {
 }
 
 template <typename OB, typename...ARGS>
-auto amb(scheduler scdl, OB ob, ARGS...args) {
+auto amb(scheduler::creator_fn sccr, OB ob, ARGS...args) {
   using T = typename OB::value_type;
   std::vector<observable<T>> arr;
-  return internal::amb<T>(scdl, arr, ob, args...);
+  return internal::amb<T>(sccr, arr, ob, args...);
 }
 
 } /* namespace operators */
