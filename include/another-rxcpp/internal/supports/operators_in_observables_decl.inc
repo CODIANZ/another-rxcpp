@@ -7,9 +7,7 @@ auto retry(std::size_t n = 0) const;
 auto observe_on(scheduler::creator_fn sccr) const;
 auto subscribe_on(scheduler::creator_fn sccr) const;
 template <typename OB> auto take_until(OB ob) const;
-template <typename...ARGS> auto merge(scheduler::creator_fn sccr, ARGS...args) const;
 template <typename...ARGS> auto merge(ARGS...args) const;
-template <typename...ARGS> auto amb(scheduler::creator_fn sccr, ARGS...args) const;
 template <typename...ARGS> auto amb(ARGS...args) const;
 auto distinct_until_changed() const;
 auto tap(

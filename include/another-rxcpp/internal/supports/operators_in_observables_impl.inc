@@ -65,23 +65,9 @@ namespace another_rxcpp {
 
   template <typename T>
     template <typename...ARGS>
-      auto observable<T>::merge(scheduler::creator_fn sccr, ARGS...args) const
-  {
-    return *this | operators::merge(sccr, args...);
-  }
-
-  template <typename T>
-    template <typename...ARGS>
       auto observable<T>::merge(ARGS...args) const
   {
     return *this | operators::merge(args...);
-  }
-
-  template <typename T>
-    template <typename...ARGS>
-      auto observable<T>::amb(scheduler::creator_fn sccr, ARGS...args) const
-  {
-    return *this | operators::amb(sccr, args...);
   }
 
   template <typename T>

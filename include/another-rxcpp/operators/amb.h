@@ -72,7 +72,7 @@ namespace internal {
   }
 } /* namespace internal */
 
-template <typename OB, typename...ARGS>
+template <typename OB, typename...ARGS, std::enable_if_t<is_observable<OB>::value, bool> = true>
 auto amb(OB ob, ARGS...args) {
   using T = typename OB::value_type;
   std::vector<observable<T>> arr;
