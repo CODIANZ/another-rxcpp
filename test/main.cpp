@@ -34,6 +34,7 @@ int main() {
   DO(test_finally)
   DO(test_take_last)
   DO(test_last)
+  DO(test_timeout)
 
   #if defined(SUPPORTS_OPERATORS_IN_OBSERVABLE)
     DO(test_operators_in_observable)
