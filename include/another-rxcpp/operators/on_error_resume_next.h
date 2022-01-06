@@ -16,7 +16,7 @@ template <typename NEXT_FN> auto on_error_resume_next(NEXT_FN f)
       auto fxCounter = std::make_shared<std::atomic_int>(0);
       auto upstream = src.create_source();
       upstream->subscribe({
-        .on_next = [s](auto&& x){
+        .on_next = [s](auto x){
           s.on_next(std::move(x));
         },
         .on_error = [s, f, upstream, bUpstreamCompleted, fxCounter](std::exception_ptr err){
@@ -24,7 +24,7 @@ template <typename NEXT_FN> auto on_error_resume_next(NEXT_FN f)
             (*fxCounter)++;
             f(err)
             .subscribe({
-              .on_next = [s](auto&& x){
+              .on_next = [s](auto x){
                 s.on_next(std::move(x));
               },
               .on_error = [s, upstream, fxCounter](std::exception_ptr err){

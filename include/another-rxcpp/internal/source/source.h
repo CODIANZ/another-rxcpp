@@ -88,7 +88,7 @@ public:
     catch(...){
       subscriber.on_error(std::current_exception());
     }
-    return std::move(sbsc);
+    return sbsc;
   }
 };
 

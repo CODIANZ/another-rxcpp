@@ -12,11 +12,12 @@ namespace operators {
 
 namespace internal {
   template <typename T, typename OB>
-  auto amb(scheduler scl, std::vector<observable<T>>& arr, OB ob){
+  auto amb(scheduler::creator_fn sccr, std::vector<observable<T>>& arr, OB ob){
     arr.push_back(ob);
-    return [scl, arr](auto src) mutable {
-      return observable<>::create<T>([src, scl, arr](subscriber<T> s) mutable {
-        scl.run([src, scl, arr, s](){
+    return [sccr, arr](auto src) mutable {
+      return observable<>::create<T>([src, sccr, arr](subscriber<T> s) mutable {
+        auto scdl = sccr();
+        scdl.schedule([src, arr, s](){
           using source_sp = typename OB::source_sp;
           using source_type = typename OB::source_type;
 
@@ -48,7 +49,7 @@ namespace internal {
 
           std::for_each(sources.begin(), sources.end(), [s, do_on_next](auto it){
             it->subscribe({
-              .on_next = [it, s, do_on_next](auto&& x){
+              .on_next = [it, s, do_on_next](auto x){
                 do_on_next(it, std::move(x));
               },
               .on_error = [s](std::exception_ptr err){
@@ -65,13 +66,13 @@ namespace internal {
   }
 
   template <typename T, typename OB, typename...ARGS>
-  auto amb(scheduler scl, std::vector<observable<T>>& arr, OB ob, ARGS...args){
+  auto amb(scheduler::creator_fn sccr, std::vector<observable<T>>& arr, OB ob, ARGS...args){
     arr.push_back(ob);
-    return amb(scl, arr, args...);
+    return amb(sccr, arr, args...);
   }
 } /* namespace internal */
 
-template <typename OB, typename...ARGS>
+template <typename OB, typename...ARGS, std::enable_if_t<is_observable<OB>::value, bool> = true>
 auto amb(OB ob, ARGS...args) {
   using T = typename OB::value_type;
   std::vector<observable<T>> arr;
@@ -79,10 +80,10 @@ auto amb(OB ob, ARGS...args) {
 }
 
 template <typename OB, typename...ARGS>
-auto amb(scheduler scl, OB ob, ARGS...args) {
+auto amb(scheduler::creator_fn sccr, OB ob, ARGS...args) {
   using T = typename OB::value_type;
   std::vector<observable<T>> arr;
-  return internal::amb<T>(scl, arr, ob, args...);
+  return internal::amb<T>(sccr, arr, ob, args...);
 }
 
 } /* namespace operators */

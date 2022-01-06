@@ -4,55 +4,38 @@
 #include "../scheduler.h"
 #include <thread>
 #include <queue>
+#include <memory>
 
 namespace another_rxcpp {
 namespace schedulers {
 
-class new_thread_scheduler_interface : public scheduler_interface {
+class new_thread_scheduler_interface : public scheduler_interface
+{
 private:
-  std::queue<function_type> queue_;
-  std::mutex                mtx_;
-  std::thread               thread_;
-  std::condition_variable   cond_;
-  volatile bool             bContinue_;
+  std::thread thread_;
 
 public:
-  new_thread_scheduler_interface() : bContinue_(true) {
-    thread_ = std::thread([&](){
-      while(true) {
-        auto f = [&]() -> function_type {
-          std::unique_lock<std::mutex> lock(mtx_);
-          cond_.wait(lock, [&](){
-              return !queue_.empty() || !bContinue_;
-          });
-          if(queue_.empty()) return {};
-          auto f = queue_.front();
-          queue_.pop();
-          return f;
-        }();
-        if(!bContinue_) break;
-        f();
-      }
+  new_thread_scheduler_interface() = default;
+  virtual ~new_thread_scheduler_interface() = default;
+
+  virtual void run(call_in_context_fn_t call_in_context) override {
+    thread_ = std::thread([call_in_context](){
+      call_in_context();
     });
   }
 
-  virtual ~new_thread_scheduler_interface(){
-    bContinue_ = false;
-    cond_.notify_one();
-    thread_.join();
-  }
-
-  virtual void run(function_type f) {
-    {
-      std::unique_lock<std::mutex> lock(mtx_);
-      queue_.push(f);
-    }
-    cond_.notify_one();
+  virtual void detach() override {
+    thread_.detach();
   }
 };
 
 inline auto new_thread_scheduler() {
-  return scheduler(std::make_shared<new_thread_scheduler_interface>());
+  return [](){
+    return scheduler(
+      std::make_shared<new_thread_scheduler_interface>(),
+      scheduler::type::async
+    );
+  };
 }
 
 #if defined(SUPPORTS_RXCPP_COMPATIBLE)

@@ -64,11 +64,11 @@ public:
       for(auto it = sinks->begin(); it != sinks->end(); it++, ret_it++){
         *ret_it = it->second.observer_;
       }
-      return std::move(ret);
+      return ret;
     };
 
     return upstream_->subscribe({
-      .on_next = [collect](value_type&& x) {
+      .on_next = [collect](value_type x) {
         auto obs = collect();
         std::for_each(obs.begin(), obs.end(), [&](auto ob){
           ob.on_next(x);
@@ -116,7 +116,7 @@ public:
         .observer_ = ob
       }});
     }
-    return std::move(sbsc);
+    return sbsc;
   }
 };
 

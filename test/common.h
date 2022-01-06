@@ -47,7 +47,7 @@ auto ovalue(T&& value, int delay = 0) -> observable<TT> {
 template <typename T> auto doSubscribe(T source) {
   log() << "doSubscribe" << std::endl;
   return source.subscribe({
-    .on_next = [](auto&& x) {
+    .on_next = [](auto x) {
       log() << "  [on_next] " << x << std::endl;
     },
     .on_error = [](std::exception_ptr err) {

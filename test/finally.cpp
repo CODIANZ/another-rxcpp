@@ -8,19 +8,28 @@ using namespace another_rxcpp;
 using namespace another_rxcpp::operators;
 using namespace another_rxcpp::schedulers;
 
-void test_observe_on() {
-  log() << "test_observe_on -- begin" << std::endl;
+void test_finally() {
+  log() << "test_finally -- begin" << std::endl;
 
-  auto o = observables::range(1, 10)
-  | observe_on(default_scheduler())
+  auto o = observables::just(1)
+  | map([](int x){
+    log() << x << std::endl;
+    return x + 1;
+  })
+  | finally([](){
+    log() << "finally #1" << std::endl;
+  })
   | flat_map([](int x){
     log() << x << std::endl;
     return observables::just(x);
+  })
+  | finally([](){
+    log() << "finally #2" << std::endl;
   });
 
   auto x = doSubscribe(o);
   
   while(x.is_subscribed()) {}
 
-  log() << "test_observe_on -- end" << std::endl << std::endl;
+  log() << "test_finally -- end" << std::endl << std::endl;
 }

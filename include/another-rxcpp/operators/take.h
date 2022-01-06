@@ -16,7 +16,7 @@ inline auto take(std::size_t n)
       auto mtx = std::make_shared<std::mutex>();
       auto upstream = src.create_source();
       upstream->subscribe({
-        .on_next = [s, n, upstream, counter, mtx](auto&& x){
+        .on_next = [s, n, upstream, counter, mtx](auto x){
           const bool bNext = [&](){
             std::lock_guard<std::mutex> lock(*mtx);
             return *counter < n;

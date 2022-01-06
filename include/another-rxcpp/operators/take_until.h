@@ -27,7 +27,7 @@ template <typename TRIGGER_OB> auto take_until(TRIGGER_OB trigger)
       });
 
       upstream->subscribe({
-        .on_next = [s](auto&& x){
+        .on_next = [s](auto x){
           s.on_next(std::move(x));
         },
         .on_error = [s, trig](std::exception_ptr err){

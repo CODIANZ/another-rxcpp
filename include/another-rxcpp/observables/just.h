@@ -3,17 +3,16 @@
 
 #include "../observable.h"
 #include "../internal/tools/util.h"
+#include "../schedulers.h"
 
 namespace another_rxcpp {
 namespace observables {
 
-template <typename T> auto just(T&& value) -> observable<typename strip_const_referece<T>::type> {
-  using TT = typename strip_const_referece<T>::type;
-  auto _value = std::forward<T>(value);
-  return observable<>::create<TT>([_value](subscriber<TT> s){
-    s.on_next(std::move(_value));
-    s.on_completed();
-  });
+template <typename T>
+  auto just(T&& value, scheduler::creator_fn sccr = schedulers::default_scheduler())
+    -> observable<typename strip_const_referece<T>::type>
+{
+  return observable<>::just(std::forward<T>(value), sccr);
 }
 
 } /* namespace observables */

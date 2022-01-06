@@ -6,23 +6,21 @@
 using namespace another_rxcpp;
 using namespace another_rxcpp::operators;
 
-void test_take() {
-  log() << "test_take -- begin" << std::endl;
+void test_last() {
+  log() << "test_last -- begin" << std::endl;
 
   auto o = observables::range(1, 100);
 
-  doSubscribe(o | take(0));
-  doSubscribe(o | take(1));
-  doSubscribe(o | take(5));
+  doSubscribe(o | last());
 
   auto x = doSubscribe(
     o
     | flat_map([](int x){
       return ovalue(x, 100);
     })
-    | take(10)
+    | last()
   );
   while(x.is_subscribed()) {}
 
-  log() << "test_take -- end" << std::endl << std::endl;
+  log() << "test_last -- end" << std::endl << std::endl;
 }

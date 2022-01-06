@@ -12,11 +12,12 @@ namespace operators {
 
 namespace internal {
   template <typename T, typename OB>
-  auto merge(scheduler scl, std::vector<observable<T>>& arr, OB ob){
+  auto merge(scheduler::creator_fn sccr, std::vector<observable<T>>& arr, OB ob){
     arr.push_back(ob);
-    return [scl, arr](auto src) mutable {
-      return observable<>::create<T>([src, scl, arr](subscriber<T> s) mutable {
-        scl.run([src, scl, arr, s](){
+    return [sccr, arr](auto src) mutable {
+      return observable<>::create<T>([src, sccr, arr](subscriber<T> s) mutable {
+        auto scdl = sccr();
+        scdl.schedule([src, arr, s](){
           using source_sp = typename OB::source_sp;
           std::vector<source_sp> sources;
           sources.push_back(src.create_source());
@@ -32,7 +33,7 @@ namespace internal {
 
           std::for_each(sources.begin(), sources.end(), [s, unsubscribe_all](auto it){
             it->subscribe({
-              .on_next = [s](auto&& x){
+              .on_next = [s](auto x){
                 s.on_next(std::move(x));
               },
               .on_error = [s, unsubscribe_all](std::exception_ptr err){
@@ -51,13 +52,13 @@ namespace internal {
   }
 
   template <typename T, typename OB, typename...ARGS>
-  auto merge(scheduler scl, std::vector<observable<T>>& arr, OB ob, ARGS...args){
+  auto merge(scheduler::creator_fn sccr, std::vector<observable<T>>& arr, OB ob, ARGS...args){
     arr.push_back(ob);
-    return merge(scl, arr, args...);
+    return merge(sccr, arr, args...);
   }
 } /* namespace internal */
 
-template <typename OB, typename...ARGS>
+template <typename OB, typename...ARGS, std::enable_if_t<is_observable<OB>::value, bool> = true>
 auto merge(OB ob, ARGS...args) {
   using T = typename OB::value_type;
   std::vector<observable<T>> arr;
@@ -65,10 +66,10 @@ auto merge(OB ob, ARGS...args) {
 }
 
 template <typename OB, typename...ARGS>
-auto merge(scheduler scl, OB ob, ARGS...args) {
+auto merge(scheduler::creator_fn sccr, OB ob, ARGS...args) {
   using T = typename OB::value_type;
   std::vector<observable<T>> arr;
-  return internal::merge<T>(scl, arr, ob, args...);
+  return internal::merge<T>(sccr, arr, ob, args...);
 }
 
 } /* namespace operators */

@@ -1,6 +1,6 @@
 # another-rxcpp
 
-`RxCpp` とは異なる実装の `ReactiveX` です。 
+`RxCpp` とは異なる実装の `ReactiveX` です。
 
 ## 背景
 
@@ -25,13 +25,12 @@
 ## 特徴
 
 * C++14 以降に対応しました。
+* `Observable` に上流の `Type` を持たせないことで、 `as_dynamic()` を不要としました。これにより、コンパイル時間とデバッガへの負荷を軽減します。（弊社のプロダクトでは`RxCpp`よりもコンパイル時間が半分程度、デバッグシンボルは10分の1程度になりました。）
 * `Observable` の `Operators` をメンバメソッドから分離しました。
-* `Observable` に上流の `Type` を持たせないことで、 `as_dynamic()` を不要としました。これにより、コンパイル時間とデバッガへの負荷を軽減できれば嬉しいです。
-* `Take` などのオペレータをスレッドセーフにしました。
+* `Take` などの内部で判定が必要なオペレータをスレッドセーフにしました。（ブロッキングしないバージョンも準備する予定です）
 * `C++` のマルチスレッディングを利用した機能を追加しました。（`subscription::unsubscribe_notice()` など）
 * `SUPPORTS＿OPERATORS_IN_OBSERVABLE` を定義することで、従来のメソッドチェーンをサポートします。（型推論が効くメリットがありますが、observableの型ごとの関数インスタンス量がが増えるデメリットがあります）
 * `SUPPORTS_RXCPP_COMPATIBLE` を定義することで、`subscribe()` が `RxCpp` に準じた引数を使用することができます。また、`as_dynamic()` も実装されます。（`as_dynamic()`は本当になにも行わず `observable` をコピーして返却するだけです）
-
 
 ## 注意事項
 
@@ -50,21 +49,28 @@
 * never
 * error
 * range
+* interval
 
 ### operator
-* map
+
+* amb
+* delay
+* distinct_until_changed
+* finally
 * flat_map
+* last
+* map
+* merge
+* observe_on
 * on_error_resume_next
-* take
-* take_until
 * publish
 * retry
-* distinct_until_changed
-* merge
-* amb
-* observe_on
 * subscribe_on
+* take_last
 * take_until
+* take
+* tap
+* timeout
 
 ### subject
 
@@ -76,6 +82,7 @@
 * scheduler
 * default_scheduler
 * new_thread_scheduler (observe_on_new_thread)
+* async_scheduler
 
 
 ## 使用方法
@@ -134,7 +141,7 @@ auto ovalue(T&& value, int delay = 0) -> observable<TT> {
 template <typename T> auto doSubscribe(T source) {
   log() << "doSubscribe" << std::endl;
   return source.subscribe({
-    .on_next = [](auto&& x) {
+    .on_next = [](auto x) {
       log() << "  [on_next] " << x << std::endl;
     },
     .on_error = [](std::exception_ptr err) {
@@ -156,10 +163,10 @@ void test_observable() {
   {
     log() << "#1" << std::endl;
     auto ob = ovalue(123)
-    | flat_map([](int&& x){
+    | flat_map([](int x){
       log() << x << std::endl;
       return ovalue(std::string("abc"))
-      | map([](std::string&& x){
+      | map([](std::string x){
         log() << x << std::endl;
         return 456;
       });
@@ -169,19 +176,19 @@ void test_observable() {
 
   {
     auto ob = ovalue(1)
-    | flat_map([](int&& x){
+    | flat_map([](int x){
       log() << x << std::endl;
       return ovalue(std::string("abc"), 500);
     })
-    | flat_map([](std::string&& x){
+    | flat_map([](std::string x){
       log() << x << std::endl;
       return ovalue(5);
     })
-    | flat_map([](int&& x){
+    | flat_map([](int x){
       log() << x << std::endl;
       return ovalue(x + 1, 500);
     })
-    | flat_map([](int&& x){
+    | flat_map([](int x){
       log() << x << std::endl;
       return ovalue(x + 1);
     });
@@ -259,7 +266,7 @@ void test_take() {
 
   auto x = doSubscribe(
     o
-    | flat_map([](int&& x){
+    | flat_map([](int x){
       return ovalue(x, 100);
     })
     | take(10)
@@ -369,7 +376,7 @@ void test_retry() {
   auto counter = std::make_shared<int>(0);
 
   auto o = observables::range(0, 10)
-  | flat_map([counter](int&& x){
+  | flat_map([counter](int x){
     log() << "value = " << x << std::endl;
     if(x == 3){
       (*counter)++;

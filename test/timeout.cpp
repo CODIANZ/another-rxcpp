@@ -8,19 +8,27 @@ using namespace another_rxcpp;
 using namespace another_rxcpp::operators;
 using namespace another_rxcpp::schedulers;
 
-void test_observe_on() {
-  log() << "test_observe_on -- begin" << std::endl;
+void test_timeout() {
+  log() << "test_timeout -- begin" << std::endl;
 
   auto o = observables::range(1, 10)
-  | observe_on(default_scheduler())
+  | tap<int>({
+    .on_next = [](int x){
+    }
+  })
   | flat_map([](int x){
-    log() << x << std::endl;
-    return observables::just(x);
-  });
+    return observables::just(x)
+    | delay(std::chrono::milliseconds(x * 100));
+  })
+  | tap<int>({
+    .on_next = [](int x){
+    }
+  })
+  | timeout(std::chrono::milliseconds(500));
 
   auto x = doSubscribe(o);
   
   while(x.is_subscribed()) {}
 
-  log() << "test_observe_on -- end" << std::endl << std::endl;
+  log() << "test_timeout -- end" << std::endl << std::endl;
 }

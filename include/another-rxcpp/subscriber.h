@@ -13,8 +13,8 @@ public:
   using observer_type = observer<value_type>;
 
 private:
-  mutable std::weak_ptr<source_base>    source_;
-  mutable std::weak_ptr<observer_type>  observer_;
+  std::weak_ptr<source_base>    source_;
+  std::weak_ptr<observer_type>  observer_;
 
 public:
   subscriber() = default;
@@ -65,6 +65,13 @@ public:
   bool is_subscribed() const {
     auto s = source_.lock();
     return s ? s->is_subscribed() : false;
+  }
+
+  void unsubscribe() const {
+    auto s = source_.lock();
+    if(s){
+      s->unsubscribe();
+    }
   }
 };
 

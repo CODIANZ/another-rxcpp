@@ -2,22 +2,22 @@
 #include <another-rxcpp/operators.h>
 #include <another-rxcpp/observables.h>
 #include <another-rxcpp/subjects.h>
+#include <another-rxcpp/schedulers.h>
 #include "common.h"
 
 using namespace another_rxcpp;
 using namespace another_rxcpp::operators;
 
-void test_take_until() {
+void test_delay() {
 
-  log() << "test_take_until -- begin" << std::endl;
-
-  auto trigger = std::make_shared<subjects::subject<int>>();
+  log() << "test_delay -- begin" << std::endl;
 
   auto emitter = observable<>::create<int>([](subscriber<int> s){
     std::thread([s](){
-      for(int i = 0; i < 100; i++){
+      for(int i = 0; i <= 5; i++){
         if(!s.is_subscribed()) break;
-        std::this_thread::sleep_for(std::chrono::milliseconds(300));
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        log() << "emit " << i << std::endl;
         s.on_next(i);
       }
       s.on_completed();
@@ -25,16 +25,13 @@ void test_take_until() {
   });
 
 
-  auto o = emitter | take_until(trigger->as_observable());
+  auto o = emitter
+    | observe_on(schedulers::new_thread_scheduler())
+    | delay(std::chrono::milliseconds(500));
 
   auto x = doSubscribe(o);
 
-  setTimeout([trigger](){
-    trigger->as_subscriber().on_next(1);
-    trigger->as_subscriber().on_completed();
-  }, 2000);
-
   while(x.is_subscribed()) {}
 
-  log() << "test_take_until -- end" << std::endl << std::endl;
+  log() << "test_delay -- end" << std::endl << std::endl;
 }

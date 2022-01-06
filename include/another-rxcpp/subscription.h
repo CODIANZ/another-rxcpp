@@ -12,12 +12,13 @@ class subscription {
 public:
   using is_subscribed_fn_t  = std::function<bool()>;
   using on_unsubscribe_fn_t = std::function<void()>;
+  using cond_sp             = std::shared_ptr<std::condition_variable>;
 
 private:
-  any_sp_keeper       sp_keeper_;
-  is_subscribed_fn_t  is_subscribed_fn_;
-  on_unsubscribe_fn_t on_unsubscribe_fn_;
-  std::shared_ptr<std::condition_variable> cond_;
+  mutable any_sp_keeper       sp_keeper_;
+  mutable is_subscribed_fn_t  is_subscribed_fn_;
+  mutable on_unsubscribe_fn_t on_unsubscribe_fn_;
+  mutable cond_sp             cond_;
 
 public:
   subscription() = default;
@@ -32,7 +33,7 @@ public:
     cond_(std::make_shared<std::condition_variable>()) {};
   ~subscription() = default;
 
-  void unsubscribe() {
+  void unsubscribe() const {
     if(on_unsubscribe_fn_){
       on_unsubscribe_fn_();
       cond_->notify_all();
@@ -45,7 +46,7 @@ public:
     return is_subscribed_fn_ ? is_subscribed_fn_() : false;
   }
 
-  auto unsubscribe_notice() { return cond_; }
+  auto unsubscribe_notice() const { return cond_; }
 };
 
 } /* namespace another_rxcpp */
