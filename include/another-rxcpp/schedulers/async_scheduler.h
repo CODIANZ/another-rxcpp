@@ -25,7 +25,7 @@ public:
   }
 
   virtual void detach() override {
-    future_ = {};
+    /* nothing to do */
   }
 };
 
