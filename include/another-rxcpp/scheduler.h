@@ -46,13 +46,16 @@ public:
       m->refcount_  = 1;
       m->interface_->run([m](){
         while(true){
-          std::unique_lock<std::mutex> lock(m->mtx_);
-          m->cond_.wait(lock);
-          while(!m->queue_.empty()){
-            m->queue_.front()();
-            m->queue_.pop();
+          auto q = [m]() -> std::queue<function_type> {
+            std::unique_lock<std::mutex> lock(m->mtx_);
+            m->cond_.wait(lock, [m]{ return !m->queue_.empty() || m->refcount_ == 0; });
+            return std::move(m->queue_);
+          }();
+          if(q.empty()) break;
+          while(!q.empty()){
+            q.front()();
+            q.pop();
           }
-          if(m->refcount_ == 0) break;
         }
         m->interface_->detach();
       });
