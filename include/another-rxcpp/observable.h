@@ -60,7 +60,7 @@ public:
 
 class observable_base {
 protected:
-  template <typename T> static typename source<T>::sp execute_source_creator(observable<T>&& o){
+  template <typename T> static typename source<T>::sp execute_source_creator(const observable<T>& o){
     return o.source_creator_fn_();
   }
 public:

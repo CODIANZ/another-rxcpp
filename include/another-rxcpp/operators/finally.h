@@ -16,7 +16,7 @@ template <typename F> auto finally(F on_finally)
     return observable<>::create<OUT>([src](subscriber<OUT> s) {
       auto upstream = src.create_source();
       upstream->subscribe({
-        .on_next = [s, upstream](auto&& x){
+        .on_next = [s, upstream](auto x){
           s.on_next(std::move(x));
         },
         .on_error = [s, upstream](std::exception_ptr err){

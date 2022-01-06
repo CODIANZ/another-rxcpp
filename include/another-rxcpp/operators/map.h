@@ -14,7 +14,7 @@ template <typename F> auto map(F f)
     return observable<>::create<OUT>([src, f](subscriber<OUT> s) {
       auto upstream = src.create_source();
       upstream->subscribe({
-        .on_next = [s, f, upstream](auto&& x){
+        .on_next = [s, f, upstream](auto x){
           try{
             s.on_next(f(std::move(x)));
           }

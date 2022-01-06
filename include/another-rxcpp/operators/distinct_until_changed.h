@@ -16,7 +16,7 @@ inline auto distinct_until_changed()
       auto last_value = std::make_shared<std::shared_ptr<OUT>>();
       auto upstream = src.create_source();
       upstream->subscribe({
-        .on_next = [s, mtx, last_value](auto&& x){
+        .on_next = [s, mtx, last_value](auto x){
           const bool bNext = [&](){
             std::lock_guard<std::mutex> lock(*mtx);
             if(!*last_value){

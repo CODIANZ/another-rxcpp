@@ -17,7 +17,7 @@ void test_take() {
 
   auto x = doSubscribe(
     o
-    | flat_map([](int&& x){
+    | flat_map([](int x){
       return ovalue(x, 100);
     })
     | take(10)

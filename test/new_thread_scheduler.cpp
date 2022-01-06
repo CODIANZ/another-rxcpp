@@ -13,7 +13,7 @@ void test_new_thread_scheduler() {
 
   auto o = observables::range(1, 10)
   | observe_on(new_thread_scheduler())
-  | flat_map([](int&& x){
+  | flat_map([](int x){
     log() << x << std::endl;
     return observables::just(x);
   });

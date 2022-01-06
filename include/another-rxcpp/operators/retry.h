@@ -16,7 +16,7 @@ inline auto retry()
       *proceed = [src, s, proceed]() {
         auto upstream = src.create_source();
         upstream->subscribe({
-          .on_next = [s](auto&& x){
+          .on_next = [s](auto x){
             s.on_next(std::move(x));
           },
           .on_error = [proceed, upstream](std::exception_ptr){

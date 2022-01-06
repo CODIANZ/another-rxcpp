@@ -134,7 +134,7 @@ auto ovalue(T&& value, int delay = 0) -> observable<TT> {
 template <typename T> auto doSubscribe(T source) {
   log() << "doSubscribe" << std::endl;
   return source.subscribe({
-    .on_next = [](auto&& x) {
+    .on_next = [](auto x) {
       log() << "  [on_next] " << x << std::endl;
     },
     .on_error = [](std::exception_ptr err) {
@@ -156,10 +156,10 @@ void test_observable() {
   {
     log() << "#1" << std::endl;
     auto ob = ovalue(123)
-    | flat_map([](int&& x){
+    | flat_map([](int x){
       log() << x << std::endl;
       return ovalue(std::string("abc"))
-      | map([](std::string&& x){
+      | map([](std::string x){
         log() << x << std::endl;
         return 456;
       });
@@ -169,19 +169,19 @@ void test_observable() {
 
   {
     auto ob = ovalue(1)
-    | flat_map([](int&& x){
+    | flat_map([](int x){
       log() << x << std::endl;
       return ovalue(std::string("abc"), 500);
     })
-    | flat_map([](std::string&& x){
+    | flat_map([](std::string x){
       log() << x << std::endl;
       return ovalue(5);
     })
-    | flat_map([](int&& x){
+    | flat_map([](int x){
       log() << x << std::endl;
       return ovalue(x + 1, 500);
     })
-    | flat_map([](int&& x){
+    | flat_map([](int x){
       log() << x << std::endl;
       return ovalue(x + 1);
     });
@@ -259,7 +259,7 @@ void test_take() {
 
   auto x = doSubscribe(
     o
-    | flat_map([](int&& x){
+    | flat_map([](int x){
       return ovalue(x, 100);
     })
     | take(10)
@@ -369,7 +369,7 @@ void test_retry() {
   auto counter = std::make_shared<int>(0);
 
   auto o = observables::range(0, 10)
-  | flat_map([counter](int&& x){
+  | flat_map([counter](int x){
     log() << "value = " << x << std::endl;
     if(x == 3){
       (*counter)++;

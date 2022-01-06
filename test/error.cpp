@@ -10,7 +10,7 @@ void test_error() {
   log() << "test_error -- begin" << std::endl;
 
   auto o = observables::just(1)
-  | flat_map([](int&& x){
+  | flat_map([](int x){
     log() << x << std::endl;
     return observables::error<int>(std::make_exception_ptr(std::exception()));
   });

@@ -17,7 +17,7 @@ inline auto delay(std::chrono::milliseconds msec)
     return observable<>::create<OUT>([src, msec](subscriber<OUT> s) {
       auto upstream = src.create_source();
       upstream->subscribe({
-        .on_next = [s, upstream, msec](auto&& x){
+        .on_next = [s, upstream, msec](auto x){
           std::this_thread::sleep_for(msec);
           s.on_next(std::move(x));
         },

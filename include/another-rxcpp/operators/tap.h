@@ -22,7 +22,7 @@ template <typename T> auto tap(tap_observer<T> obs)
     return observable<>::create<OUT>([src, obs](subscriber<OUT> s) {
       auto upstream = src.create_source();
       upstream->subscribe({
-        .on_next = [s, obs](auto&& x){
+        .on_next = [s, obs](auto x){
           if(obs.on_next) obs.on_next(x);
           s.on_next(std::move(x));
         },

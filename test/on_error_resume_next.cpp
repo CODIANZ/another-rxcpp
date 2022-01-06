@@ -9,7 +9,7 @@ void test_on_error_resume_next() {
   log() << "test_on_error_resume_next -- begin" << std::endl;
 
   auto o = ovalue(1)
-  | flat_map([](int&& x){
+  | flat_map([](int x){
     log() << x << std::endl;
     return observables::error<int>(std::make_exception_ptr(std::exception()));
   })
@@ -17,7 +17,7 @@ void test_on_error_resume_next() {
     log() << "on_error_resume_next #1" << std::endl;
     return ovalue(2);
   })
-  | map([](int&& x){
+  | map([](int x){
     log() << x << std::endl;
     throw std::exception();
     return x + 1;

@@ -17,7 +17,7 @@ inline auto subscribe_on(scheduler::creator_fn sccr)
       scdl.run([s, src]() mutable {
         auto upstream = src.create_source();
         upstream->subscribe({
-          .on_next = [s](auto&& x){
+          .on_next = [s](auto x){
             s.on_next(std::move(x));
           },
           .on_error = [s](std::exception_ptr err){

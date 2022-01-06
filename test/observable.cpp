@@ -11,10 +11,10 @@ void test_observable() {
   {
     log() << "#1" << std::endl;
     auto ob = ovalue(123)
-    | flat_map([](int&& x){
+    | flat_map([](int x){
       log() << x << std::endl;
       return ovalue(std::string("abc"))
-      | map([](std::string&& x){
+      | map([](std::string x){
         log() << x << std::endl;
         return 456;
       });
@@ -24,19 +24,19 @@ void test_observable() {
 
   {
     auto ob = ovalue(1)
-    | flat_map([](int&& x){
+    | flat_map([](int64_t x){
       log() << x << std::endl;
       return ovalue(std::string("abc"), 500);
     })
-    | flat_map([](std::string&& x){
+    | flat_map([](std::string x){
       log() << x << std::endl;
       return ovalue(5);
     })
-    | flat_map([](int&& x){
+    | flat_map([](int x){
       log() << x << std::endl;
       return ovalue(x + 1, 500);
     })
-    | flat_map([](int&& x){
+    | flat_map([](int x){
       log() << x << std::endl;
       return ovalue(x + 1);
     });

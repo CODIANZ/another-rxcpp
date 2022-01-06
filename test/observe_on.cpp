@@ -13,7 +13,7 @@ void test_observe_on() {
 
   auto o = observables::range(1, 10)
   | observe_on(default_scheduler())
-  | flat_map([](int&& x){
+  | flat_map([](int x){
     log() << x << std::endl;
     return observables::just(x);
   });

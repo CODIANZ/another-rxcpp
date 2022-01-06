@@ -13,7 +13,7 @@ void test_retry() {
   auto counter = std::make_shared<int>(0);
 
   auto o = observables::range(0, 10)
-  | flat_map([counter](int&& x){
+  | flat_map([counter](int x){
     log() << "value = " << x << std::endl;
     if(x == 3){
       (*counter)++;

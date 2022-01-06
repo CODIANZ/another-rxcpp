@@ -33,7 +33,7 @@ namespace internal {
 
           std::for_each(sources.begin(), sources.end(), [s, unsubscribe_all](auto it){
             it->subscribe({
-              .on_next = [s](auto&& x){
+              .on_next = [s](auto x){
                 s.on_next(std::move(x));
               },
               .on_error = [s, unsubscribe_all](std::exception_ptr err){

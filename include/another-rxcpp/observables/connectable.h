@@ -68,7 +68,7 @@ public:
     };
 
     return upstream_->subscribe({
-      .on_next = [collect](value_type&& x) {
+      .on_next = [collect](value_type x) {
         auto obs = collect();
         std::for_each(obs.begin(), obs.end(), [&](auto ob){
           ob.on_next(x);

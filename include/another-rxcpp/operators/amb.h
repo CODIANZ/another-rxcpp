@@ -49,7 +49,7 @@ namespace internal {
 
           std::for_each(sources.begin(), sources.end(), [s, do_on_next](auto it){
             it->subscribe({
-              .on_next = [it, s, do_on_next](auto&& x){
+              .on_next = [it, s, do_on_next](auto x){
                 do_on_next(it, std::move(x));
               },
               .on_error = [s](std::exception_ptr err){
