@@ -8,6 +8,7 @@
 int main() {
   log() << "**** start ****" << std::endl;
 
+  DO(test_finally)
 
   DO(test_observable)
   DO(test_just)
@@ -32,6 +33,7 @@ int main() {
   DO(test_delay)
   DO(test_tap)
   DO(test_async_scheduler)
+  DO(test_finally)
 
   #if defined(SUPPORTS_OPERATORS_IN_OBSERVABLE)
     DO(test_operators_in_observable)
