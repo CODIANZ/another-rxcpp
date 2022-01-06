@@ -8,38 +8,38 @@
 int main() {
   log() << "**** start ****" << std::endl;
 
+
+  DO(test_observable)
+  DO(test_just)
+  DO(test_range)
+  DO(test_take)
+  DO(test_flat_map)
+  DO(test_map)
+  DO(test_connectable)
+  DO(test_subject)
+  DO(test_error)
+  DO(test_never)
+  DO(test_on_error_resume_next)
+  DO(test_retry)
+  DO(test_subscribe_on)
+  DO(test_new_thread_scheduler)
+  DO(test_take_until)
+  DO(test_merge)
+  DO(test_amb)
   DO(test_behavior_subject)
+  DO(test_distinct_until_changed)
+  DO(test_interval)
+  DO(test_delay)
+  DO(test_tap)
+  DO(test_async_scheduler)
 
-  // DO(test_observable)
-  // DO(test_just)
-  // DO(test_range)
-  // DO(test_take)
-  // DO(test_flat_map)
-  // DO(test_map)
-  // DO(test_connectable)
-  // DO(test_subject)
-  // DO(test_error)
-  // DO(test_never)
-  // DO(test_on_error_resume_next)
-  // DO(test_retry)
-  // DO(test_subscribe_on)
-  // DO(test_new_thread_scheduler)
-  // DO(test_take_until)
-  // DO(test_merge)
-  // DO(test_amb)
-  // DO(test_behavior_subject)
-  // DO(test_distinct_until_changed)
-  // DO(test_interval)
-  // DO(test_delay)
-  // DO(test_tap)
+  #if defined(SUPPORTS_OPERATORS_IN_OBSERVABLE)
+    DO(test_operators_in_observable)
+  #endif /* defined(SUPPORTS_OPERATORS_IN_OBSERVABLE) */
 
-  // #if defined(SUPPORTS_OPERATORS_IN_OBSERVABLE)
-  //   DO(test_operators_in_observable)
-  // #endif /* defined(SUPPORTS_OPERATORS_IN_OBSERVABLE) */
-
-  // #if defined(SUPPORTS_RXCPP_COMPATIBLE)
-  //   DO(test_rxcpp_compatible)
-  // #endif /* defined(SUPPORTS_RXCPP_COMPATIBLE) */
+  #if defined(SUPPORTS_RXCPP_COMPATIBLE)
+    DO(test_rxcpp_compatible)
+  #endif /* defined(SUPPORTS_RXCPP_COMPATIBLE) */
 
   log() << "**** finish ****" << std::endl;
 

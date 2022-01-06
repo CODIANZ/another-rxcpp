@@ -23,25 +23,25 @@ private:
     std::condition_variable cond_;
     bool                    bContinue_;
   };
-  std::shared_ptr<member> m;
+  std::shared_ptr<member> m_;
 
 public:
-  new_thread_scheduler_interface() : m(new member()) {
-    m->bContinue_ = true;
-    auto m_ = m;
-    m->thread_ = std::thread([m_](){
+  new_thread_scheduler_interface() : m_(new member()) {
+    m_->bContinue_ = true;
+    auto m = m_;
+    m->thread_ = std::thread([m](){
       while(true) {
-        auto item = [m_]() -> queue_item {
-          std::unique_lock<std::mutex> lock(m_->mtx_);
-          m_->cond_.wait(lock, [m_](){
-              return !m_->queue_.empty() || !m_->bContinue_;
+        auto item = [m]() -> queue_item {
+          std::unique_lock<std::mutex> lock(m->mtx_);
+          m->cond_.wait(lock, [m](){
+              return !m->queue_.empty() || !m->bContinue_;
           });
-          if(m_->queue_.empty()) return {};
-          auto it = m_->queue_.front();
-          m_->queue_.pop();
+          if(m->queue_.empty()) return {};
+          auto it = m->queue_.front();
+          m->queue_.pop();
           return it;
         }();
-        if(!m_->bContinue_) break;
+        if(!m->bContinue_) break;
         item.fn();
         item.keepalive.clear();
       }
@@ -55,19 +55,19 @@ public:
      * (2) queue_ is empty (= lost keepalive)
      **/
     {
-      std::unique_lock<std::mutex> lock(m->mtx_);
-      m->bContinue_ = false;
+      std::unique_lock<std::mutex> lock(m_->mtx_);
+      m_->bContinue_ = false;
     }
-    m->cond_.notify_one();
-    m->thread_.detach();
+    m_->cond_.notify_one();
+    m_->thread_.detach();
   }
 
   virtual void run(function_type f, any_sp_keeper keepalive) override {
     {
-      std::unique_lock<std::mutex> lock(m->mtx_);
-      m->queue_.push({f, keepalive});
+      std::unique_lock<std::mutex> lock(m_->mtx_);
+      m_->queue_.push({f, keepalive});
     }
-    m->cond_.notify_one();
+    m_->cond_.notify_one();
   }
 };
 
