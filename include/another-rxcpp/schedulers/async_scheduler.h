@@ -18,7 +18,7 @@ public:
   async_scheduler_interface() = default;
   virtual ~async_scheduler_interface() = default;
 
-  virtual void run(std::function<void()> call_in_context) override {
+  virtual void run(call_in_context_fn_t call_in_context) override {
     future_ = std::async(std::launch::async, [call_in_context](){
       call_in_context();
     });

@@ -9,9 +9,10 @@ namespace another_rxcpp {
 class scheduler_interface {
 public:
   using function_type = std::function<void()>;
+  using call_in_context_fn_t = std::function<void()>;
   scheduler_interface() = default;
   virtual ~scheduler_interface() = default;
-  virtual void run(std::function<void()> call_in_context) = 0;
+  virtual void run(call_in_context_fn_t call_in_context) = 0;
   virtual void detach() = 0;
 };
 

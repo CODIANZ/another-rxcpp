@@ -18,7 +18,7 @@ public:
   new_thread_scheduler_interface() = default;
   virtual ~new_thread_scheduler_interface() = default;
 
-  virtual void run(std::function<void()> call_in_context) override {
+  virtual void run(call_in_context_fn_t call_in_context) override {
     thread_ = std::thread([call_in_context](){
       call_in_context();
     });

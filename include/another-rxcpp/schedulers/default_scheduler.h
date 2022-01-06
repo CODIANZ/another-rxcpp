@@ -11,7 +11,7 @@ public:
   default_scheduler_interface() = default;
   virtual ~default_scheduler_interface() = default;
 
-  virtual void run(std::function<void()> call_in_context) override {
+  virtual void run(call_in_context_fn_t call_in_context) override {
     call_in_context();
   }
 
