@@ -17,7 +17,7 @@ namespace internal {
     return [sccr, arr](auto src) mutable {
       return observable<>::create<T>([src, sccr, arr](subscriber<T> s) mutable {
         auto scdl = sccr();
-        scdl.run([src, arr, s](){
+        scdl.schedule([src, arr, s](){
           using source_sp = typename OB::source_sp;
           std::vector<source_sp> sources;
           sources.push_back(src.create_source());

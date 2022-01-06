@@ -14,7 +14,7 @@ template <typename T = int>
 {
   return observable<>::create<T>([msec, sccr](subscriber<T> s){
     auto scdl = sccr();
-    scdl.run([s, msec](){
+    scdl.schedule([s, msec](){
       T n = 0;
       while(true){
         std::this_thread::sleep_for(msec);

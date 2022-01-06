@@ -10,14 +10,21 @@ class default_scheduler_interface : public scheduler_interface {
 public:
   default_scheduler_interface() = default;
   virtual ~default_scheduler_interface() = default;
-  virtual void run(function_type f, any_sp_keeper) override {
-    f();
+
+  virtual void run(std::function<void()> call_in_context) override {
+    call_in_context();
+  }
+
+  virtual void detach() override {
   }
 };
 
 inline auto default_scheduler() {
   return []{
-    return scheduler(std::make_shared<default_scheduler_interface>());
+    return scheduler(
+      std::make_shared<default_scheduler_interface>(),
+      scheduler::type::sync
+    );
   };
 }
 

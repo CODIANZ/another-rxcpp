@@ -12,42 +12,29 @@ namespace schedulers {
 
 class async_scheduler_interface : public scheduler_interface {
 private:
-  const std::launch policy_;
-  struct member {
-    int               serial_;
-    std::unordered_map<int, std::future<void>> items_;
-    std::mutex mtx_;
-  };
-  std::shared_ptr<member> m_;
-
-
+  std::future<void> future_;
 
 public:
-  async_scheduler_interface(std::launch policy) :
-    policy_(policy),
-    m_(new member())
-  {
-    m_->serial_ = 0;
-  };
+  async_scheduler_interface() = default;
   virtual ~async_scheduler_interface() = default;
-  virtual void run(function_type f, any_sp_keeper keepalive) override {
-    auto m = m_;
-    std::lock_guard<std::mutex> lock(m->mtx_);
-    auto serial = m->serial_++;
-    m->items_.insert({
-      serial,
-      std::async(policy_, [keepalive, serial, m, f](){
-        f();
-        std::lock_guard<std::mutex> lock(m->mtx_);
-        m->items_.erase(serial);
-      })
+
+  virtual void run(std::function<void()> call_in_context) override {
+    future_ = std::async(std::launch::async, [call_in_context](){
+      call_in_context();
     });
+  }
+
+  virtual void detach() override {
+    future_ = {};
   }
 };
 
-inline auto async_scheduler(std::launch policy = std::launch::async) {
-  return [policy]{
-    return scheduler(std::make_shared<async_scheduler_interface>(policy));
+inline auto async_scheduler() {
+  return []{
+    return scheduler(
+      std::make_shared<async_scheduler_interface>(),
+      scheduler::type::async
+    );
   };
 }
 

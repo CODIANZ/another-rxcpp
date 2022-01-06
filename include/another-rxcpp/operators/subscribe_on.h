@@ -14,16 +14,17 @@ inline auto subscribe_on(scheduler::creator_fn sccr)
     using OUT = typename OUT_OB::value_type;
     return observable<>::create<OUT>([src, sccr](subscriber<OUT> s) {
       auto scdl = sccr();
-      scdl.run([s, src]() mutable {
+      auto keepalive = scdl;
+      scdl.schedule([s, src, keepalive]() mutable {
         auto upstream = src.create_source();
         upstream->subscribe({
-          .on_next = [s](auto x){
+          .on_next = [s, keepalive](auto x){
             s.on_next(std::move(x));
           },
-          .on_error = [s](std::exception_ptr err){
+          .on_error = [s, keepalive](std::exception_ptr err){
             s.on_error(err);
           },
-          .on_completed = [s](){
+          .on_completed = [s, keepalive](){
             s.on_completed();
           }
         });

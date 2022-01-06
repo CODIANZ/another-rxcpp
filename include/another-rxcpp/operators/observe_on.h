@@ -17,17 +17,17 @@ inline auto observe_on(scheduler::creator_fn sccr)
       auto upstream = src.create_source();
       upstream->subscribe({
         .on_next = [s, scdl](auto x){
-          scdl.run([s, x]() {
+          scdl.schedule([s, x]() {
             s.on_next(std::move(x));
           });
         },
         .on_error = [s, scdl](std::exception_ptr err){
-          scdl.run([s, err]() {
+          scdl.schedule([s, err]() {
             s.on_error(err);
           });
         },
         .on_completed = [s, scdl](){
-          scdl.run([s]() {
+          scdl.schedule([s]() {
             s.on_completed();
           });
         }
