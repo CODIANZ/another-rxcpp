@@ -17,7 +17,6 @@ public:
 
 inline auto timeout(std::chrono::milliseconds msec)
 {
-  /** TODO: not implemented */
   return [msec](auto src){
     using OUT_OB = decltype(src);
     using OUT = typename OUT_OB::value_type;
@@ -41,7 +40,6 @@ inline auto timeout(std::chrono::milliseconds msec)
             break;
           }
         }
-        m->thread_.detach();
       });
 
       upstream->subscribe({
