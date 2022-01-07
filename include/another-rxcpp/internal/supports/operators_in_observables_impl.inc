@@ -34,23 +34,9 @@ namespace another_rxcpp {
 
   template <typename T>
     template <typename...ARGS>
-      auto observable<T>::publish(ARGS...args) const
-  {
-    return *this | operators::publish(std::forward<ARGS>(args)...);
-  }
-
-  template <typename T>
-    template <typename...ARGS>
       auto observable<T>::on_error_resume_next(ARGS...args) const
   {
     return *this | operators::on_error_resume_next(std::forward<ARGS>(args)...);
-  }
-
-  template <typename T>
-    template <typename...ARGS>
-      auto observable<T>::retry(ARGS...args) const
-  {
-    return *this | operators::retry(std::forward<ARGS>(args)...);
   }
 
   template <typename T>
@@ -65,6 +51,13 @@ namespace another_rxcpp {
       auto observable<T>::subscribe_on(ARGS...args) const
   {
     return *this | operators::subscribe_on(std::forward<ARGS>(args)...);
+  }
+
+  template <typename T>
+    template <typename...ARGS>
+      auto observable<T>::take_last(ARGS...args) const
+  {
+    return *this | operators::take_last(std::forward<ARGS>(args)...);
   }
 
   template <typename T>
@@ -90,13 +83,6 @@ namespace another_rxcpp {
 
   template <typename T>
     template <typename...ARGS>
-      auto observable<T>::distinct_until_changed(ARGS...args) const
-  {
-    return *this | operators::distinct_until_changed(std::forward<ARGS>(args)...);
-  }
-
-  template <typename T>
-    template <typename...ARGS>
       auto observable<T>::timeout(ARGS...args) const
   {
     return *this | operators::timeout(std::forward<ARGS>(args)...);
@@ -108,14 +94,7 @@ namespace another_rxcpp {
   {
     return *this | operators::delay(std::forward<ARGS>(args)...);
   }
-  
-  template <typename T>
-    template <typename...ARGS>
-      auto observable<T>::last(ARGS...args) const
-  {
-    return *this | operators::last(std::forward<ARGS>(args)...);
-  }
-  
+    
   template <typename T>
     template <typename...ARGS>
       auto observable<T>::finally(ARGS...args) const
@@ -124,10 +103,27 @@ namespace another_rxcpp {
   }
   
   template <typename T>
-    template <typename...ARGS>
-      auto observable<T>::take_last(ARGS...args) const
+    auto observable<T>::publish() const
   {
-    return *this | operators::take_last(std::forward<ARGS>(args)...);
+    return *this | operators::publish();
+  }
+
+  template <typename T>
+    auto observable<T>::retry() const
+  {
+    return *this | operators::retry();
+  }
+
+  template <typename T>
+    auto observable<T>::distinct_until_changed() const
+  {
+    return *this | operators::distinct_until_changed();
+  }
+
+  template <typename T>
+    auto observable<T>::last() const
+  {
+    return *this | operators::last();
   }
 
 } /* namespace another_rxcpp */
