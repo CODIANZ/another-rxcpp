@@ -47,7 +47,7 @@ public:
     m->subscription_ = m->source_.connect();
   }
 
-  subject(const subject& src) {
+  subject(const subject& src) : m_(src.m_) {
     m_->refcount_++;
   }
 

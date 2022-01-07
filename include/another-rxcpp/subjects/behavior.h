@@ -37,7 +37,10 @@ public:
     });
   }
 
-  behavior(const behavior& src) : m_(src.m_){
+  behavior(const behavior& src) :
+    subject<T>(src),
+    m_(src.m_)
+  {
     m_->refcount_++;
   }
 
