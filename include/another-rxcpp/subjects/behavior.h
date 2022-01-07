@@ -12,9 +12,10 @@ namespace subjects {
 template <typename T> class behavior : public subject<T> {
 private:
   struct member {
-    T             last_;
-    std::mutex    mtx_;
-    subscription  subscription_;
+    T               last_;
+    std::mutex      mtx_;
+    subscription    subscription_;
+    std::atomic_int refcount_;
   };
   std::shared_ptr<member> m_;
 
@@ -27,6 +28,7 @@ public:
     })
   {
     auto m = m_; 
+    m->refcount_ = 1;
     m->subscription_ = as_observable().subscribe([m](T x){
       std::lock_guard<std::mutex> lock(m->mtx_);
       m->last_ = std::move(x);
@@ -36,12 +38,13 @@ public:
   }
 
   behavior(const behavior& src) : m_(src.m_){
-    /* unsubscribe subscription only for original */
-    m_->subscription_ = {};
+    m_->refcount_++;
   }
 
   virtual ~behavior(){
-    m_->subscription_.unsubscribe();
+    if(m_->refcount_.fetch_sub(1) == 1){
+      m_->subscription_.unsubscribe();
+    }
   }
 
   virtual observable<T> as_observable() const override {

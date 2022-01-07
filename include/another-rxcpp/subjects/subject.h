@@ -22,6 +22,7 @@ private:
     subscriber_type     subscriber_;
     std::exception_ptr  error_;
     subscription        subscription_;
+    std::atomic_int     refcount_;
   };
   std::shared_ptr<member> m_;
 
@@ -33,6 +34,7 @@ public:
   subject() : m_(std::make_shared<member>())
   {
     auto m = m_;
+    m->refcount_ = 1;
     m->source_ = observable<>::create<value_type>([m](subscriber_type s){
       m->subscriber_ = s;
     })
@@ -45,13 +47,14 @@ public:
     m->subscription_ = m->source_.connect();
   }
 
-  subject(const subject& src) : m_(src.m_) {
-    /* unsubscribe subscription only for original */
-    m_->subscription_ = {};
+  subject(const subject& src) {
+    m_->refcount_++;
   }
 
   virtual ~subject() {
-    m_->subscription_.unsubscribe();
+    if(m_->refcount_.fetch_sub(1) == 1){
+      m_->subscription_.unsubscribe();
+    }
   }
 
   auto as_subscriber() const {
