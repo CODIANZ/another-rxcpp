@@ -6,12 +6,24 @@
 namespace another_rxcpp {
 namespace observables {
 
-template <typename T, typename ERR>
-  auto error(ERR err)
+
+template <typename T>
+  inline auto error(std::exception_ptr err)
     -> observable<T>
 {
-  return observable<>::error<T>(err);
+  return observable<>::create<T>([err](subscriber<T> s){
+    s.on_error(err);
+  });
 }
+
+template <typename T>
+  inline auto error(const std::exception& err)
+    -> observable<T>
+{
+  return error<T>(std::make_exception_ptr(err));
+}
+
+
 
 } /* namespace observables */
 } /* namespace another_rxcpp */

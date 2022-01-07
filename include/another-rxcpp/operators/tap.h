@@ -14,7 +14,8 @@ struct tap_observer{
   std::function<void()>                   on_completed;
 };
 
-template <typename T> auto tap(tap_observer<T> obs)
+template <typename T>
+  auto tap(tap_observer<T> obs)
 {
   return [obs](auto src){
     using OUT_OB = decltype(src);
@@ -38,6 +39,40 @@ template <typename T> auto tap(tap_observer<T> obs)
     });
   };
 }
+
+template <typename NEXT>
+  auto tap(
+    NEXT  n,
+    std::function<void(std::exception_ptr)> e = {},
+    std::function<void()> c = {}
+  )
+{
+  return [n, e, c](auto src){
+    using OUT_OB = decltype(src);
+    using OUT = typename OUT_OB::value_type;
+    return observable<>::create<OUT>([src, n, e, c](subscriber<OUT> s) {
+      auto upstream = src.create_source();
+      upstream->subscribe({
+        .on_next = [s, n](auto x){
+          n(x);
+          s.on_next(std::move(x));
+        },
+        .on_error = [s, e](std::exception_ptr err){
+          if(e) e(err);
+          s.on_error(err);
+        },
+        .on_completed = [s, c](){
+          if(c) c();
+          s.on_completed();
+        }
+      });
+    });
+  };
+}
+
+
+
+
 
 } /* namespace operators */
 } /* namespace another_rxcpp */

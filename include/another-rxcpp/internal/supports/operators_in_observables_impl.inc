@@ -3,128 +3,131 @@
 
 namespace another_rxcpp {
   template <typename T>
-    template<typename F>
-      auto observable<T>::flat_map(F f) const
+    template<typename F, typename...ARGS>
+      auto observable<T>::flat_map(F f, ARGS...args) const
   {
     using OUT = decltype(f(std::declval<value_type>()));
-    return *this | operators::flat_map<std::function<OUT(value_type)>>(f);
+    return *this | operators::flat_map<std::function<OUT(value_type)>>(f, std::forward<ARGS>(args)...);
   }
 
   template <typename T>
-    template <typename F>
-      auto observable<T>::map(F f) const
+    template <typename F, typename...ARGS>
+      auto observable<T>::map(F f, ARGS...args) const
   {
     using OUT = decltype(f(std::declval<value_type>()));
-    return *this | operators::map<std::function<OUT(value_type)>>(f);
+    return *this | operators::map<std::function<OUT(value_type)>>(f, std::forward<ARGS>(args)...);
   }
 
   template <typename T>
-    auto observable<T>::take(std::size_t n) const
+    template <typename...ARGS>
+      auto observable<T>::take(ARGS...args) const
   {
-    return *this | operators::take(n);
+    return *this | operators::take(std::forward<ARGS>(args)...);
   }
 
   template <typename T>
-    auto observable<T>::publish() const
+    template <typename...ARGS>
+      auto observable<T>::publish(ARGS...args) const
   {
-    return *this | operators::publish();
+    return *this | operators::publish(std::forward<ARGS>(args)...);
   }
 
   template <typename T>
-    template <typename F>
-      auto observable<T>::on_error_resume_next(F f) const
+    template <typename...ARGS>
+      auto observable<T>::on_error_resume_next(ARGS...args) const
   {
-    using OUT = observable<value_type>;
-    return *this | operators::on_error_resume_next<std::function<OUT(std::exception_ptr)>>(f);
+    return *this | operators::on_error_resume_next(std::forward<ARGS>(args)...);
   }
 
   template <typename T>
-    auto observable<T>::retry(std::size_t n) const
+    template <typename...ARGS>
+      auto observable<T>::retry(ARGS...args) const
   {
-    return *this | operators::retry();
+    return *this | operators::retry(std::forward<ARGS>(args)...);
   }
 
   template <typename T>
-    auto observable<T>::observe_on(scheduler::creator_fn sccr) const
+    template <typename...ARGS>
+      auto observable<T>::observe_on(ARGS...args) const
   {
-    return *this | operators::observe_on(sccr);
+    return *this | operators::observe_on(std::forward<ARGS>(args)...);
   }
 
   template <typename T>
-    auto observable<T>::subscribe_on(scheduler::creator_fn sccr) const
+    template <typename...ARGS>
+      auto observable<T>::subscribe_on(ARGS...args) const
   {
-    return *this | operators::subscribe_on(sccr);
+    return *this | operators::subscribe_on(std::forward<ARGS>(args)...);
   }
 
   template <typename T>
-    template <typename OB>
-      auto observable<T>::take_until(OB ob) const
+    template <typename...ARGS>
+      auto observable<T>::take_until(ARGS...args) const
   {
-    return *this | operators::take_until(ob);
+    return *this | operators::take_until(std::forward<ARGS>(args)...);
   }
 
   template <typename T>
     template <typename...ARGS>
       auto observable<T>::merge(ARGS...args) const
   {
-    return *this | operators::merge(args...);
+    return *this | operators::merge(std::forward<ARGS>(args)...);
   }
 
   template <typename T>
     template <typename...ARGS>
       auto observable<T>::amb(ARGS...args) const
   {
-    return *this | operators::amb(args...);
+    return *this | operators::amb(std::forward<ARGS>(args)...);
   }
 
   template <typename T>
-    auto observable<T>::distinct_until_changed() const
+    template <typename...ARGS>
+      auto observable<T>::distinct_until_changed(ARGS...args) const
   {
-    return *this | operators::distinct_until_changed();
+    return *this | operators::distinct_until_changed(std::forward<ARGS>(args)...);
   }
 
   template <typename T>
-    auto observable<T>::tap(
-      std::function<void(value_type)>         on_next,
-      std::function<void(std::exception_ptr)> on_error,
-      std::function<void()>                   on_completed
-    ) const
+    template <typename F, typename...ARGS>
+      auto observable<T>::tap(F f, ARGS...args) const
   {
-    return *this | operators::tap<value_type>({
-      .on_next      = on_next,
-      .on_error     = on_error,
-      .on_completed = on_completed
-    });
+    return *this | operators::tap<std::function<void(value_type)>>(f, std::forward<ARGS>(args)...);
   }
 
   template <typename T>
-    auto observable<T>::timeout(std::chrono::milliseconds d) const
+    template <typename...ARGS>
+      auto observable<T>::timeout(ARGS...args) const
   {
-    return *this | operators::timeout(d);
+    return *this | operators::timeout(std::forward<ARGS>(args)...);
   }
 
   template <typename T>
-    auto observable<T>::delay(std::chrono::milliseconds d) const
+    template <typename...ARGS>
+      auto observable<T>::delay(ARGS...args) const
   {
-    return *this | operators::delay(d);
+    return *this | operators::delay(std::forward<ARGS>(args)...);
   }
   
   template <typename T>
-    auto observable<T>::last() const
+    template <typename...ARGS>
+      auto observable<T>::last(ARGS...args) const
   {
-    return *this | operators::last();
+    return *this | operators::last(std::forward<ARGS>(args)...);
   }
   
   template <typename T>
-    auto observable<T>::finally(std::function<void()> on_finally) const
+    template <typename...ARGS>
+      auto observable<T>::finally(ARGS...args) const
   {
-    return *this | operators::finally(on_finally);
+    return *this | operators::finally(std::forward<ARGS>(args)...);
   }
   
   template <typename T>
-    auto observable<T>::take_last(std::size_t n) const
+    template <typename...ARGS>
+      auto observable<T>::take_last(ARGS...args) const
   {
-    return *this | operators::take_last(n);
+    return *this | operators::take_last(std::forward<ARGS>(args)...);
   }
 
 } /* namespace another_rxcpp */

@@ -22,40 +22,9 @@ public:
     });
   }
 
-  template <typename T>
-    static auto just(T&& value, scheduler::creator_fn sccr = schedulers::default_scheduler())
-      -> observable<typename strip_const_referece<T>::type>
-  {
-    using TT = typename strip_const_referece<T>::type;
-    auto _value = std::forward<T>(value);
-    return create<TT>([_value](subscriber<TT> s){
-      s.on_next(std::move(_value));
-      s.on_completed();
-    });
-  }
-
-  template <typename T>
-    static auto error(std::exception_ptr err)
-      -> observable<T>
-  {
-    return create<T>([err](subscriber<T> s){
-      s.on_error(err);
-    });
-  }
-
-  template <typename T>
-    static auto error(const std::exception& err)
-      -> observable<T>
-  {
-    return error<T>(std::make_exception_ptr(err));
-  }
-
-  template <typename T>
-    static auto never() -> observable<T>
-  {
-    return create<T>([](subscriber<T>){
-    });
-  }
+  #if defined(SUPPORTS_RXCPP_COMPATIBLE)
+    #include "internal/supports/observable_static_decl.inc"
+  #endif /* defined(SUPPORTS_RXCPP_COMPATIBLE) */
 };
 
 class observable_base {
@@ -128,6 +97,11 @@ public:
 };
 
 } /* namespace another_rxcpp */
+
+
+#if defined(SUPPORTS_RXCPP_COMPATIBLE)
+  #include "internal/supports/observable_static_impl.inc"
+#endif /* defined(SUPPORTS_RXCPP_COMPATIBLE) */
 
 #if defined(SUPPORTS_OPERATORS_IN_OBSERVABLE)
   #include "internal/supports/operators_in_observables_impl.inc"
