@@ -30,7 +30,6 @@ protected:
   std::exception_ptr error() const { return m_->error_; }
 
 public:
-  subject(const subject&) = delete; /* non copyable */
   subject() : m_(std::make_shared<member>())
   {
     auto m = m_;
@@ -44,6 +43,11 @@ public:
     })
     | operators::publish();
     m->subscription_ = m->source_.connect();
+  }
+
+  subject(const subject& src) : m_(src.m_) {
+    /* unsubscribe subscription only for original */
+    m_->subscription_ = {};
   }
 
   virtual ~subject() {
