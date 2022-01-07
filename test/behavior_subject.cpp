@@ -16,6 +16,7 @@ void test_behavior_subject() {
   sbj.as_subscriber().on_next(2);
   doSubscribe(sbj.as_observable());  
   sbj.as_subscriber().on_completed();
+  doSubscribe(sbj.as_observable());  
 
   log() << "test_behavior_subject -- end" << std::endl << std::endl;
 }

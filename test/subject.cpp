@@ -45,7 +45,9 @@ void test_subject() {
 
   wait(2000);
 
-  sbj.reset();
+  sbj = std::make_shared<subjects::subject<int>>();
+  sbj->as_subscriber().on_error(std::make_exception_ptr(std::exception()));
+  doSubscribe(sbj->as_observable());
 
   log() << "test_subject -- end" << std::endl << std::endl;
 }

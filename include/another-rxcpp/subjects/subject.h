@@ -4,6 +4,7 @@
 #include "../internal/source/source.h"
 #include "../observables.h"
 #include "../observable.h"
+#include "../operators.h"
 
 namespace another_rxcpp {
 namespace subjects {
@@ -16,32 +17,53 @@ public:
   using subscriber_type = subscriber<value_type>;
 
 private:
-  source_type     source_;
-  subscriber_type subscriber_;
-  subscription    subscription_;
+  struct member {
+    source_type         source_;
+    subscriber_type     subscriber_;
+    std::exception_ptr  error_;
+    subscription        subscription_;
+  };
+  std::shared_ptr<member> m_;
 
 protected:
+  bool completed() const { return !m_->subscription_.is_subscribed(); }
+  std::exception_ptr error() const { return m_->error_; }
 
 public:
-  subject()
+  subject(const subject&) = delete; /* non copyable */
+  subject() : m_(std::make_shared<member>())
   {
-    source_ = observable<>::create<value_type>([&](subscriber_type s){
-      subscriber_ = s;
-    }) | operators::publish();
-    subscription_ = source_.connect();
+    auto m = m_;
+    m->source_ = observable<>::create<value_type>([m](subscriber_type s){
+      m->subscriber_ = s;
+    })
+    | operators::tap<value_type>({
+      .on_error = [m](std::exception_ptr err){
+        m->error_ = err;
+      }
+    })
+    | operators::publish();
+    m->subscription_ = m->source_.connect();
   }
 
   virtual ~subject() {
-    subscription_.unsubscribe();
+    m_->subscription_.unsubscribe();
   }
 
   auto as_subscriber() const {
-    return subscriber_;
+    return m_->subscriber_;
   }
 
   virtual observable<T> as_observable() const {
-    return observable<>::create<value_type>([=](subscriber_type s){
-      source_.subscribe({
+    auto m = m_;
+    return observable<>::create<value_type>([m](subscriber_type s){
+      if(m->error_){
+        s.on_error(m->error_);
+      }
+      else if(!m->subscription_.is_subscribed()){
+        s.on_completed();
+      }
+      m->source_.subscribe({
         .on_next = [s](value_type x){
           s.on_next(std::move(x));
         },

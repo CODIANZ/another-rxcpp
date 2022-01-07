@@ -42,22 +42,34 @@ public:
   virtual observable<T> as_observable() const override {
     auto src = subject<T>::as_observable();
     auto m = m_;
-    return observable<>::create<T>([src, m](subscriber<T> s){
-      s.on_next([m](){
-        std::lock_guard<std::mutex> lock(m->mtx_);
-        return m->last_;
-      }());
-      src.subscribe({
-        .on_next = [s](T x){
-          s.on_next(std::move(x));
-        },
-        .on_error = [s](std::exception_ptr err){
-          s.on_error(err);
-        },
-        .on_completed = [s](){
+    auto base_completed = subject<T>::completed();
+    auto base_error = subject<T>::error();
+    return observable<>::create<T>([src, m, base_completed, base_error](subscriber<T> s){
+      if(base_completed){
+        if(base_error != nullptr){
+          s.on_error(base_error);
+        }
+        else{
           s.on_completed();
         }
-      });
+      }
+      else{
+        s.on_next([m](){
+          std::lock_guard<std::mutex> lock(m->mtx_);
+          return m->last_;
+        }());
+        src.subscribe({
+          .on_next = [s](T x){
+            s.on_next(std::move(x));
+          },
+          .on_error = [s](std::exception_ptr err){
+            s.on_error(err);
+          },
+          .on_completed = [s](){
+            s.on_completed();
+          }
+        });
+      }
     });
   }
 };
