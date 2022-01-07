@@ -38,6 +38,7 @@ void test_rxcpp_compatible() {
   .on_error_resume_next([](auto err){ return observable<>::error<int>(err); })
   .publish()
   .retry()
+  .retry(123)
   .subscribe_on(schedulers::observe_on_new_thread())
   .take_last(1)
   .take_until(o)

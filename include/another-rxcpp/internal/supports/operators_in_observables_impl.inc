@@ -48,6 +48,13 @@ namespace another_rxcpp {
 
   template <typename T>
     template <typename...ARGS>
+      auto observable<T>::retry(ARGS...args) const
+  {
+    return *this | operators::retry(std::forward<ARGS>(args)...);
+  }
+
+  template <typename T>
+    template <typename...ARGS>
       auto observable<T>::subscribe_on(ARGS...args) const
   {
     return *this | operators::subscribe_on(std::forward<ARGS>(args)...);
@@ -106,12 +113,6 @@ namespace another_rxcpp {
     auto observable<T>::publish() const
   {
     return *this | operators::publish();
-  }
-
-  template <typename T>
-    auto observable<T>::retry() const
-  {
-    return *this | operators::retry();
   }
 
   template <typename T>
