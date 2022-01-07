@@ -15,7 +15,8 @@ private:
   std::future<void> future_;
 
 public:
-  async_scheduler_interface() = default;
+  async_scheduler_interface() :
+    scheduler_interface(schedule_type::queuing) {}
   virtual ~async_scheduler_interface() = default;
 
   virtual void run(call_in_context_fn_t call_in_context) override {
@@ -27,13 +28,16 @@ public:
   virtual void detach() override {
     /* nothing to do */
   }
+
+  virtual void schedule(function_type f) override {
+    f();
+  }
 };
 
 inline auto async_scheduler() {
   return []{
     return scheduler(
-      std::make_shared<async_scheduler_interface>(),
-      scheduler::type::async
+      std::make_shared<async_scheduler_interface>()
     );
   };
 }

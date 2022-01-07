@@ -8,28 +8,40 @@ namespace another_rxcpp {
 
 class scheduler_interface {
 public:
+  enum class schedule_type {direct, queuing};
   using function_type = std::function<void()>;
   using call_in_context_fn_t = std::function<void()>;
-  scheduler_interface() = default;
+
+private:
+  schedule_type schedule_type_;
+
+protected:
+  scheduler_interface(schedule_type stype) : schedule_type_(stype) {}
+
+public:
   virtual ~scheduler_interface() = default;
+
+  schedule_type get_schedule_type() const { return schedule_type(); }
+
   virtual void run(call_in_context_fn_t call_in_context) = 0;
   virtual void detach() = 0;
+  virtual void schedule(function_type f) = 0;
 };
 
 class scheduler {
 public:
   using function_type = typename scheduler_interface::function_type;
   using creator_fn    = std::function<scheduler()>;
-  enum class type { async, sync };
+  enum class interface_type { direct, queuing };
 
 private:
   using isp = std::shared_ptr<scheduler_interface>;
 
   struct member {
-    std::queue<function_type> queue_;
+    isp                       interface_;
     std::mutex                mtx_;
     std::condition_variable   cond_;
-    isp                       interface_;
+    std::queue<function_type> queue_;
     int                       refcount_;
   };
   std::shared_ptr<member>     m_;
@@ -37,12 +49,13 @@ private:
 protected:
 
 public:
-  template <typename ISP> scheduler(ISP isp, type t)
+  template <typename ISP> scheduler(ISP isp) :
+    m_(std::make_shared<member>())
   {
-    if(t == type::async){
-      m_ = std::make_shared<member>();
+    m_->interface_ = std::dynamic_pointer_cast<scheduler_interface>(isp);
+
+    if(m_->interface_->get_schedule_type() == scheduler_interface::schedule_type::queuing){
       auto m = m_;
-      m->interface_ = std::dynamic_pointer_cast<scheduler_interface>(isp);
       m->refcount_  = 1;
       m->interface_->run([m](){
         while(true){
@@ -53,11 +66,10 @@ public:
           }();
           if(q.empty()) break;
           while(!q.empty()){
-            q.front()();
+            m->interface_->schedule(q.front());
             q.pop();
           }
         }
-        m->interface_->detach();
       });
     }
   }
@@ -65,32 +77,34 @@ public:
   scheduler(const scheduler& src) :
     m_(src.m_)
   {
-    if(m_){
+    if(m_->interface_->get_schedule_type() == scheduler_interface::schedule_type::queuing){
       std::lock_guard<std::mutex> lock(m_->mtx_);
-      m_->refcount_++;
-    }
+      m_->refcount_++;    
+    }    
   }
 
   virtual ~scheduler() {
-    if(m_){
+    if(m_->interface_->get_schedule_type() == scheduler_interface::schedule_type::queuing){
       std::unique_lock<std::mutex> lock(m_->mtx_);
       m_->refcount_--;
       if(m_->refcount_ == 0){
         lock.unlock();
         m_->cond_.notify_one();
+        m_->interface_->detach();
       }
     }
   }
 
   void schedule(function_type f) const {
-    if(m_){
+    if(m_->interface_->get_schedule_type() == scheduler_interface::schedule_type::queuing){
       std::unique_lock<std::mutex> lock(m_->mtx_);
       m_->queue_.push(f);
       lock.unlock();
       m_->cond_.notify_one();
     }
     else{
-      f();
+      /* m_->interface_->get_schedule_type() == scheduler_interface::schedule_type::direct */
+      m_->interface_->schedule(f);
     }
   }
 };
