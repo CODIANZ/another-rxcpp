@@ -19,6 +19,13 @@ namespace another_rxcpp {
   }
 
   template <typename T>
+    template <typename F, typename...ARGS>
+      auto observable<T>::tap(F f, ARGS...args) const
+  {
+    return *this | operators::tap<std::function<void(value_type)>>(f, std::forward<ARGS>(args)...);
+  }
+
+  template <typename T>
     template <typename...ARGS>
       auto observable<T>::take(ARGS...args) const
   {
@@ -86,13 +93,6 @@ namespace another_rxcpp {
       auto observable<T>::distinct_until_changed(ARGS...args) const
   {
     return *this | operators::distinct_until_changed(std::forward<ARGS>(args)...);
-  }
-
-  template <typename T>
-    template <typename F, typename...ARGS>
-      auto observable<T>::tap(F f, ARGS...args) const
-  {
-    return *this | operators::tap<std::function<void(value_type)>>(f, std::forward<ARGS>(args)...);
   }
 
   template <typename T>

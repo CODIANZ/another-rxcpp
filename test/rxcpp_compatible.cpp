@@ -10,15 +10,40 @@ using namespace another_rxcpp::operators;
 void test_rxcpp_compatible() {
   log() << "test_rxcpp_compatible -- begin" << std::endl;
 
-  auto o = ovalue(1)
+  auto o = ovalue(1);
+
+  auto test = observable<>::just(12)
+  .flat_map([](auto){
+    return observable<>::error<int>(std::exception());
+  })
+  .flat_map([](auto){
+    return observable<>::never<int>();
+  })
+  .flat_map([](auto){
+    return observable<>::range(1, 5);
+  })
+  .flat_map([](auto){
+    return observable<>::interval(std::chrono::milliseconds(100));
+  })
+  .amb(o)
   .as_dynamic()
-  .subscribe([](auto x){
-    std::cout << x << std::endl;
-  }, [](auto){
-    std::cout << "error" << std::endl;
-  }, [](){
-    std::cout << "completed" << std::endl;
-  });
+  .delay(std::chrono::seconds(1))
+  .distinct_until_changed()
+  .finally([](){})
+  .flat_map([](auto x){ return observable<>::just(x); })
+  .last()
+  .map([](auto x){ return x + 1; })
+  .merge(o)
+  .observe_on(schedulers::observe_on_new_thread())
+  .on_error_resume_next([](auto err){ return observable<>::error<int>(err); })
+  .publish()
+  .retry()
+  .subscribe_on(schedulers::observe_on_new_thread())
+  .take_last(1)
+  .take_until(o)
+  .take(100)
+  .tap([](auto){})
+  .timeout(std::chrono::hours(2));
 
   log() << "test_rxcpp_compatible -- end" << std::endl << std::endl;
 }
