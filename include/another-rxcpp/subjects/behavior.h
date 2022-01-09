@@ -2,6 +2,7 @@
 #define __h_behavior__
 
 #include "../internal/source/source.h"
+#include "../internal/tools/shared_with_will.h"
 #include "../observables.h"
 #include "../observable.h"
 #include "subject.h"
@@ -15,20 +16,19 @@ private:
     T               last_;
     std::mutex      mtx_;
     subscription    subscription_;
-    std::atomic_int refcount_;
+    member(const T& last) : last_(last) {}
   };
-  std::shared_ptr<member> m_;
+  shared_with_will<member> m_;
 
 protected:
 
 public:
   behavior(T initial_value) :
-    m_(new member{
-      .last_ = std::move(initial_value)
+    m_(std::make_shared<member>(std::move(initial_value)), [](auto x){
+      x->subscription_.unsubscribe();
     })
   {
-    auto m = m_; 
-    m->refcount_ = 1;
+    auto m = m_.capture_element();
     m->subscription_ = as_observable().subscribe([m](T x){
       std::lock_guard<std::mutex> lock(m->mtx_);
       m->last_ = std::move(x);
@@ -37,22 +37,11 @@ public:
     });
   }
 
-  behavior(const behavior& src) :
-    subject<T>(src),
-    m_(src.m_)
-  {
-    m_->refcount_++;
-  }
-
-  virtual ~behavior(){
-    if(m_->refcount_.fetch_sub(1) == 1){
-      m_->subscription_.unsubscribe();
-    }
-  }
+  virtual ~behavior() = default;
 
   virtual observable<T> as_observable() const override {
     auto src = subject<T>::as_observable();
-    auto m = m_;
+    auto m = m_.capture_element();
     auto base_completed = subject<T>::completed();
     auto base_error = subject<T>::error();
     return observable<>::create<T>([src, m, base_completed, base_error](subscriber<T> s){

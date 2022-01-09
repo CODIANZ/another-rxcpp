@@ -2,6 +2,7 @@
 #define __h_subject__
 
 #include "../internal/source/source.h"
+#include "../internal/tools/shared_with_will.h"
 #include "../observables.h"
 #include "../observable.h"
 #include "../operators.h"
@@ -22,19 +23,20 @@ private:
     subscriber_type     subscriber_;
     std::exception_ptr  error_;
     subscription        subscription_;
-    std::atomic_int     refcount_;
   };
-  std::shared_ptr<member> m_;
+  shared_with_will<member> m_;
 
 protected:
   bool completed() const { return !m_->subscription_.is_subscribed(); }
   std::exception_ptr error() const { return m_->error_; }
 
 public:
-  subject() : m_(std::make_shared<member>())
+  subject() :
+    m_(std::make_shared<member>(), [](auto x){
+      x->subscription_.unsubscribe();
+    })
   {
-    auto m = m_;
-    m->refcount_ = 1;
+    auto m = m_.capture_element();
     m->source_ = observable<>::create<value_type>([m](subscriber_type s){
       m->subscriber_ = s;
     })
@@ -47,22 +49,14 @@ public:
     m->subscription_ = m->source_.connect();
   }
 
-  subject(const subject& src) : m_(src.m_) {
-    m_->refcount_++;
-  }
-
-  virtual ~subject() {
-    if(m_->refcount_.fetch_sub(1) == 1){
-      m_->subscription_.unsubscribe();
-    }
-  }
+  virtual ~subject() = default;
 
   auto as_subscriber() const {
     return m_->subscriber_;
   }
 
   virtual observable<T> as_observable() const {
-    auto m = m_;
+    auto m = m_.capture_element();
     return observable<>::create<value_type>([m](subscriber_type s){
       if(m->error_){
         s.on_error(m->error_);
