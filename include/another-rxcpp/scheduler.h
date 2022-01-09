@@ -46,7 +46,19 @@ private:
   };
   std::shared_ptr<member>     m_;
 
-protected:
+  void release() {
+    if(!m_) return;
+    if(m_->interface_->get_schedule_type() == scheduler_interface::schedule_type::queuing){
+      std::unique_lock<std::mutex> lock(m_->mtx_);
+      m_->refcount_--;
+      if(m_->refcount_ == 0){
+        lock.unlock();
+        m_->cond_.notify_one();
+        m_->interface_->detach();
+      }
+    }
+    m_.reset();
+  }
 
 public:
   template <typename ISP> scheduler(ISP isp) :
@@ -74,25 +86,22 @@ public:
     }
   }
 
-  scheduler(const scheduler& src) :
-    m_(src.m_)
-  {
+  scheduler(const scheduler& src){
+    *this = src;
+  }
+
+  scheduler& operator= (const scheduler& src) {
+    release();
+    m_ = src.m_;
     if(m_->interface_->get_schedule_type() == scheduler_interface::schedule_type::queuing){
       std::lock_guard<std::mutex> lock(m_->mtx_);
       m_->refcount_++;    
-    }    
+    }
+    return *this;
   }
 
   virtual ~scheduler() {
-    if(m_->interface_->get_schedule_type() == scheduler_interface::schedule_type::queuing){
-      std::unique_lock<std::mutex> lock(m_->mtx_);
-      m_->refcount_--;
-      if(m_->refcount_ == 0){
-        lock.unlock();
-        m_->cond_.notify_one();
-        m_->interface_->detach();
-      }
-    }
+    release();
   }
 
   void schedule(function_type f) const {
