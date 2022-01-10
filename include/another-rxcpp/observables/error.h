@@ -1,5 +1,5 @@
-#if !defined(__h_error__)
-#define __h_error__
+#if !defined(__another_rxcpp_h_error__)
+#define __another_rxcpp_h_error__
 
 #include "../observable.h"
 
@@ -28,4 +28,4 @@ template <typename T>
 } /* namespace observables */
 } /* namespace another_rxcpp */
 
-#endif /* !defined(__h_error__) */
+#endif /* !defined(__another_rxcpp_h_error__) */

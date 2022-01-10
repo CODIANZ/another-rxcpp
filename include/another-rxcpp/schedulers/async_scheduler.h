@@ -1,5 +1,5 @@
-#if !defined(__h_async_scheduler__)
-#define __h_async_scheduler__
+#if !defined(__another_rxcpp_h_async_scheduler__)
+#define __another_rxcpp_h_async_scheduler__
 
 #include "../scheduler.h"
 #include <future>
@@ -45,4 +45,4 @@ inline auto async_scheduler() {
 } /* namespace schedulers */
 } /* namespace another_rxcpp */
 
-#endif /* !defined(__h_async_scheduler__) */
+#endif /* !defined(__another_rxcpp_h_async_scheduler__) */

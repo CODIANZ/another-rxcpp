@@ -1,5 +1,5 @@
-#if !defined(__h_merge__)
-#define __h_merge__
+#if !defined(__another_rxcpp_h_merge__)
+#define __another_rxcpp_h_merge__
 
 #include "../observable.h"
 #include "../internal/tools/util.h"
@@ -71,4 +71,4 @@ auto merge(scheduler::creator_fn sccr, OB ob, ARGS...args) {
 } /* namespace operators */
 } /* namespace another_rxcpp */
 
-#endif /* !defined(__h_merge__) */
+#endif /* !defined(__another_rxcpp_h_merge__) */

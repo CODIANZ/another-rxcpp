@@ -1,5 +1,5 @@
-#if !defined(__h_retry__)
-#define __h_retry__
+#if !defined(__another_rxcpp_h_retry__)
+#define __another_rxcpp_h_retry__
 
 #include "../observable.h"
 
@@ -42,4 +42,4 @@ inline auto retry(std::size_t max_retry_count = 0 /* infinite */)
 } /* namespace operators */
 } /* namespace another_rxcpp */
 
-#endif /* !defined(__h_retry__) */
+#endif /* !defined(__another_rxcpp_h_retry__) */

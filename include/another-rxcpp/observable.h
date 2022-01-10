@@ -1,5 +1,5 @@
-#if !defined(__h_observable__)
-#define __h_observable__
+#if !defined(__another_rxcpp_h_observable__)
+#define __another_rxcpp_h_observable__
 
 #include "internal/source/source.h"
 #include "schedulers.h"
@@ -107,4 +107,4 @@ public:
   #include "internal/supports/operators_in_observables_impl.inc"
 #endif /* SUPPORTS_OPERATORS_IN_OBSERVABLE */
 
-#endif /* !defined(__h_observable__) */
+#endif /* !defined(__another_rxcpp_h_observable__) */

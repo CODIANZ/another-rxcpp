@@ -1,5 +1,5 @@
-#if !defined(__h_flat_map__)
-#define __h_flat_map__
+#if !defined(__another_rxcpp_h_flat_map__)
+#define __another_rxcpp_h_flat_map__
 
 #include "../observable.h"
 #include "../internal/tools/util.h"
@@ -61,4 +61,4 @@ template <typename F> auto flat_map(F f)
 } /* namespace operators */
 } /* namespace another_rxcpp */
 
-#endif /* !defined(__h_flat_map__) */
+#endif /* !defined(__another_rxcpp_h_flat_map__) */

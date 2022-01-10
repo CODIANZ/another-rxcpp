@@ -1,5 +1,5 @@
-#if !defined(__h_interval__)
-#define __h_interval__
+#if !defined(__another_rxcpp_h_interval__)
+#define __another_rxcpp_h_interval__
 
 #include "../observable.h"
 #include "../internal/tools/util.h"
@@ -28,4 +28,4 @@ template <typename T = int>
 } /* namespace observables */
 } /* namespace another_rxcpp */
 
-#endif /* !defined(__h_interval__) */
+#endif /* !defined(__another_rxcpp_h_interval__) */

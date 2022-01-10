@@ -1,5 +1,5 @@
-#if !defined(__h_skip_while__)
-#define __h_skip_while__
+#if !defined(__another_rxcpp_h_skip_while__)
+#define __another_rxcpp_h_skip_while__
 
 #include "../observable.h"
 #include "../internal/tools/util.h"
@@ -44,4 +44,4 @@ template <typename F> auto skip_while(F f)
 } /* namespace operators */
 } /* namespace another_rxcpp */
 
-#endif /* !defined(__h_skip_while__) */
+#endif /* !defined(__another_rxcpp_h_skip_while__) */

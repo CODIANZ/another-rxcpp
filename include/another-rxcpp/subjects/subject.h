@@ -1,5 +1,5 @@
-#if !defined(__h_subject__)
-#define __h_subject__
+#if !defined(__another_rxcpp_h_subject__)
+#define __another_rxcpp_h_subject__
 
 #include "../internal/source/source.h"
 #include "../internal/tools/shared_with_will.h"
@@ -87,4 +87,4 @@ public:
 } /* namespace subjects */
 } /* namespace another_rxcpp */
 
-#endif /* !defined(__h_subject__) */
+#endif /* !defined(__another_rxcpp_h_subject__) */

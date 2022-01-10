@@ -1,5 +1,5 @@
-#if !defined(__h_range__)
-#define __h_range__
+#if !defined(__another_rxcpp_h_range__)
+#define __another_rxcpp_h_range__
 
 #include "../observable.h"
 #include "../internal/tools/util.h"
@@ -24,4 +24,4 @@ template <typename T>
 } /* namespace observables */
 } /* namespace another_rxcpp */
 
-#endif /* !defined(__h_range__) */
+#endif /* !defined(__another_rxcpp_h_range__) */

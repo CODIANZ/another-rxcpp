@@ -1,5 +1,5 @@
-#if !defined(__h_shared_with_will__)
-#define __h_shared_with_will__
+#if !defined(__another_rxcpp_h_shared_with_will__)
+#define __another_rxcpp_h_shared_with_will__
 
 #include <memory>
 #include <thread>
@@ -60,4 +60,4 @@ public:
 };
 
 
-#endif /* !defined(__h_shared_with_will__) */
+#endif /* !defined(__another_rxcpp_h_shared_with_will__) */

@@ -1,5 +1,5 @@
-#if !defined(__h_new_thread_scheduler__)
-#define __h_new_thread_scheduler__
+#if !defined(__another_rxcpp_h_new_thread_scheduler__)
+#define __another_rxcpp_h_new_thread_scheduler__
 
 #include "../scheduler.h"
 #include <thread>
@@ -52,4 +52,4 @@ inline auto observe_on_new_thread() {
 } /* namespace schedulers */
 } /* namespace another_rxcpp */
 
-#endif /* !defined(__h_new_thread_scheduler__) */
+#endif /* !defined(__another_rxcpp_h_new_thread_scheduler__) */

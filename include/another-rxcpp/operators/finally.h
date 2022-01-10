@@ -1,5 +1,5 @@
-#if !defined(__h_finally__)
-#define __h_finally__
+#if !defined(__another_rxcpp_h_finally__)
+#define __another_rxcpp_h_finally__
 
 #include "../observable.h"
 #include "../internal/tools/util.h"
@@ -35,4 +35,4 @@ template <typename F> auto finally(F f)
 } /* namespace operators */
 } /* namespace another_rxcpp */
 
-#endif /* !defined(__h_finally__) */
+#endif /* !defined(__another_rxcpp_h_finally__) */

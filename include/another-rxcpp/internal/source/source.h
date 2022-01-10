@@ -1,5 +1,5 @@
-#if !defined(__h_source__)
-#define __h_source__
+#if !defined(__another_rxcpp_h_source__)
+#define __another_rxcpp_h_source__
 
 #include <memory>
 #include <condition_variable>
@@ -94,4 +94,4 @@ public:
 
 } /* namespace another_rxcpp */
 
-#endif /* !defined(__h_source__) */
+#endif /* !defined(__another_rxcpp_h_source__) */

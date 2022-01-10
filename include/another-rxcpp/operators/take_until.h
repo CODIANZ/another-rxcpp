@@ -1,5 +1,5 @@
-#if !defined(__h_take_until__)
-#define __h_take_until__
+#if !defined(__another_rxcpp_h_take_until__)
+#define __another_rxcpp_h_take_until__
 
 #include "../observable.h"
 
@@ -47,4 +47,4 @@ template <typename TRIGGER_OB> auto take_until(TRIGGER_OB trigger)
 } /* namespace operators */
 } /* namespace another_rxcpp */
 
-#endif /* !defined(__h_take_until__) */
+#endif /* !defined(__another_rxcpp_h_take_until__) */

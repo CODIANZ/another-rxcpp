@@ -1,5 +1,5 @@
-#if !defined(__h_operators__)
-#define __h_operators__
+#if !defined(__another_rxcpp_h_operators__)
+#define __another_rxcpp_h_operators__
 
 #include "operators/flat_map.h"
 #include "operators/map.h"
@@ -22,4 +22,4 @@
 
 #include "operators/timeout.h"
 
-#endif /* !defined(__h_operators__) */
+#endif /* !defined(__another_rxcpp_h_operators__) */

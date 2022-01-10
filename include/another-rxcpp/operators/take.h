@@ -1,5 +1,5 @@
-#if !defined(__h_take__)
-#define __h_take__
+#if !defined(__another_rxcpp_h_take__)
+#define __another_rxcpp_h_take__
 
 #include "../observable.h"
 
@@ -40,4 +40,4 @@ inline auto take(std::size_t n)
 } /* namespace operators */
 } /* namespace another_rxcpp */
 
-#endif /* !defined(__h_take__) */
+#endif /* !defined(__another_rxcpp_h_take__) */

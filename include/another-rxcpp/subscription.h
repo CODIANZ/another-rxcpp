@@ -1,5 +1,5 @@
-#if !defined(__h_subscription__)
-#define __h_subscription__
+#if !defined(__another_rxcpp_h_subscription__)
+#define __another_rxcpp_h_subscription__
 
 #include <functional>
 #include <memory>
@@ -51,4 +51,4 @@ public:
 
 } /* namespace another_rxcpp */
 
-#endif /* !defined(__h_subscription__) */
+#endif /* !defined(__another_rxcpp_h_subscription__) */

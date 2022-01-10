@@ -1,5 +1,5 @@
-#if !defined(__h_observables__)
-#define __h_observables__
+#if !defined(__another_rxcpp_h_observables__)
+#define __another_rxcpp_h_observables__
 
 #include "observables/just.h"
 #include "observables/never.h"
@@ -9,4 +9,4 @@
 #include "observables/interval.h"
 #include "observables/iterate.h"
 
-#endif /* !defined(__h_observables__) */
+#endif /* !defined(__another_rxcpp_h_observables__) */

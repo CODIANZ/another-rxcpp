@@ -1,5 +1,5 @@
-#if !defined(__h_connectable_observable__)
-#define __h_connectable_observable__
+#if !defined(__another_rxcpp_h_connectable_observable__)
+#define __another_rxcpp_h_connectable_observable__
 
 #include "../observable.h"
 #include <algorithm>
@@ -123,4 +123,4 @@ public:
 } /* namespace observables */
 } /* namespace another_rxcpp */
 
-#endif /* !defined(__h_connectable_observable__) */
+#endif /* !defined(__another_rxcpp_h_connectable_observable__) */

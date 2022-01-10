@@ -1,5 +1,5 @@
-#if !defined(__h_tap__)
-#define __h_tap__
+#if !defined(__another_rxcpp_h_tap__)
+#define __another_rxcpp_h_tap__
 
 #include "../observable.h"
 #include "../internal/tools/util.h"
@@ -79,4 +79,4 @@ template <typename NEXT>
 } /* namespace operators */
 } /* namespace another_rxcpp */
 
-#endif /* !defined(__h_tap__) */
+#endif /* !defined(__another_rxcpp_h_tap__) */

@@ -1,5 +1,5 @@
-#if !defined(__h_subscriber__)
-#define __h_subscriber__
+#if !defined(__another_rxcpp_h_subscriber__)
+#define __another_rxcpp_h_subscriber__
 
 #include "observer.h"
 #include "internal/source/source_base.h"
@@ -106,4 +106,4 @@ public:
 
 } /* namespace another_rxcpp */
 
-#endif /* !defined(__h_subscriber__) */
+#endif /* !defined(__another_rxcpp_h_subscriber__) */

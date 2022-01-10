@@ -1,5 +1,5 @@
-#if !defined(__h_default_scheduler__)
-#define __h_default_scheduler__
+#if !defined(__another_rxcpp_h_default_scheduler__)
+#define __another_rxcpp_h_default_scheduler__
 
 #include "../scheduler.h"
 
@@ -35,4 +35,4 @@ inline auto default_scheduler() {
 } /* namespace schedulers */
 } /* namespace another_rxcpp */
 
-#endif /* !defined(__h_default_scheduler__) */
+#endif /* !defined(__another_rxcpp_h_default_scheduler__) */

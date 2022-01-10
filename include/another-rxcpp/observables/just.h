@@ -1,5 +1,5 @@
-#if !defined(__h_just__)
-#define __h_just__
+#if !defined(__another_rxcpp_h_just__)
+#define __another_rxcpp_h_just__
 
 #include "../observable.h"
 #include "../internal/tools/util.h"
@@ -28,4 +28,4 @@ template <typename T>
 } /* namespace observables */
 } /* namespace another_rxcpp */
 
-#endif /* !defined(__h_just__) */
+#endif /* !defined(__another_rxcpp_h_just__) */

@@ -1,5 +1,5 @@
-#if !defined(__h_behavior__)
-#define __h_behavior__
+#if !defined(__another_rxcpp_h_behavior__)
+#define __another_rxcpp_h_behavior__
 
 #include "../internal/source/source.h"
 #include "../internal/tools/shared_with_will.h"
@@ -77,4 +77,4 @@ public:
 } /* namespace subjects */
 } /* namespace another_rxcpp */
 
-#endif /* !defined(__h_behavior__) */
+#endif /* !defined(__another_rxcpp_h_behavior__) */

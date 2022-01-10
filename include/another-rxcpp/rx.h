@@ -1,5 +1,5 @@
-#if !defined(__h_another_rxcpp__)
-#define __h_another_rxcpp__
+#if !defined(__another_rxcpp_h_another_rxcpp__)
+#define __another_rxcpp_h_another_rxcpp__
 
 #include "observable.h"
 #include "observables.h"
@@ -17,4 +17,4 @@ namespace rxcpp {
 }
 #endif
 
-#endif /* !defined(__h_another_rxcpp__) */
+#endif /* !defined(__another_rxcpp_h_another_rxcpp__) */

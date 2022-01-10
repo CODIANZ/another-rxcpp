@@ -1,5 +1,5 @@
-#if !defined(__h_never__)
-#define __h_never__
+#if !defined(__another_rxcpp_h_never__)
+#define __another_rxcpp_h_never__
 
 #include "../observable.h"
 
@@ -17,4 +17,4 @@ template <typename T>
 } /* namespace observables */
 } /* namespace another_rxcpp */
 
-#endif /* !defined(__h_never__) */
+#endif /* !defined(__another_rxcpp_h_never__) */

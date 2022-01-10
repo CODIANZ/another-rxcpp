@@ -1,5 +1,5 @@
-#if !defined(__h_map__)
-#define __h_map__
+#if !defined(__another_rxcpp_h_map__)
+#define __another_rxcpp_h_map__
 
 #include "../observable.h"
 #include "../internal/tools/util.h"
@@ -37,4 +37,4 @@ template <typename F> auto map(F f)
 } /* namespace operators */
 } /* namespace another_rxcpp */
 
-#endif /* !defined(__h_map__) */
+#endif /* !defined(__another_rxcpp_h_map__) */

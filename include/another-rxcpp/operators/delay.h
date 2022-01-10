@@ -1,5 +1,5 @@
-#if !defined(__h_delay__)
-#define __h_delay__
+#if !defined(__another_rxcpp_h_delay__)
+#define __another_rxcpp_h_delay__
 
 #include "../observable.h"
 #include "../internal/tools/util.h"
@@ -40,4 +40,4 @@ inline auto delay(std::chrono::milliseconds msec, scheduler::creator_fn sccr = s
 } /* namespace operators */
 } /* namespace another_rxcpp */
 
-#endif /* !defined(__h_delay__) */
+#endif /* !defined(__another_rxcpp_h_delay__) */

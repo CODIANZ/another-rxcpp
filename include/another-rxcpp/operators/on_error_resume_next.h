@@ -1,5 +1,5 @@
-#if !defined(__h_on_error_resume_next__)
-#define __h_on_error_resume_next__
+#if !defined(__another_rxcpp_h_on_error_resume_next__)
+#define __another_rxcpp_h_on_error_resume_next__
 
 #include "../observable.h"
 
@@ -48,4 +48,4 @@ template <typename NEXT_FN> auto on_error_resume_next(NEXT_FN f)
 } /* namespace operators */
 } /* namespace another_rxcpp */
 
-#endif /* !defined(__h_on_error_resume_next__) */
+#endif /* !defined(__another_rxcpp_h_on_error_resume_next__) */

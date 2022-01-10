@@ -1,5 +1,5 @@
-#if !defined(__h_amb__)
-#define __h_amb__
+#if !defined(__another_rxcpp_h_amb__)
+#define __another_rxcpp_h_amb__
 
 #include "../observable.h"
 #include "../internal/tools/util.h"
@@ -93,4 +93,4 @@ auto amb(scheduler::creator_fn sccr, OB ob, ARGS...args) {
 } /* namespace operators */
 } /* namespace another_rxcpp */
 
-#endif /* !defined(__h_amb__) */
+#endif /* !defined(__another_rxcpp_h_amb__) */

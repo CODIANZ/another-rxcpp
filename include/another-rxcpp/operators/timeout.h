@@ -1,5 +1,5 @@
-#if !defined(__h_timeout__)
-#define __h_timeout__
+#if !defined(__another_rxcpp_h_timeout__)
+#define __another_rxcpp_h_timeout__
 
 #include "../observable.h"
 #include "../internal/tools/util.h"
@@ -62,4 +62,4 @@ inline auto timeout(std::chrono::milliseconds msec)
 } /* namespace operators */
 } /* namespace another_rxcpp */
 
-#endif /* !defined(__h_timeout__) */
+#endif /* !defined(__another_rxcpp_h_timeout__) */

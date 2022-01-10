@@ -1,5 +1,5 @@
-#if !defined(__h_scheduler__)
-#define __h_scheduler__
+#if !defined(__another_rxcpp_h_scheduler__)
+#define __another_rxcpp_h_scheduler__
 
 #include <memory>
 #include <queue>
@@ -120,4 +120,4 @@ public:
 
 } /* namespace another_rxcpp */
 
-#endif /* !defined(__h_scheduler__) */
+#endif /* !defined(__another_rxcpp_h_scheduler__) */

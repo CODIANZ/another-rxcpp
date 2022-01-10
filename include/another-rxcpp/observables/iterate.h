@@ -1,5 +1,5 @@
-#if !defined(__h_iterate__)
-#define __h_iterate__
+#if !defined(__another_rxcpp_h_iterate__)
+#define __another_rxcpp_h_iterate__
 
 #include "../observable.h"
 #include "../internal/tools/util.h"
@@ -24,4 +24,4 @@ template <typename T>
 } /* namespace observables */
 } /* namespace another_rxcpp */
 
-#endif /* !defined(__h_iterate__) */
+#endif /* !defined(__another_rxcpp_h_iterate__) */

@@ -1,5 +1,5 @@
-#if !defined(__h_distinct_until_changed__)
-#define __h_distinct_until_changed__
+#if !defined(__another_rxcpp_h_distinct_until_changed__)
+#define __another_rxcpp_h_distinct_until_changed__
 
 #include "../observable.h"
 
@@ -46,4 +46,4 @@ inline auto distinct_until_changed()
 } /* namespace operators */
 } /* namespace another_rxcpp */
 
-#endif /* !defined(__h_distinct_until_changed__) */
+#endif /* !defined(__another_rxcpp_h_distinct_until_changed__) */

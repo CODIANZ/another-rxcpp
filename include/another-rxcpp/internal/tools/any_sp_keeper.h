@@ -1,5 +1,5 @@
-#if !defined(__h_any_sp_keeper__)
-#define __h_any_sp_keeper__
+#if !defined(__another_rxcpp_h_any_sp_keeper__)
+#define __another_rxcpp_h_any_sp_keeper__
 
 #include <memory>
 #include <vector>
@@ -62,4 +62,4 @@ public:
 
 } /* namespace another_rxcpp */
 
-#endif /* !defined(__h_any_sp_keeper__) */
+#endif /* !defined(__another_rxcpp_h_any_sp_keeper__) */
