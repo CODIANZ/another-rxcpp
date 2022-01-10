@@ -22,6 +22,7 @@ template <typename T>
     using OUT = typename OUT_OB::value_type;
     return observable<>::create<OUT>([src, obs](subscriber<OUT> s) {
       auto upstream = src.create_source();
+      s.add_upstream(upstream);
       upstream->subscribe({
         .on_next = [s, obs](auto x){
           if(obs.on_next) obs.on_next(x);
@@ -52,6 +53,7 @@ template <typename NEXT>
     using OUT = typename OUT_OB::value_type;
     return observable<>::create<OUT>([src, n, e, c](subscriber<OUT> s) {
       auto upstream = src.create_source();
+      s.add_upstream(upstream);
       upstream->subscribe({
         .on_next = [s, n](auto x){
           n(x);

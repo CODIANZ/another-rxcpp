@@ -12,22 +12,26 @@ namespace operators {
 inline auto delay(std::chrono::milliseconds msec, scheduler::creator_fn sccr = schedulers::default_scheduler())
 {
   /** TODO: implement scheduler */
-  return [msec](auto src){
+  return [msec, sccr](auto src){
     using OUT_OB = decltype(src);
     using OUT = typename OUT_OB::value_type;
-    return observable<>::create<OUT>([src, msec](subscriber<OUT> s) {
-      auto upstream = src.create_source();
-      upstream->subscribe({
-        .on_next = [s, upstream, msec](auto x){
-          std::this_thread::sleep_for(msec);
-          s.on_next(std::move(x));
-        },
-        .on_error = [s, upstream](std::exception_ptr err){
-          s.on_error(err);
-        },
-        .on_completed = [s](){
-          s.on_completed();
-        }
+    return observable<>::create<OUT>([src, msec, sccr](subscriber<OUT> s) {
+      auto scdl = sccr();
+      scdl.schedule([src, msec, s](){
+        auto upstream = src.create_source();
+        s.add_upstream(upstream);
+        upstream->subscribe({
+          .on_next = [s, upstream, msec](auto x){
+            std::this_thread::sleep_for(msec);
+            s.on_next(std::move(x));
+          },
+          .on_error = [s, upstream](std::exception_ptr err){
+            s.on_error(err);
+          },
+          .on_completed = [s](){
+            s.on_completed();
+          }
+        });
       });
     });
   };

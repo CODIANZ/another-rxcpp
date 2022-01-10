@@ -13,17 +13,17 @@ template <typename F> auto map(F f)
   return [f](auto src){
     return observable<>::create<OUT>([src, f](subscriber<OUT> s) {
       auto upstream = src.create_source();
+      s.add_upstream(upstream);
       upstream->subscribe({
-        .on_next = [s, f, upstream](auto x){
+        .on_next = [s, f](auto x){
           try{
             s.on_next(f(std::move(x)));
           }
           catch(...){
-            upstream->unsubscribe();
             s.on_error(std::current_exception());
           }
         },
-        .on_error = [s, upstream](std::exception_ptr err){
+        .on_error = [s](std::exception_ptr err){
           s.on_error(err);
         },
         .on_completed = [s](){

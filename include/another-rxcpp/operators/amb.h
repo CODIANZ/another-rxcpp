@@ -30,6 +30,10 @@ namespace internal {
             sources.push_back(it.create_source());
           });
 
+          std::for_each(sources.begin(), sources.end(), [&](auto it){
+            s.add_upstream(it);
+          });
+
           auto do_on_next = [sources, s, mtx, top](source_sp sp, auto value){
             {
               std::lock_guard<std::mutex> lock(*mtx);

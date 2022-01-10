@@ -14,11 +14,11 @@ inline auto take(std::size_t n)
     return observable<>::create<OUT>([src, n](subscriber<OUT> s) {
       auto counter = std::make_shared<std::atomic_size_t>(1);
       auto upstream = src.create_source();
+      s.add_upstream(upstream);
       upstream->subscribe({
         .on_next = [s, n, upstream, counter](auto x){
           const auto now = counter->fetch_add(1);
           if(now == n) {
-            upstream->unsubscribe();
             s.on_next(std::move(x));
             s.on_completed();
           }

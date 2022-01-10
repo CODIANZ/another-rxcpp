@@ -15,6 +15,7 @@ inline auto distinct_until_changed()
       auto mtx = std::make_shared<std::mutex>();
       auto last_value = std::make_shared<std::shared_ptr<OUT>>();
       auto upstream = src.create_source();
+      s.add_upstream(upstream);
       upstream->subscribe({
         .on_next = [s, mtx, last_value](auto x){
           const bool bNext = [&](){

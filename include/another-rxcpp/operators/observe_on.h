@@ -15,8 +15,9 @@ inline auto observe_on(scheduler::creator_fn sccr)
     return observable<>::create<OUT>([src, sccr](subscriber<OUT> s) {
       auto scdl = sccr();
       auto upstream = src.create_source();
+      s.add_upstream(upstream);
       upstream->subscribe({
-        .on_next = [s, scdl](auto x){
+        .on_next = [s, scdl, upstream](auto x){
           scdl.schedule([s, x]() {
             s.on_next(std::move(x));
           });

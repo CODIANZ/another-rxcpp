@@ -13,6 +13,7 @@ template <typename TRIGGER_OB> auto take_until(TRIGGER_OB trigger)
     using OUT = typename OUT_OB::value_type;
     return observable<>::create<OUT>([src, trigger](subscriber<OUT> s) mutable {
       auto upstream = src.create_source();
+      s.add_upstream(upstream);
       auto trig = trigger.create_source();
       trig->subscribe({
         .on_next = [upstream, s, trig](auto){

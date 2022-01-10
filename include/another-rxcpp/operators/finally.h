@@ -14,6 +14,7 @@ template <typename F> auto finally(F f)
     using OUT = typename OUT_OB::value_type;
     return observable<>::create<OUT>([src, f](subscriber<OUT> s) {
       auto upstream = src.create_source();
+      s.add_upstream(upstream);
       upstream->subscribe({
         .on_next = [s, upstream](auto x){
           s.on_next(std::move(x));

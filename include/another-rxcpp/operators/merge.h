@@ -25,23 +25,19 @@ namespace internal {
             sources.push_back(it.create_source());
           });
 
-          auto unsubscribe_all = [sources](){
-            std::for_each(sources.begin(), sources.end(), [](auto it){
-              it->unsubscribe();
-            });
-          };
+          std::for_each(sources.begin(), sources.end(), [&](auto it){
+            s.add_upstream(it);
+          });
 
-          std::for_each(sources.begin(), sources.end(), [s, unsubscribe_all](auto it){
+          std::for_each(sources.begin(), sources.end(), [s](auto it){
             it->subscribe({
               .on_next = [s](auto x){
                 s.on_next(std::move(x));
               },
-              .on_error = [s, unsubscribe_all](std::exception_ptr err){
-                unsubscribe_all();
+              .on_error = [s](std::exception_ptr err){
                 s.on_error(err);
               },
-              .on_completed = [s, unsubscribe_all](){
-                unsubscribe_all();
+              .on_completed = [s](){
                 s.on_completed();
               }
             });

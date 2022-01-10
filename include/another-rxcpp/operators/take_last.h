@@ -17,6 +17,7 @@ inline auto take_last(std::size_t n)
       auto mtx = std::make_shared<std::mutex>();
       auto arr = std::make_shared<std::queue<OUT>>();
       auto upstream = src.create_source();
+      s.add_upstream(upstream);
       upstream->subscribe({
         .on_next = [s, upstream, n, mtx, arr](auto x){
           std::lock_guard<std::mutex> lock(*mtx);

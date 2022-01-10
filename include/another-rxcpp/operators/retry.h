@@ -15,6 +15,7 @@ inline auto retry(std::size_t max_retry_count = 0 /* infinite */)
       auto proceed = std::make_shared<std::function<void(std::size_t)>>();
       *proceed = [src, s, proceed, max_retry_count](std::size_t count) {
         auto upstream = src.create_source();
+        s.add_upstream(upstream);
         upstream->subscribe({
           .on_next = [s](auto x){
             s.on_next(std::move(x));

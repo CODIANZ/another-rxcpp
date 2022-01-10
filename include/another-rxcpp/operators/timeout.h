@@ -27,13 +27,13 @@ inline auto timeout(std::chrono::milliseconds msec)
       };
       auto m = std::make_shared<member>();
       auto upstream = src.create_source();
+      s.add_upstream(upstream);
 
       std::thread([s, upstream, m, msec]{
         std::unique_lock<std::mutex> lock(m->mtx_);
         while(upstream->is_subscribed()){
           if(m->cond_.wait_for(lock, msec) == std::cv_status::timeout){
             if(upstream->is_subscribed()){
-              upstream->unsubscribe();
               s.on_error(std::make_exception_ptr(timeout_error("timeout")));
             }
             break;
@@ -42,11 +42,11 @@ inline auto timeout(std::chrono::milliseconds msec)
       }).detach();
 
       upstream->subscribe({
-        .on_next = [s, upstream, m](auto x){
+        .on_next = [s, m](auto x){
           m->cond_.notify_one();
           s.on_next(std::move(x));
         },
-        .on_error = [s, upstream, m](std::exception_ptr err){
+        .on_error = [s, m](std::exception_ptr err){
           s.on_error(err);
           m->cond_.notify_one();
         },
