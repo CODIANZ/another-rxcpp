@@ -21,7 +21,7 @@ protected:
 public:
   virtual ~scheduler_interface() = default;
 
-  schedule_type get_schedule_type() const { return schedule_type(); }
+  schedule_type get_schedule_type() const { return schedule_type_; }
 
   virtual void run(call_in_context_fn_t call_in_context) = 0;
   virtual void detach() = 0;
