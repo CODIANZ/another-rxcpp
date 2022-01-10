@@ -9,8 +9,9 @@
 namespace another_rxcpp {
 namespace operators {
 
-inline auto delay(std::chrono::milliseconds msec)
+inline auto delay(std::chrono::milliseconds msec, scheduler::creator_fn sccr = schedulers::default_scheduler())
 {
+  /** TODO: implement scheduler */
   return [msec](auto src){
     using OUT_OB = decltype(src);
     using OUT = typename OUT_OB::value_type;
