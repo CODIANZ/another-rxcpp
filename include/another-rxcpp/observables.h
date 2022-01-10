@@ -7,5 +7,6 @@
 #include "observables/range.h"
 #include "observables/connectable.h"
 #include "observables/interval.h"
+#include "observables/iterate.h"
 
 #endif /* !defined(__h_observables__) */

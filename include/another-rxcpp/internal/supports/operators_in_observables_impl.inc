@@ -62,6 +62,13 @@ namespace another_rxcpp {
 
   template <typename T>
     template <typename...ARGS>
+      auto observable<T>::skip_while(ARGS...args) const
+  {
+    return *this | operators::skip_while(std::forward<ARGS>(args)...);
+  }
+
+  template <typename T>
+    template <typename...ARGS>
       auto observable<T>::take_last(ARGS...args) const
   {
     return *this | operators::take_last(std::forward<ARGS>(args)...);

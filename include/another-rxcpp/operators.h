@@ -8,6 +8,7 @@
 #include "operators/on_error_resume_next.h"
 #include "operators/retry.h"
 #include "operators/observe_on.h"
+#include "operators/skip_while.h"
 #include "operators/subscribe_on.h"
 #include "operators/take_until.h"
 #include "operators/merge.h"
