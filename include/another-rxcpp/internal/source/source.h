@@ -12,7 +12,6 @@
 #include "../../observer.h"
 #include "../../subscription.h"
 #include "source_base.h"
-#include "../tools/any_sp_keeper.h"
 
 namespace another_rxcpp {
 
@@ -69,7 +68,6 @@ public:
     std::weak_ptr<source<value_type>> WEAK_THIS = shared_this();
     subscriber_type subscriber(THIS, obs);
     subscription sbsc(
-      any_sp_keeper::create(THIS, obs),
       /* is_subscribed() */
       [WEAK_THIS]() {
         auto p = WEAK_THIS.lock();
