@@ -19,25 +19,26 @@ private:
     any_sp_keeper       sp_keeper_;
     is_subscribed_fn_t  is_subscribed_fn_;
     on_unsubscribe_fn_t on_unsubscribe_fn_;
-    cond_sp             cond_;
     std::mutex          mtx_;
   };
   std::shared_ptr<member> m_;
+  cond_sp               cond_;
 
 public:
-  subscription() : m_(std::make_shared<member>()) {
-    m_->cond_ = std::make_shared<std::condition_variable>();
-  }
+  subscription() :
+    m_(std::make_shared<member>()),
+    cond_(std::make_shared<std::condition_variable>()) {}
   subscription(
     any_sp_keeper       sp_keeper,
     is_subscribed_fn_t  is_subscribed_fn,
     on_unsubscribe_fn_t on_unsubscribe_fn
-  ) : m_(std::make_shared<member>())
+  ) : 
+    m_(std::make_shared<member>()),
+    cond_(std::make_shared<std::condition_variable>())
   {
     m_->sp_keeper_ = sp_keeper;
     m_->is_subscribed_fn_ = is_subscribed_fn;
     m_->on_unsubscribe_fn_ = on_unsubscribe_fn;
-    m_->cond_ = std::make_shared<std::condition_variable>();
   }
   ~subscription() = default;
 
@@ -48,13 +49,13 @@ public:
       if(f){
         m_->on_unsubscribe_fn_ = {};
         m_->is_subscribed_fn_ = {};
+        m_->sp_keeper_.clear();
       }
       return f;
     }();
     if(fn){
       fn();
-      //m_->sp_keeper_.clear();
-      m_->cond_->notify_all();
+      cond_->notify_all();
     }
   }
 
@@ -67,7 +68,7 @@ public:
     return fn ? fn() : false;
   }
 
-  auto unsubscribe_notice() const { return m_->cond_; }
+  auto unsubscribe_notice() const { return cond_; }
 };
 
 } /* namespace another_rxcpp */
