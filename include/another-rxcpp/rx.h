@@ -14,6 +14,8 @@ namespace rxcpp {
   using namespace another_rxcpp::schedulers;
   namespace schedulers  = another_rxcpp::schedulers;
   namespace subjects    = another_rxcpp::subjects;
+  namespace sources     = another_rxcpp::observables;
+  namespace util {}
 }
 #endif
 
