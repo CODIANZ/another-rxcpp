@@ -1,6 +1,6 @@
 
-#if !defined(__h_source_base__)
-#define __h_source_base__
+#if !defined(__another_rxcpp_h_source_base__)
+#define __another_rxcpp_h_source_base__
 
 #include <thread>
 #include <vector>
@@ -57,8 +57,8 @@ public:
       return false;
     }();
     if(bExecute){
-      subscription_.unsubscribe();
       f();
+      unsubscribe();
     }
   }
 
@@ -72,17 +72,19 @@ public:
       return false;
     }();
     if(bExecute){
-      subscription_.unsubscribe();
       f();
+      unsubscribe();
     }
   }
 
   state state() const { return state_; }
   
   bool is_subscribed() const { return subscription_.is_subscribed(); }
-  void unsubscribe() { return subscription_.unsubscribe(); }
+  void unsubscribe() {
+    subscription_.unsubscribe();
+  }
 };
 
 } /* namespace another_rxcpp */
 
-#endif /* !defined(__h_state_holder__) */
+#endif /* !defined(__another_rxcpp_h_state_holder__) */

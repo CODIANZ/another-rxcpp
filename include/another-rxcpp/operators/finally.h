@@ -1,5 +1,5 @@
-#if !defined(__h_finally__)
-#define __h_finally__
+#if !defined(__another_rxcpp_h_finally__)
+#define __another_rxcpp_h_finally__
 
 #include "../observable.h"
 #include "../internal/tools/util.h"
@@ -14,6 +14,7 @@ template <typename F> auto finally(F f)
     using OUT = typename OUT_OB::value_type;
     return observable<>::create<OUT>([src, f](subscriber<OUT> s) {
       auto upstream = src.create_source();
+      s.add_upstream(upstream);
       upstream->subscribe({
         .on_next = [s, upstream](auto x){
           s.on_next(std::move(x));
@@ -34,4 +35,4 @@ template <typename F> auto finally(F f)
 } /* namespace operators */
 } /* namespace another_rxcpp */
 
-#endif /* !defined(__h_finally__) */
+#endif /* !defined(__another_rxcpp_h_finally__) */

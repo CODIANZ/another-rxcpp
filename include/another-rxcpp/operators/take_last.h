@@ -1,5 +1,5 @@
-#if !defined(__h_take_last__)
-#define __h_take_last__
+#if !defined(__another_rxcpp_h_take_last__)
+#define __another_rxcpp_h_take_last__
 
 #include "../observable.h"
 #include "../internal/tools/util.h"
@@ -17,6 +17,7 @@ inline auto take_last(std::size_t n)
       auto mtx = std::make_shared<std::mutex>();
       auto arr = std::make_shared<std::queue<OUT>>();
       auto upstream = src.create_source();
+      s.add_upstream(upstream);
       upstream->subscribe({
         .on_next = [s, upstream, n, mtx, arr](auto x){
           std::lock_guard<std::mutex> lock(*mtx);
@@ -45,4 +46,4 @@ inline auto take_last(std::size_t n)
 } /* namespace operators */
 } /* namespace another_rxcpp */
 
-#endif /* !defined(__h_take_last__) */
+#endif /* !defined(__another_rxcpp_h_take_last__) */

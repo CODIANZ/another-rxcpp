@@ -1,5 +1,5 @@
-#if !defined(__h_util__)
-#define __h_util__
+#if !defined(__another_rxcpp_h_util__)
+#define __another_rxcpp_h_util__
 
 #include <tuple>
 #include <type_traits>
@@ -36,4 +36,4 @@ template <typename FUNC, std::size_t N>
 
 } /* namespace another_rxcpp */
 
-#endif /* !defined(__h_util__) */
+#endif /* !defined(__another_rxcpp_h_util__) */

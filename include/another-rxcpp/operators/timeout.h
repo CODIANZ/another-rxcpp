@@ -1,5 +1,5 @@
-#if !defined(__h_timeout__)
-#define __h_timeout__
+#if !defined(__another_rxcpp_h_timeout__)
+#define __another_rxcpp_h_timeout__
 
 #include "../observable.h"
 #include "../internal/tools/util.h"
@@ -23,39 +23,36 @@ inline auto timeout(std::chrono::milliseconds msec)
     return observable<>::create<OUT>([src, msec](subscriber<OUT> s) {
       struct member {
         std::mutex              mtx_;
-        std::thread             thread_;
         std::condition_variable cond_;
       };
       auto m = std::make_shared<member>();
       auto upstream = src.create_source();
+      s.add_upstream(upstream);
 
-      m->thread_ = std::thread([s, upstream, m, msec]{
+      std::thread([s, upstream, m, msec]{
+        std::unique_lock<std::mutex> lock(m->mtx_);
         while(upstream->is_subscribed()){
-          std::unique_lock<std::mutex> lock(m->mtx_);
           if(m->cond_.wait_for(lock, msec) == std::cv_status::timeout){
             if(upstream->is_subscribed()){
-              upstream->unsubscribe();
               s.on_error(std::make_exception_ptr(timeout_error("timeout")));
             }
             break;
           }
         }
-      });
+      }).detach();
 
       upstream->subscribe({
-        .on_next = [s, upstream, m](auto x){
+        .on_next = [s, m](auto x){
           m->cond_.notify_one();
           s.on_next(std::move(x));
         },
-        .on_error = [s, upstream, m](std::exception_ptr err){
+        .on_error = [s, m](std::exception_ptr err){
           s.on_error(err);
           m->cond_.notify_one();
-          m->thread_.detach();
         },
         .on_completed = [s, m](){
           s.on_completed();
           m->cond_.notify_one();
-          m->thread_.detach();
         }
       });
     });
@@ -65,4 +62,4 @@ inline auto timeout(std::chrono::milliseconds msec)
 } /* namespace operators */
 } /* namespace another_rxcpp */
 
-#endif /* !defined(__h_timeout__) */
+#endif /* !defined(__another_rxcpp_h_timeout__) */

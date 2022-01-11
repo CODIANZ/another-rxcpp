@@ -1,5 +1,5 @@
-#if !defined(__h_take__)
-#define __h_take__
+#if !defined(__another_rxcpp_h_take__)
+#define __another_rxcpp_h_take__
 
 #include "../observable.h"
 
@@ -12,30 +12,18 @@ inline auto take(std::size_t n)
     using OUT_OB = decltype(src);
     using OUT = typename OUT_OB::value_type;
     return observable<>::create<OUT>([src, n](subscriber<OUT> s) {
-      auto counter = std::make_shared<std::size_t>(0);
-      auto mtx = std::make_shared<std::mutex>();
+      auto counter = std::make_shared<std::atomic_size_t>(1);
       auto upstream = src.create_source();
+      s.add_upstream(upstream);
       upstream->subscribe({
-        .on_next = [s, n, upstream, counter, mtx](auto x){
-          const bool bNext = [&](){
-            std::lock_guard<std::mutex> lock(*mtx);
-            return *counter < n;
-          }();
-          if(bNext) s.on_next(std::move(x));
-
-          const bool bComplete = [&](){
-            std::lock_guard<std::mutex> lock(*mtx);
-            if(*counter == n){
-              return true;
-            }
-            else{
-              (*counter)++;
-              return *counter == n;
-            }
-          }();
-          if(bComplete) {
-            upstream->unsubscribe();
+        .on_next = [s, n, upstream, counter](auto x){
+          const auto now = counter->fetch_add(1);
+          if(now == n) {
+            s.on_next(std::move(x));
             s.on_completed();
+          }
+          else if(now < n){
+            s.on_next(std::move(x));
           }
         },
         .on_error = [s](std::exception_ptr err){
@@ -52,4 +40,4 @@ inline auto take(std::size_t n)
 } /* namespace operators */
 } /* namespace another_rxcpp */
 
-#endif /* !defined(__h_take__) */
+#endif /* !defined(__another_rxcpp_h_take__) */

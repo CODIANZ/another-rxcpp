@@ -29,7 +29,7 @@
 * `Observable` の `Operators` をメンバメソッドから分離しました。
 * `Take` などの内部で判定が必要なオペレータをスレッドセーフにしました。（ブロッキングしないバージョンも準備する予定です）
 * `C++` のマルチスレッディングを利用した機能を追加しました。（`subscription::unsubscribe_notice()` など）
-* `SUPPORTS＿OPERATORS_IN_OBSERVABLE` を定義することで、従来のメソッドチェーンをサポートします。（型推論が効くメリットがありますが、observableの型ごとの関数インスタンス量がが増えるデメリットがあります）
+* `SUPPORTS_OPERATORS_IN_OBSERVABLE` を定義することで、従来のメソッドチェーンをサポートします。（型推論が効くメリットがありますが、observableの型ごとの関数インスタンス量がが増えるデメリットがあります）
 * `SUPPORTS_RXCPP_COMPATIBLE` を定義することで、`subscribe()` が `RxCpp` に準じた引数を使用することができます。また、`as_dynamic()` も実装されます。（`as_dynamic()`は本当になにも行わず `observable` をコピーして返却するだけです）
 
 ## 注意事項
@@ -50,6 +50,7 @@
 * error
 * range
 * interval
+* iterate
 
 ### operator
 
@@ -66,6 +67,7 @@
 * publish
 * retry
 * subscribe_on
+* skip_while
 * take_last
 * take_until
 * take
@@ -91,12 +93,20 @@
 
 下記のインクルードファイルを指定してください。（そのうち、まとめる予定です）
 ```cpp
-#include <another-rxcpp/observable.h>
-#include <another-rxcpp/operators.h>
-#include <another-rxcpp/observables.h>
+#include <another-rxcpp/rx.h>
 ```
 
 `namespace` は `another_rxcpp` になります。
+
+`RxCpp` と互換性が必要な場合は下記のようにします。
+
+```cpp
+#define SUPPORTS_OPERATORS_IN_OBSERVABLE
+#define SUPPORTS_RXCPP_COMPATIBLE
+#include <another-rxcpp/rx.h>
+```
+
+定義はコンパイルオプションで設定すると良いでしょう。
 
 ## 使用例
 

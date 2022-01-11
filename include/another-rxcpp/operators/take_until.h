@@ -1,5 +1,5 @@
-#if !defined(__h_take_until__)
-#define __h_take_until__
+#if !defined(__another_rxcpp_h_take_until__)
+#define __another_rxcpp_h_take_until__
 
 #include "../observable.h"
 
@@ -13,11 +13,11 @@ template <typename TRIGGER_OB> auto take_until(TRIGGER_OB trigger)
     using OUT = typename OUT_OB::value_type;
     return observable<>::create<OUT>([src, trigger](subscriber<OUT> s) mutable {
       auto upstream = src.create_source();
+      s.add_upstream(upstream);
       auto trig = trigger.create_source();
+      s.add_upstream(trig);
       trig->subscribe({
-        .on_next = [upstream, s, trig](auto){
-          trig->unsubscribe();
-          upstream->unsubscribe();
+        .on_next = [s](auto){
           s.on_completed();
         },
         .on_error = [](std::exception_ptr){
@@ -31,11 +31,9 @@ template <typename TRIGGER_OB> auto take_until(TRIGGER_OB trigger)
           s.on_next(std::move(x));
         },
         .on_error = [s, trig](std::exception_ptr err){
-          trig->unsubscribe();
           s.on_error(err);
         },
         .on_completed = [s, trig](){
-          trig->unsubscribe();
           s.on_completed();
         }
       });
@@ -46,4 +44,4 @@ template <typename TRIGGER_OB> auto take_until(TRIGGER_OB trigger)
 } /* namespace operators */
 } /* namespace another_rxcpp */
 
-#endif /* !defined(__h_take_until__) */
+#endif /* !defined(__another_rxcpp_h_take_until__) */

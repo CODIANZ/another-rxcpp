@@ -1,22 +1,21 @@
-template <typename F> auto flat_map(F f) const;
-template <typename F> auto map(F f) const;
-auto take(std::size_t n) const;
+template <typename F, typename...ARGS> auto flat_map(F, ARGS...) const;
+template <typename F, typename...ARGS> auto map(F, ARGS...) const;
+template <typename F, typename...ARGS> auto tap(F, ARGS...) const;
+
+template <typename...ARGS> auto take(ARGS...) const;
+template <typename...ARGS> auto on_error_resume_next(ARGS...) const;
+template <typename...ARGS> auto observe_on(ARGS...) const;
+template <typename...ARGS> auto retry(ARGS...) const;
+template <typename...ARGS> auto subscribe_on(ARGS...) const;
+template <typename...ARGS> auto skip_while(ARGS...) const;
+template <typename...ARGS> auto take_last(ARGS...) const;
+template <typename...ARGS> auto take_until(ARGS...) const;
+template <typename...ARGS> auto merge(ARGS...) const;
+template <typename...ARGS> auto amb(ARGS...) const;
+template <typename...ARGS> auto timeout(ARGS...) const;
+template <typename...ARGS> auto delay(ARGS...) const;
+template <typename...ARGS> auto finally(ARGS...) const;
+
 auto publish() const;
-template <typename F> auto on_error_resume_next(F f) const;
-auto retry(std::size_t n = 0) const;
-auto observe_on(scheduler::creator_fn sccr) const;
-auto subscribe_on(scheduler::creator_fn sccr) const;
-template <typename OB> auto take_until(OB ob) const;
-template <typename...ARGS> auto merge(ARGS...args) const;
-template <typename...ARGS> auto amb(ARGS...args) const;
 auto distinct_until_changed() const;
-auto tap(
-  std::function<void(value_type)>         on_next       = {},
-  std::function<void(std::exception_ptr)> on_error      = {},
-  std::function<void()>                   on_completed  = {}
-) const;
-auto timeout(std::chrono::milliseconds d) const;
-auto delay(std::chrono::milliseconds d) const;
 auto last() const;
-auto finally(std::function<void()> on_finally) const;
-auto take_last(std::size_t n) const;

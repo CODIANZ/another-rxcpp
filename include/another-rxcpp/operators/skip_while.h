@@ -1,5 +1,5 @@
-#if !defined(__another_rxcpp_h_map__)
-#define __another_rxcpp_h_map__
+#if !defined(__another_rxcpp_h_skip_while__)
+#define __another_rxcpp_h_skip_while__
 
 #include "../observable.h"
 #include "../internal/tools/util.h"
@@ -7,17 +7,24 @@
 namespace another_rxcpp {
 namespace operators {
 
-template <typename F> auto map(F f)
+template <typename F> auto skip_while(F f)
 {
-  using OUT = lambda_invoke_result_t<F>;
   return [f](auto src){
+    using OUT_OB = decltype(src);
+    using OUT = typename OUT_OB::value_type;
     return observable<>::create<OUT>([src, f](subscriber<OUT> s) {
       auto upstream = src.create_source();
       s.add_upstream(upstream);
+      auto skip = std::make_shared<bool>(true);
       upstream->subscribe({
-        .on_next = [s, f](auto x){
+        .on_next = [s, f, skip](auto x){
           try{
-            s.on_next(f(std::move(x)));
+            if(*skip){
+              *skip = f(x);
+            }
+            if(!*skip){
+              s.on_next(std::move(x));
+            }
           }
           catch(...){
             s.on_error(std::current_exception());
@@ -37,4 +44,4 @@ template <typename F> auto map(F f)
 } /* namespace operators */
 } /* namespace another_rxcpp */
 
-#endif /* !defined(__another_rxcpp_h_map__) */
+#endif /* !defined(__another_rxcpp_h_skip_while__) */

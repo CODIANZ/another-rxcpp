@@ -1,5 +1,5 @@
-#if !defined(__h_publish__)
-#define __h_publish__
+#if !defined(__another_rxcpp_h_publish__)
+#define __another_rxcpp_h_publish__
 
 #include "../observables.h"
 
@@ -18,4 +18,4 @@ inline auto publish()
 } /* namespace operators */
 } /* namespace another_rxcpp */
 
-#endif /* !defined(__h_publish__) */
+#endif /* !defined(__another_rxcpp_h_publish__) */

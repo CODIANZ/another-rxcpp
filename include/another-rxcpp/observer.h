@@ -1,5 +1,5 @@
-#if !defined(__h_observer__)
-#define __h_observer__
+#if !defined(__another_rxcpp_h_observer__)
+#define __another_rxcpp_h_observer__
 
 #include <functional>
 #include <memory>
@@ -23,4 +23,4 @@ template <typename T> struct observer {
 
 } /* namespace another_rxcpp */
 
-#endif /* !defined(__h_observable__) */
+#endif /* !defined(__another_rxcpp_h_observable__) */

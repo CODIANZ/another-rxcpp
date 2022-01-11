@@ -1,5 +1,5 @@
-#if !defined(__h_source__)
-#define __h_source__
+#if !defined(__another_rxcpp_h_source__)
+#define __another_rxcpp_h_source__
 
 #include <memory>
 #include <condition_variable>
@@ -12,7 +12,6 @@
 #include "../../observer.h"
 #include "../../subscription.h"
 #include "source_base.h"
-#include "../tools/any_sp_keeper.h"
 
 namespace another_rxcpp {
 
@@ -66,15 +65,12 @@ public:
   virtual subscription subscribe(observer_type ob) {
     auto THIS = shared_this();
     auto obs = ob.to_shared();
-    std::weak_ptr<source<value_type>> WEAK_THIS = shared_this();
     subscriber_type subscriber(THIS, obs);
     subscription sbsc(
       any_sp_keeper::create(THIS, obs),
       /* is_subscribed() */
-      [WEAK_THIS]() {
-        auto p = WEAK_THIS.lock();
-        if(!p) return false;
-        return p->state() == state::active;
+      [THIS]() {
+        return THIS->state() == state::active;
       },
       /* on_unsubscribe */
       [THIS]() {
@@ -94,4 +90,4 @@ public:
 
 } /* namespace another_rxcpp */
 
-#endif /* !defined(__h_source__) */
+#endif /* !defined(__another_rxcpp_h_source__) */

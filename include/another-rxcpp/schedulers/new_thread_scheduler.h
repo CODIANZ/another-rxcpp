@@ -1,5 +1,5 @@
-#if !defined(__h_new_thread_scheduler__)
-#define __h_new_thread_scheduler__
+#if !defined(__another_rxcpp_h_new_thread_scheduler__)
+#define __another_rxcpp_h_new_thread_scheduler__
 
 #include "../scheduler.h"
 #include <thread>
@@ -15,7 +15,9 @@ private:
   std::thread thread_;
 
 public:
-  new_thread_scheduler_interface() = default;
+  new_thread_scheduler_interface() :
+    scheduler_interface(schedule_type::queuing) {}
+
   virtual ~new_thread_scheduler_interface() = default;
 
   virtual void run(call_in_context_fn_t call_in_context) override {
@@ -27,13 +29,16 @@ public:
   virtual void detach() override {
     thread_.detach();
   }
+
+  virtual void schedule(function_type f) override {
+    f();
+  }
 };
 
 inline auto new_thread_scheduler() {
   return [](){
     return scheduler(
-      std::make_shared<new_thread_scheduler_interface>(),
-      scheduler::type::async
+      std::make_shared<new_thread_scheduler_interface>()
     );
   };
 }
@@ -47,4 +52,4 @@ inline auto observe_on_new_thread() {
 } /* namespace schedulers */
 } /* namespace another_rxcpp */
 
-#endif /* !defined(__h_new_thread_scheduler__) */
+#endif /* !defined(__another_rxcpp_h_new_thread_scheduler__) */

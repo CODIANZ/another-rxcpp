@@ -9,7 +9,7 @@ using namespace another_rxcpp::operators;
 void test_take() {
   log() << "test_take -- begin" << std::endl;
 
-  auto o = observables::range(1, 100);
+  auto o = observables::range(1, 10);
 
   doSubscribe(o | take(0));
   doSubscribe(o | take(1));
@@ -20,7 +20,7 @@ void test_take() {
     | flat_map([](int x){
       return ovalue(x, 100);
     })
-    | take(10)
+    | take(2)
   );
   while(x.is_subscribed()) {}
 

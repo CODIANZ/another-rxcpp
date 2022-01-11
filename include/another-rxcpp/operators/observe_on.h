@@ -1,5 +1,5 @@
-#if !defined(__h_observe_on__)
-#define __h_observe_on__
+#if !defined(__another_rxcpp_h_observe_on__)
+#define __another_rxcpp_h_observe_on__
 
 #include "../observable.h"
 #include "../scheduler.h"
@@ -15,8 +15,9 @@ inline auto observe_on(scheduler::creator_fn sccr)
     return observable<>::create<OUT>([src, sccr](subscriber<OUT> s) {
       auto scdl = sccr();
       auto upstream = src.create_source();
+      s.add_upstream(upstream);
       upstream->subscribe({
-        .on_next = [s, scdl](auto x){
+        .on_next = [s, scdl, upstream](auto x){
           scdl.schedule([s, x]() {
             s.on_next(std::move(x));
           });
@@ -39,4 +40,4 @@ inline auto observe_on(scheduler::creator_fn sccr)
 } /* namespace operators */
 } /* namespace another_rxcpp */
 
-#endif /* !defined(__h_observe_on__) */
+#endif /* !defined(__another_rxcpp_h_observe_on__) */

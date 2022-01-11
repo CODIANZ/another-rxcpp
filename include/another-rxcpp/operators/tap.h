@@ -1,5 +1,5 @@
-#if !defined(__h_tap__)
-#define __h_tap__
+#if !defined(__another_rxcpp_h_tap__)
+#define __another_rxcpp_h_tap__
 
 #include "../observable.h"
 #include "../internal/tools/util.h"
@@ -14,13 +14,15 @@ struct tap_observer{
   std::function<void()>                   on_completed;
 };
 
-template <typename T> auto tap(tap_observer<T> obs)
+template <typename T>
+  auto tap(tap_observer<T> obs)
 {
   return [obs](auto src){
     using OUT_OB = decltype(src);
     using OUT = typename OUT_OB::value_type;
     return observable<>::create<OUT>([src, obs](subscriber<OUT> s) {
       auto upstream = src.create_source();
+      s.add_upstream(upstream);
       upstream->subscribe({
         .on_next = [s, obs](auto x){
           if(obs.on_next) obs.on_next(x);
@@ -39,7 +41,42 @@ template <typename T> auto tap(tap_observer<T> obs)
   };
 }
 
+template <typename NEXT>
+  auto tap(
+    NEXT  n,
+    std::function<void(std::exception_ptr)> e = {},
+    std::function<void()> c = {}
+  )
+{
+  return [n, e, c](auto src){
+    using OUT_OB = decltype(src);
+    using OUT = typename OUT_OB::value_type;
+    return observable<>::create<OUT>([src, n, e, c](subscriber<OUT> s) {
+      auto upstream = src.create_source();
+      s.add_upstream(upstream);
+      upstream->subscribe({
+        .on_next = [s, n](auto x){
+          n(x);
+          s.on_next(std::move(x));
+        },
+        .on_error = [s, e](std::exception_ptr err){
+          if(e) e(err);
+          s.on_error(err);
+        },
+        .on_completed = [s, c](){
+          if(c) c();
+          s.on_completed();
+        }
+      });
+    });
+  };
+}
+
+
+
+
+
 } /* namespace operators */
 } /* namespace another_rxcpp */
 
-#endif /* !defined(__h_tap__) */
+#endif /* !defined(__another_rxcpp_h_tap__) */

@@ -1,5 +1,5 @@
-#if !defined(__h_last__)
-#define __h_last__
+#if !defined(__another_rxcpp_h_last__)
+#define __another_rxcpp_h_last__
 
 #include "../observable.h"
 #include "take_last.h"
@@ -15,4 +15,4 @@ inline auto last()
 } /* namespace operators */
 } /* namespace another_rxcpp */
 
-#endif /* !defined(__h_last__) */
+#endif /* !defined(__another_rxcpp_h_last__) */

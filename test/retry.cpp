@@ -27,10 +27,14 @@ void test_retry() {
       }
     }
     else return observables::just(x);
-  })
-  | retry();
+  });
 
-  auto x = doSubscribe(o);
+  log() << "retry()"  << std::endl;
+  doSubscribe(o | retry());
+
+  *counter = 0;
+  log() << "retry(1)"  << std::endl;
+  doSubscribe(o | retry(1));
   
   log() << "test_retry -- end" << std::endl << std::endl;
 }

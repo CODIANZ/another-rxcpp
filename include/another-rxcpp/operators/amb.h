@@ -1,5 +1,5 @@
-#if !defined(__h_amb__)
-#define __h_amb__
+#if !defined(__another_rxcpp_h_amb__)
+#define __another_rxcpp_h_amb__
 
 #include "../observable.h"
 #include "../internal/tools/util.h"
@@ -28,6 +28,10 @@ namespace internal {
           sources.push_back(src.create_source());
           std::for_each(arr.begin(), arr.end(), [&](auto it){
             sources.push_back(it.create_source());
+          });
+
+          std::for_each(sources.begin(), sources.end(), [&](auto it){
+            s.add_upstream(it);
           });
 
           auto do_on_next = [sources, s, mtx, top](source_sp sp, auto value){
@@ -89,4 +93,4 @@ auto amb(scheduler::creator_fn sccr, OB ob, ARGS...args) {
 } /* namespace operators */
 } /* namespace another_rxcpp */
 
-#endif /* !defined(__h_amb__) */
+#endif /* !defined(__another_rxcpp_h_amb__) */

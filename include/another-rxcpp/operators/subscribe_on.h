@@ -1,5 +1,5 @@
-#if !defined(__h_subscribe_on__)
-#define __h_subscribe_on__
+#if !defined(__another_rxcpp_h_subscribe_on__)
+#define __another_rxcpp_h_subscribe_on__
 
 #include "../observable.h"
 #include "../scheduler.h"
@@ -17,6 +17,7 @@ inline auto subscribe_on(scheduler::creator_fn sccr)
       auto keepalive = scdl;
       scdl.schedule([s, src, keepalive]() mutable {
         auto upstream = src.create_source();
+        s.add_upstream(upstream);
         upstream->subscribe({
           .on_next = [s, keepalive](auto x){
             s.on_next(std::move(x));
@@ -36,4 +37,4 @@ inline auto subscribe_on(scheduler::creator_fn sccr)
 } /* namespace operators */
 } /* namespace another_rxcpp */
 
-#endif /* !defined(__h_subscribe_on__) */
+#endif /* !defined(__another_rxcpp_h_subscribe_on__) */

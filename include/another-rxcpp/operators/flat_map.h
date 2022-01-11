@@ -1,5 +1,5 @@
-#if !defined(__h_flat_map__)
-#define __h_flat_map__
+#if !defined(__another_rxcpp_h_flat_map__)
+#define __another_rxcpp_h_flat_map__
 
 #include "../observable.h"
 #include "../internal/tools/util.h"
@@ -18,6 +18,7 @@ template <typename F> auto flat_map(F f)
       auto bUpstreamCompleted = std::make_shared<std::atomic_bool>(false);
       auto fxCounter = std::make_shared<std::atomic_int>(0);
       auto upstream = src.create_source();
+      s.add_upstream(upstream);
       upstream->subscribe({
         .on_next = [s, f, upstream, bUpstreamCompleted, fxCounter](auto x){
           try{
@@ -29,7 +30,6 @@ template <typename F> auto flat_map(F f)
               },
               .on_error = [s, upstream, fxCounter](std::exception_ptr err){
                 (*fxCounter)--;
-                upstream->unsubscribe();
                 s.on_error(err);
               },
               .on_completed = [s, bUpstreamCompleted, fxCounter](){
@@ -41,7 +41,6 @@ template <typename F> auto flat_map(F f)
             });
           }
           catch(...){
-            upstream->unsubscribe();
             s.on_error(std::current_exception());
           }
         },
@@ -62,4 +61,4 @@ template <typename F> auto flat_map(F f)
 } /* namespace operators */
 } /* namespace another_rxcpp */
 
-#endif /* !defined(__h_flat_map__) */
+#endif /* !defined(__another_rxcpp_h_flat_map__) */

@@ -35,6 +35,8 @@ int main() {
   DO(test_take_last)
   DO(test_last)
   DO(test_timeout)
+  DO(test_skip_while)
+  DO(test_iterate)
 
   #if defined(SUPPORTS_OPERATORS_IN_OBSERVABLE)
     DO(test_operators_in_observable)
