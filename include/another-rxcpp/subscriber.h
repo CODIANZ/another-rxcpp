@@ -29,10 +29,10 @@ public:
     m_(std::make_shared<member>()) {}
 
   template <typename SOURCE_SP>
-    subscriber(SOURCE_SP source, typename observer_type::sp observer) :
+    subscriber(SOURCE_SP source, observer_sp observer) :
       m_(std::make_shared<member>())
   {
-    m_->source_ = source->shared_from_this();
+    m_->source_ = std::dynamic_pointer_cast<source_base>(source);
     m_->observer_ = observer;
   }
 
@@ -100,9 +100,12 @@ public:
         u->unsubscribe();
       }
     }
+    /* Upstream will be released after unsbscribe */
     m_->upstreams_.clear();
-    m_->observer_.reset();
-    m_->source_.reset();
+
+    /* source and observer are released when the subscriber is destroyed */
+    // m_->observer_.reset();
+    // m_->source_.reset();
   }
 
   template <typename X> void add_upstream(X upstream) const {
