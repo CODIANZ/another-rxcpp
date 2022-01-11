@@ -4,6 +4,7 @@
 #include <functional>
 #include <memory>
 #include <condition_variable>
+#include "internal/tools/any_sp_keeper.h"
 
 namespace another_rxcpp {
 
@@ -15,6 +16,7 @@ public:
 
 private:
   struct member {
+    any_sp_keeper       sp_keeper_;
     is_subscribed_fn_t  is_subscribed_fn_;
     on_unsubscribe_fn_t on_unsubscribe_fn_;
     std::mutex          mtx_;
@@ -26,12 +28,14 @@ public:
   subscription() :
     cond_(std::make_shared<std::condition_variable>()) {}
   subscription(
+    any_sp_keeper       sp_keeper,
     is_subscribed_fn_t  is_subscribed_fn,
     on_unsubscribe_fn_t on_unsubscribe_fn
   ) : 
     m_(std::make_shared<member>()),
     cond_(std::make_shared<std::condition_variable>())
   {
+    m_->sp_keeper_        = sp_keeper;
     m_->is_subscribed_fn_ = is_subscribed_fn;
     m_->on_unsubscribe_fn_ = on_unsubscribe_fn;
   }
@@ -52,6 +56,7 @@ public:
     if(fn){
       fn();
       cond_->notify_all();
+      m->sp_keeper_.clear();
     }
   }
 

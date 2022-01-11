@@ -57,8 +57,8 @@ public:
       return false;
     }();
     if(bExecute){
-      subscription_.unsubscribe();
       f();
+      unsubscribe();
     }
   }
 
@@ -72,15 +72,17 @@ public:
       return false;
     }();
     if(bExecute){
-      subscription_.unsubscribe();
       f();
+      unsubscribe();
     }
   }
 
   state state() const { return state_; }
   
   bool is_subscribed() const { return subscription_.is_subscribed(); }
-  void unsubscribe() { return subscription_.unsubscribe(); }
+  void unsubscribe() {
+    subscription_.unsubscribe();
+  }
 };
 
 } /* namespace another_rxcpp */

@@ -13,13 +13,15 @@ public:
   using observer_type = observer<value_type>;
 
 private:
-  using soruce_sp   = typename source_base::sp;
+  using source_sp   = typename source_base::sp;
   using observer_sp = typename observer_type::sp;
+  using source_wp   = std::weak_ptr<source_base>;
+  using observer_wp = std::weak_ptr<observer_type>;
 
   struct member {
-    soruce_sp   source_;
-    observer_sp observer_;
-    std::vector<soruce_sp>  upstreams_;
+    source_sp   source_;
+    observer_wp observer_;
+    std::vector<source_sp>  upstreams_;
     std::mutex  mtx_;
   };
   std::shared_ptr<member> m_;
@@ -38,7 +40,7 @@ public:
 
   template <typename U> void on_next(U&& value) const {
     auto s = m_->source_;
-    auto o = m_->observer_;
+    auto o = m_->observer_.lock();
     auto v = std::forward<U>(value);
     if(!is_subscribed()){
       unsubscribe();
@@ -55,7 +57,7 @@ public:
 
   void on_error(std::exception_ptr err) const {
     auto s = m_->source_;
-    auto o = m_->observer_;
+    auto o = m_->observer_.lock();
     if(s){
       s->on_error_function([o, err](){
         if(o){
@@ -71,7 +73,7 @@ public:
 
   void on_completed() const {
     auto s = m_->source_;
-    auto o = m_->observer_;
+    auto o = m_->observer_.lock();
     if(s){
       s->on_completed_function([o](){
         if(o && o->on_completed){
@@ -100,12 +102,7 @@ public:
         u->unsubscribe();
       }
     }
-    /* Upstream will be released after unsbscribe */
     m_->upstreams_.clear();
-
-    /* source and observer are released when the subscriber is destroyed */
-    // m_->observer_.reset();
-    // m_->source_.reset();
   }
 
   template <typename X> void add_upstream(X upstream) const {
