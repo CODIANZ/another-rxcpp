@@ -22,20 +22,9 @@ private:
     source_sp   source_;
     observer_wp observer_;
     std::vector<source_sp>  upstreams_;
-    std::mutex  mtx_;
+    std::recursive_mutex  mtx_;
   };
   std::shared_ptr<member> m_;
-
-  void unsubscribe_upstreams() const {
-    std::lock_guard<std::mutex> lock(m_->mtx_);
-    for(auto it : m_->upstreams_){
-      auto u = it;
-      if(u){
-        u->unsubscribe();
-      }
-    }
-    m_->upstreams_.clear();
-  }
 
 public:
   subscriber() :
@@ -98,14 +87,14 @@ public:
   }
 
   bool is_subscribed() const {
-    std::lock_guard<std::mutex> lock(m_->mtx_);
+    std::lock_guard<std::recursive_mutex> lock(m_->mtx_);
     auto s = m_->source_;
     return s ? s->is_subscribed() : false;
   }
 
   void unsubscribe() const {
     unsubscribe_upstreams();
-    std::lock_guard<std::mutex> lock(m_->mtx_);
+    std::lock_guard<std::recursive_mutex> lock(m_->mtx_);
     auto s = m_->source_;
     if(s){
       s->unsubscribe();
@@ -113,8 +102,19 @@ public:
   }
 
   template <typename X> void add_upstream(X upstream) const {
-    std::lock_guard<std::mutex> lock(m_->mtx_);
+    std::lock_guard<std::recursive_mutex> lock(m_->mtx_);
     m_->upstreams_.push_back(std::dynamic_pointer_cast<source_base>(upstream));
+  }
+
+  void unsubscribe_upstreams() const {
+    std::lock_guard<std::recursive_mutex> lock(m_->mtx_);
+    for(auto it : m_->upstreams_){
+      auto u = it;
+      if(u){
+        u->unsubscribe();
+      }
+    }
+    m_->upstreams_.clear();
   }
 };
 

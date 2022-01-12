@@ -31,6 +31,8 @@ protected:
     }
   }
 
+  virtual void unsubscribe_upstreams() = 0;
+
 public:
   source_base() : state_(state::active) {}
   virtual ~source_base() = default;
@@ -81,6 +83,7 @@ public:
   
   bool is_subscribed() const { return subscription_.is_subscribed(); }
   void unsubscribe() {
+    unsubscribe_upstreams();
     subscription_.unsubscribe();
   }
 };
