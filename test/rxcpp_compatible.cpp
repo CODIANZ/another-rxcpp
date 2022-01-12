@@ -23,6 +23,9 @@ void test_rxcpp_compatible() {
     return observable<>::range(1, 5);
   })
   .flat_map([](auto){
+    return observable<>::empty<int>();
+  })
+  .flat_map([](auto){
     return observable<>::interval(std::chrono::milliseconds(100));
   })
   .flat_map([](auto){

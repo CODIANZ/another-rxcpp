@@ -18,6 +18,7 @@ int main() {
   DO(test_subject)
   DO(test_error)
   DO(test_never)
+  DO(test_empty)
   DO(test_on_error_resume_next)
   DO(test_retry)
   DO(test_subscribe_on)

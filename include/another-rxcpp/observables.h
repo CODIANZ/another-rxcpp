@@ -4,6 +4,7 @@
 #include "observables/just.h"
 #include "observables/never.h"
 #include "observables/error.h"
+#include "observables/empty.h"
 #include "observables/range.h"
 #include "observables/connectable.h"
 #include "observables/interval.h"
