@@ -114,8 +114,6 @@ protected:
       std::condition_variable cond;
     };
     auto result = std::make_shared<_result>();
-    std::exception_ptr  err = nullptr;
-    bool gotValue = false;
     auto o = m_->sbj_.get_observable() | operators::take(1);
     auto sbsc = o.subscribe({
       .on_next = [result](value_type x){
