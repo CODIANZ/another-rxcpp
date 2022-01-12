@@ -46,17 +46,26 @@ public:
   using sp                = std::shared_ptr<source<value_type>>;
   using observer_type     = observer<value_type>;
   using subscriber_type   = subscriber<value_type>;
+  using subscriber_sp     = std::shared_ptr<subscriber_type>;
   using creator_fn_t      = std::function<void(subscriber_type)>;
   using emitter_fn_t      = std::function<void(sp, subscriber_type)>;
 
 private:
   emitter_fn_t  emitter_fn_;
-
+  subscriber_sp subscriber_;
   sp shared_this() { return std::dynamic_pointer_cast<source<T>>(shared_base()); }
 
 protected:
   source() = default;
   emitter_fn_t emitter() { return emitter_fn_; }
+
+  virtual void unsubscribe_upstreams() {
+    auto s = subscriber_;
+    subscriber_.reset();
+    if(s){
+      s->unsubscribe_upstreams();
+    }
+  }
 
 public:
   source(emitter_fn_t emitter_fn) : emitter_fn_(emitter_fn) {}
@@ -65,7 +74,8 @@ public:
   virtual subscription subscribe(observer_type ob) {
     auto THIS = shared_this();
     auto obs = ob.to_shared();
-    subscriber_type subscriber(THIS, obs);
+    subscriber_ = std::make_shared<subscriber_type>(THIS, obs);
+    auto subscriber = subscriber_;
     subscription sbsc(
       any_sp_keeper::create(THIS, obs),
       /* is_subscribed() */
@@ -79,10 +89,10 @@ public:
     );
     set_subscription(sbsc);
     try{
-      emitter_fn_(THIS, subscriber);
+      emitter_fn_(THIS, *subscriber);
     }
     catch(...){
-      subscriber.on_error(std::current_exception());
+      subscriber->on_error(std::current_exception());
     }
     return sbsc;
   }
