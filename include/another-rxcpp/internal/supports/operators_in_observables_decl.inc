@@ -17,5 +17,6 @@ template <typename...ARGS> auto delay(ARGS...) const;
 template <typename...ARGS> auto finally(ARGS...) const;
 
 auto publish() const;
+auto as_blocking() const;
 auto distinct_until_changed() const;
 auto last() const;

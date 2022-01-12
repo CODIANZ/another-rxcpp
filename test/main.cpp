@@ -37,6 +37,7 @@ int main() {
   DO(test_timeout)
   DO(test_skip_while)
   DO(test_iterate)
+  DO(test_blocking)
 
   #if defined(SUPPORTS_OPERATORS_IN_OBSERVABLE)
     DO(test_operators_in_observable)

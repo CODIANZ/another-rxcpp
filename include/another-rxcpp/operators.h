@@ -19,7 +19,7 @@
 #include "operators/finally.h"
 #include "operators/last.h"
 #include "operators/take_last.h"
-
 #include "operators/timeout.h"
+#include "operators/blocking.h"
 
 #endif /* !defined(__another_rxcpp_h_operators__) */
