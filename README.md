@@ -45,9 +45,11 @@
 
 * observable
 * connectable observable
+* blocking observable
 * just
 * never
 * error
+* empty
 * range
 * interval
 * iterate
@@ -55,6 +57,7 @@
 ### operator
 
 * amb
+* blocking
 * delay
 * distinct_until_changed
 * finally
