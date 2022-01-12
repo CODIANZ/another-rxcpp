@@ -26,6 +26,17 @@ private:
   };
   std::shared_ptr<member> m_;
 
+  void unsubscribe_upstreams() const {
+    std::lock_guard<std::mutex> lock(m_->mtx_);
+    for(auto it : m_->upstreams_){
+      auto u = it;
+      if(u){
+        u->unsubscribe();
+      }
+    }
+    m_->upstreams_.clear();
+  }
+
 public:
   subscriber() :
     m_(std::make_shared<member>()) {}
@@ -56,6 +67,7 @@ public:
   }
 
   void on_error(std::exception_ptr err) const {
+    unsubscribe_upstreams();
     auto s = m_->source_;
     auto o = m_->observer_.lock();
     if(s){
@@ -72,6 +84,7 @@ public:
   }
 
   void on_completed() const {
+    unsubscribe_upstreams();
     auto s = m_->source_;
     auto o = m_->observer_.lock();
     if(s){
@@ -91,18 +104,12 @@ public:
   }
 
   void unsubscribe() const {
+    unsubscribe_upstreams();
     std::lock_guard<std::mutex> lock(m_->mtx_);
     auto s = m_->source_;
     if(s){
       s->unsubscribe();
     }
-    for(auto it : m_->upstreams_){
-      auto u = it;
-      if(u){
-        u->unsubscribe();
-      }
-    }
-    m_->upstreams_.clear();
   }
 
   template <typename X> void add_upstream(X upstream) const {

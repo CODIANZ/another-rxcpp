@@ -23,7 +23,14 @@ void test_rxcpp_compatible() {
     return observable<>::range(1, 5);
   })
   .flat_map([](auto){
+    return observable<>::empty<int>();
+  })
+  .flat_map([](auto){
     return observable<>::interval(std::chrono::milliseconds(100));
+  })
+  .flat_map([](auto){
+    auto arr = {1, 2, 3};
+    return observable<>::iterate(arr);
   })
   .amb(o)
   .as_dynamic()
@@ -40,11 +47,13 @@ void test_rxcpp_compatible() {
   .retry()
   .retry(123)
   .subscribe_on(schedulers::observe_on_new_thread())
+  .skip_while([](auto x) { return true; })
   .take_last(1)
   .take_until(o)
   .take(100)
   .tap([](auto){})
-  .timeout(std::chrono::hours(2));
+  .timeout(std::chrono::hours(2))
+  .as_blocking();
 
   log() << "test_rxcpp_compatible -- end" << std::endl << std::endl;
 }

@@ -3,9 +3,10 @@
 
 #include "../internal/source/source.h"
 #include "../internal/tools/shared_with_will.h"
-#include "../observables.h"
 #include "../observable.h"
-#include "../operators.h"
+#include "../observables/connectable.h"
+#include "../operators/tap.h"
+#include "../operators/publish.h"
 
 namespace another_rxcpp {
 namespace subjects {

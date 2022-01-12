@@ -123,6 +123,12 @@ namespace another_rxcpp {
   }
 
   template <typename T>
+    auto observable<T>::as_blocking() const
+  {
+    return *this | operators::blocking();
+  }
+
+  template <typename T>
     auto observable<T>::distinct_until_changed() const
   {
     return *this | operators::distinct_until_changed();

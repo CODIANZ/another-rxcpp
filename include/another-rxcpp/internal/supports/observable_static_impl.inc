@@ -10,6 +10,9 @@ namespace another_rxcpp {
   template <typename T> auto observable<void>::never() {
     return observables::never<T>();
   }
+  template <typename T> auto observable<void>::empty() {
+    return observables::empty<T>();
+  }
   template <typename T, typename...ARGS> auto observable<void>::range(T start, ARGS...args) {
     return observables::range<T>(std::forward<T>(start), std::forward<ARGS>(args)...);
   }
