@@ -8,7 +8,7 @@ using namespace another_rxcpp;
 using namespace another_rxcpp::operators;
 
 void test_case_1() {
-  log() << "test_take -- begin" << std::endl;
+  log() << "test_case_1 -- begin" << std::endl;
 
   subjects::subject<int> sbj;
 
@@ -30,5 +30,5 @@ void test_case_1() {
 
   while(x.is_subscribed()) {}
 
-  log() << "test_take -- end" << std::endl << std::endl;
+  log() << "test_case_1 -- end" << std::endl << std::endl;
 }
