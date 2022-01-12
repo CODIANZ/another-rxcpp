@@ -2,6 +2,9 @@
 #define __another_rxcpp_h_blocking_observable__
 
 #include "../observable.h"
+#include "../subjects/subject.h"
+#include "../operators/take.h"
+#include "../internal/tools/shared_with_will.h"
 #include <algorithm>
 #include <mutex>
 #include <numeric>
@@ -47,25 +50,108 @@ public:
   using observer_type = typename observable<T>::observer_type;
 
 protected:
-  observable<T> src_;
+  struct member {
+    std::mutex              mtx_;
+    std::size_t             read_;
+    std::condition_variable cond_;
+    subjects::subject<value_type> sbj_;
+    subscription            subscription_;
+    bool                    done_;
+  };
+  shared_with_will<member> m_;
+
+  blocking(observable<T> src) :
+    m_(std::make_shared<member>(), [](auto x){
+      x->subscription_.unsubscribe();
+      x->done_ = true;
+      x->cond_.notify_one();
+    })
+  {
+    auto m = m_.capture_element();
+    m->done_ = false;
+    std::thread([m, src](){
+      m->subscription_ = src.subscribe({
+        .on_next = [m](value_type x){
+          std::unique_lock<std::mutex> lock(m->mtx_);
+          m->cond_.wait(lock, [m]{ return m->read_ > 0 || m->done_; });
+          if(m->done_) return;
+          m->read_--;
+          m->sbj_.get_subscriber().on_next(std::move(x));
+        },
+        .on_error = [m](std::exception_ptr err){
+          std::unique_lock<std::mutex> lock(m->mtx_);
+          m->cond_.wait(lock, [m]{ return m->read_ > 0; });
+          if(m->done_) return;
+          m->read_--;
+          m->sbj_.get_subscriber().on_error(err);
+        },
+        .on_completed = [m]() {
+          std::unique_lock<std::mutex> lock(m->mtx_);
+          m->cond_.wait(lock, [m]{ return m->read_ > 0; });
+          if(m->done_) return;
+          m->read_--;
+          m->sbj_.get_subscriber().on_completed();
+        }
+      });
+    }).detach();
+  }
+
+  bool subscribe_one(value_type& value) const {
+    struct _result {
+      std::exception_ptr  err = nullptr;
+      bool        gotValue = false;
+      value_type  value;
+      bool        bDone = false;
+      std::mutex  mtx;
+      std::condition_variable cond;
+    };
+    auto result = std::make_shared<_result>();
+    std::exception_ptr  err = nullptr;
+    bool gotValue = false;
+    auto o = m_->sbj_.get_observable() | operators::take(1);
+    auto sbsc = o.subscribe({
+      .on_next = [result](value_type x){
+        result->value = std::move(x);
+        result->gotValue = true;
+        std::lock_guard<std::mutex> lock(result->mtx);
+        result->bDone = true;
+        result->cond.notify_one();
+      },
+      .on_error = [result](std::exception_ptr e){
+        result->err = e;
+        std::lock_guard<std::mutex> lock(result->mtx);
+        result->bDone = true;
+        result->cond.notify_one();
+      },
+      .on_completed = [result](){
+        std::lock_guard<std::mutex> lock(result->mtx);
+        result->bDone = true;
+        result->cond.notify_one();
+      }
+    });
+    {
+      std::lock_guard<std::mutex> lock(m_->mtx_);
+      m_->read_++;
+      m_->cond_.notify_one();
+    }
+    {
+      std::unique_lock<std::mutex> lock(result->mtx);
+      result->cond.wait(lock, [result]{ return result->bDone; });
+    }
+    if(result->err) std::rethrow_exception(result->err);
+    if(!result->gotValue) return false;
+    value = std::move(result->value);
+    return true;
+  }
 
   auto subscribe_all() const {
     std::vector<value_type> values;
-    std::exception_ptr err = nullptr;
-    auto sbsc = src_.subscribe({
-      .on_next = [&](value_type x){
-        values.push_back(std::move(x));
-      },
-      .on_error = [&](std::exception_ptr e){
-        err = e;
-      }
-    });
-    while(sbsc.is_subscribed()) {}
-    if(err) std::rethrow_exception(err);
+    value_type value;
+    while(subscribe_one(value)){
+      values.push_back(std::move(value));
+    }
     return values;
   }
-
-  blocking(observable<T> src) : src_(src) {}
 
 public:
 
@@ -87,9 +173,9 @@ public:
   }
 
   value_type first() const {
-    auto  values = subscribe_all();
-    if(values.empty()) throw empty_error("empty");
-    return values.front();
+    value_type value;
+    if(!subscribe_one(value)) throw empty_error("empty");
+    return value;
   }
 
   value_type last() const {
@@ -126,7 +212,8 @@ public:
   double average() const {
     auto  values = base::subscribe_all();
     if(values.empty()) throw empty_error("empty");
-    return static_cast<double>(sum()) / static_cast<double>(values.size());
+    auto sum = std::accumulate(std::cbegin(values), std::cend(values), 0);
+    return static_cast<double>(sum) / static_cast<double>(values.size());
   }
 
   value_type max() const {

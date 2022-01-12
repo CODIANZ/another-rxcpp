@@ -9,24 +9,48 @@ using namespace another_rxcpp::operators;
 void test_blocking() {
   log() << "test_blocking -- begin" << std::endl;
 
+  log() << "range 1 - 10" << std::endl;
   {
-    log() << "range 1 - 10" << std::endl;
     auto o = observables::range(1, 10) | blocking();
     log() << "  first : " << o.first() << std::endl;
+    log() << "  first : " << o.first() << std::endl;
+    log() << "  first : " << o.first() << std::endl;
+    log() << "  first : " << o.first() << std::endl;
     log() << "   last : " << o.last() << std::endl;
+  }
+  {
+    auto o = observables::range(1, 10) | blocking();
     log() << "  count : " << o.count() << std::endl;
+  }
+  {
+    auto o = observables::range(1, 10) | blocking();
     log() << "    sum : " << o.sum() << std::endl;
+  }
+  {
+    auto o = observables::range(1, 10) | blocking();
     log() << "average : " << o.average() << std::endl;
+  }
+  {
+    auto o = observables::range(1, 10) | blocking();
     log() << "    min : " << o.min() << std::endl;
+  }
+  {
+    auto o = observables::range(1, 10) | blocking();
     log() << "    max : " << o.max() << std::endl;
   }
 
+  log() << "string array" << std::endl;
+  auto arr = {std::string("a"), std::string("b")};
   {
-    log() << "string array" << std::endl;
-    auto arr = {std::string("a"), std::string("b")};
     auto o = observables::iterate(arr) | blocking();
     log() << "  first : " << o.first() << std::endl;
+  }
+  {
+    auto o = observables::iterate(arr) | blocking();
     log() << "   last : " << o.last() << std::endl;
+  }
+  {
+    auto o = observables::iterate(arr) | blocking();
     log() << "  count : " << o.count() << std::endl;
   }
   
