@@ -47,74 +47,60 @@ public:
   using observer_type = typename observable<T>::observer_type;
 
 protected:
-  struct member {
-    std::mutex              mtx_;
-    source_sp               upstream_;
-    std::vector<value_type> values_;
-    std::exception_ptr      error_;
-  };
-  std::shared_ptr<member> m_;
+  observable<T> src_;
 
-  void subscribe_all() const {
-    auto m = m_;
-    std::lock_guard<std::mutex> lock(m->mtx_);
-    if(!m->upstream_) return;
-    auto sbsc = m->upstream_->subscribe({
-      .on_next = [m](value_type x){
-        m->values_.push_back(x);
+  auto subscribe_all() const {
+    std::vector<value_type> values;
+    std::exception_ptr err = nullptr;
+    auto sbsc = src_.subscribe({
+      .on_next = [&](value_type x){
+        values.push_back(std::move(x));
       },
       .on_error = [&](std::exception_ptr e){
-        m->error_ = e;
+        err = e;
       }
     });
     while(sbsc.is_subscribed()) {}
-    m->upstream_.reset();
+    if(err) std::rethrow_exception(err);
+    return values;
   }
 
-  blocking(observable<T> src) :
-    m_(std::make_shared<member>())
-  {
-    m_->upstream_ = src.create_source();
-    m_->error_ = nullptr;
-  }
+  blocking(observable<T> src) : src_(src) {}
 
 public:
 
   virtual subscription subscribe(observer_type ob) const override {
-    subscribe_all();
-    if(m_->error_){
-      ob.on_error(m_->error_);
-    }
-    else{
+    try{
+      auto values = subscribe_all();
       std::for_each(
-        std::cbegin(m_->values_),
-        std::cend(m_->values_),
+        std::cbegin(values),
+        std::cend(values),
         [ob](auto it){
           ob.on_next(std::move(it));
         });
       ob.on_completed();
     }
+    catch(...){
+      ob.on_error(std::current_exception());
+    }
     return subscription();
   }
 
   value_type first() const {
-    subscribe_all();
-    if(m_->error_) std::rethrow_exception(m_->error_);
-    if(m_->values_.empty()) throw empty_error("empty");
-    return m_->values_.front();
+    auto  values = subscribe_all();
+    if(values.empty()) throw empty_error("empty");
+    return values.front();
   }
 
   value_type last() const {
-    subscribe_all();
-    if(m_->error_) std::rethrow_exception(m_->error_);
-    if(m_->values_.empty()) throw empty_error("empty");
-    return m_->values_.back();
+    auto  values = subscribe_all();
+    if(values.empty()) throw empty_error("empty");
+    return values.back();
   }
 
   std::size_t count() const {
-    subscribe_all();
-    if(m_->error_) std::rethrow_exception(m_->error_);
-    return m_->values_.size();
+    auto  values = subscribe_all();
+    return values.size();
   }
 };
 
@@ -132,35 +118,27 @@ private:
 
 public:
   value_type sum() const {
-    base::subscribe_all();
-    auto m = base::m_;
-    if(m->error_) std::rethrow_exception(m->error_);
-    if(m->values_.empty()) throw empty_error("empty");
-    return std::accumulate(std::cbegin(m->values_), std::cend(m->values_), 0);
+    auto  values = base::subscribe_all();
+    if(values.empty()) throw empty_error("empty");
+    return std::accumulate(std::cbegin(values), std::cend(values), 0);
   }
 
   double average() const {
-    base::subscribe_all();
-    auto m = base::m_;
-    if(m->error_) std::rethrow_exception(m->error_);
-    if(m->values_.empty()) throw empty_error("empty");
-    return static_cast<double>(sum()) / static_cast<double>(m->values_.size());
+    auto  values = base::subscribe_all();
+    if(values.empty()) throw empty_error("empty");
+    return static_cast<double>(sum()) / static_cast<double>(values.size());
   }
 
   value_type max() const {
-    base::subscribe_all();
-    auto m = base::m_;
-    if(m->error_) std::rethrow_exception(m->error_);
-    if(m->values_.empty()) throw empty_error("empty");
-    return *std::max_element(std::cbegin(m->values_), std::cend(m->values_));
+    auto  values = base::subscribe_all();
+    if(values.empty()) throw empty_error("empty");
+    return *std::max_element(std::cbegin(values), std::cend(values));
   }
 
   value_type min() const {
-    base::subscribe_all();
-    auto m = base::m_;
-    if(m->error_) std::rethrow_exception(m->error_);
-    if(m->values_.empty()) throw empty_error("empty");
-    return *std::min_element(std::cbegin(m->values_), std::cend(m->values_));
+    auto  values = base::subscribe_all();
+    if(values.empty()) throw empty_error("empty");
+    return *std::min_element(std::cbegin(values), std::cend(values));
   }
 };
 
