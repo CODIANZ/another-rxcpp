@@ -5,7 +5,7 @@
 #include "../internal/tools/shared_with_will.h"
 #include "../observable.h"
 #include "../observables/connectable.h"
-#include "../operators/tap.h"
+#include "../operators/on_error_resume_next.h"
 #include "../operators/publish.h"
 
 namespace another_rxcpp {
@@ -42,13 +42,10 @@ public:
       auto m = wm.lock();
       if(m) m->subscriber_ = s;
     })
-    | operators::tap<value_type>({
-      .on_next = {},
-      .on_error = [wm](std::exception_ptr err){
-        auto m = wm.lock();
-        if(m) m->error_ = err;
-      },
-      .on_completed = {}
+    | operators::on_error_resume_next([wm](std::exception_ptr err){
+      auto m = wm.lock();
+      if(m) m->error_ = err;
+      return observables::error<value_type>(err);
     })
     | operators::publish();
     m_->subscription_ = m_->source_.connect();
