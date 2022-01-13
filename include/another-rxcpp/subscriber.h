@@ -56,7 +56,6 @@ public:
   }
 
   void on_error(std::exception_ptr err) const {
-    unsubscribe_upstreams();
     auto s = m_->source_;
     auto o = m_->observer_.lock();
     if(s){
@@ -73,7 +72,6 @@ public:
   }
 
   void on_completed() const {
-    unsubscribe_upstreams();
     auto s = m_->source_;
     auto o = m_->observer_.lock();
     if(s){
