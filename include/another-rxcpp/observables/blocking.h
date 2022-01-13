@@ -56,6 +56,7 @@ protected:
     std::condition_variable cond_;
     subjects::subject<value_type> sbj_;
     subscription            subscription_;
+    source_sp               upstream_;
     bool                    done_ = false;
     std::atomic_bool        started_{false};
   };
@@ -65,9 +66,13 @@ protected:
   blocking(observable<T> src) :
     m_(std::make_shared<member>(), [](auto x){
       if(x->started_.exchange(false)){
+        {
+          std::unique_lock<std::mutex> lock(x->mtx_);
+          x->done_ = true;
+          x->cond_.notify_one();
+        }
         x->subscription_.unsubscribe();
-        x->done_ = true;
-        x->cond_.notify_one();
+        x->upstream_->unsubscribe();
       }
     }),
     src_(src)
@@ -75,10 +80,10 @@ protected:
 
   void start_subscribing_if_not() const {
     if(m_->started_.exchange(true)) return;
+    m_->upstream_ = src_.create_source();
     auto m = m_.capture_element();
-    auto src = src_;
-    std::thread([m, src](){
-      m->subscription_ = src.subscribe({
+    std::thread([m](){
+      m->subscription_ = m->upstream_->subscribe({
         .on_next = [m](value_type x){
           std::unique_lock<std::mutex> lock(m->mtx_);
           m->cond_.wait(lock, [m]{ return m->read_ > 0 || m->done_; });
