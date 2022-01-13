@@ -42,9 +42,11 @@ public:
       m->subscriber_ = s;
     })
     | operators::tap<value_type>({
+      .on_next = {},
       .on_error = [m](std::exception_ptr err){
         m->error_ = err;
-      }
+      },
+      .on_completed = {}
     })
     | operators::publish();
     m->subscription_ = m->source_.connect();
