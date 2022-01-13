@@ -6,7 +6,7 @@
 namespace another_rxcpp {
 namespace operators {
 
-namespace internal::retry {
+namespace internal{ namespace retry {
 
 template <typename T>
   void do_retry(subscriber<T> s, observable<T> src, const std::size_t max_retry_count, const std::size_t count)
@@ -32,7 +32,7 @@ template <typename T>
   });
 }
 
-} /* namespace internal::retry */
+}} /* namespace internal::retry */
 
 inline auto retry(std::size_t max_retry_count = 0 /* infinite */)
 {
