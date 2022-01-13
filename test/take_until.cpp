@@ -35,5 +35,7 @@ void test_take_until() {
 
   while(x.is_subscribed()) {}
 
+  wait(1000);
+
   log() << "test_take_until -- end" << std::endl << std::endl;
 }

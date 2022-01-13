@@ -15,7 +15,8 @@ void test_never() {
     return observables::never<int>();
   });
 
-  doSubscribe(o);
+  auto x = doSubscribe(o);
+  x.unsubscribe();
   
   log() << "test_never -- end" << std::endl << std::endl;
 }
