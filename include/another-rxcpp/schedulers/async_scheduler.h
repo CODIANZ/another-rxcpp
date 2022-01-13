@@ -26,7 +26,7 @@ public:
   }
 
   virtual void detach() override {
-    /* nothing to do */
+    future_ = {};
   }
 
   virtual void schedule(function_type f) override {
