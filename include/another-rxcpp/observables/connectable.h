@@ -67,7 +67,7 @@ public:
       return ret;
     };
 
-    return upstream_->subscribe({
+    upstream_->subscribe({
       .on_next = [collect](value_type x) {
         auto obs = collect();
         std::for_each(obs.begin(), obs.end(), [&](auto ob){
@@ -87,6 +87,21 @@ public:
         });
       }
     });
+
+    auto ups = upstream_;
+    return subscription(
+      any_sp_keeper::create(),
+      /* is_subscribed() */
+      [ups](){
+        return ups->is_subscribed();
+      },
+      /* on_unsubscribe */
+      [mtx, sinks, ups](){
+        ups->unsubscribe();
+        std::lock_guard<std::mutex> lock(*mtx);
+        sinks->clear();
+      }
+    );
   }
 
  virtual subscription subscribe(observer_type ob) const override {

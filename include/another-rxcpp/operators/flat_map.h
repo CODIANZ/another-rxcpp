@@ -23,8 +23,9 @@ template <typename F> auto flat_map(F f)
         .on_next = [s, f, upstream, bUpstreamCompleted, fxCounter](auto x){
           try{
             (*fxCounter)++;
-            f(std::move(x))
-            .subscribe({
+            auto fsrc = f(std::move(x)).create_source();
+            s.add_upstream(fsrc);
+            fsrc->subscribe({
               .on_next = [s](auto x){
                 s.on_next(std::move(x));
               },

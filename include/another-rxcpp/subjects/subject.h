@@ -37,17 +37,21 @@ public:
       x->subscription_.unsubscribe();
     })
   {
-    auto m = m_.capture_element();
-    m->source_ = observable<>::create<value_type>([m](subscriber_type s){
-      m->subscriber_ = s;
+    auto wm = to_weak(m_.capture_element());
+    m_->source_ = observable<>::create<value_type>([wm](subscriber_type s){
+      auto m = wm.lock();
+      if(m) m->subscriber_ = s;
     })
     | operators::tap<value_type>({
-      .on_error = [m](std::exception_ptr err){
-        m->error_ = err;
-      }
+      .on_next = {},
+      .on_error = [wm](std::exception_ptr err){
+        auto m = wm.lock();
+        if(m) m->error_ = err;
+      },
+      .on_completed = {}
     })
     | operators::publish();
-    m->subscription_ = m->source_.connect();
+    m_->subscription_ = m_->source_.connect();
   }
 
   virtual ~subject() = default;
@@ -57,8 +61,10 @@ public:
   }
 
   virtual observable<T> as_observable() const {
-    auto m = m_.capture_element();
-    return observable<>::create<value_type>([m](subscriber_type s){
+    auto wm = to_weak(m_.capture_element());
+    return observable<>::create<value_type>([wm](subscriber_type s){
+      auto m = wm.lock();
+      if(!m) return;
       if(m->error_){
         s.on_error(m->error_);
       }

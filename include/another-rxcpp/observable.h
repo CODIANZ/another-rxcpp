@@ -15,7 +15,7 @@ template <typename T> struct is_observable<observable<T>> : std::true_type {};
 template <> class observable<void> {
 public:
   template<typename T>
-    static auto create(typename source<T>::creator_fn_t f)
+    static auto create(typename source<T>::emitter_fn_t f)
   {
     return observable<T>([f](){
       return source<>::create<T>(f);
