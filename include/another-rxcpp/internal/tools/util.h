@@ -34,6 +34,12 @@ template <typename FUNC>
 template <typename FUNC, std::size_t N>
   using lambda_arg_t = typename std::tuple_element<N, typename lambda_traits<FUNC>::args>::type;
 
+template <typename SP>
+  inline auto to_weak(SP sp) {
+    return std::weak_ptr<typename SP::element_type>(sp);
+  }
+
+
 } /* namespace another_rxcpp */
 
 #endif /* !defined(__another_rxcpp_h_util__) */
