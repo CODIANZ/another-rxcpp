@@ -21,22 +21,9 @@ template <> class source<void> {
 public:
   template <typename T>
   static typename source<T>::sp create(
-    typename source<T>::creator_fn_t creator
-  ) {
-    return std::make_shared<source<T>>([creator](auto, auto s){
-      creator(s);
-    });
-  }
-
-  template <typename T, typename UPSTREAM_SP>
-  static typename source<T>::sp create(
-    UPSTREAM_SP upstream,
     typename source<T>::emitter_fn_t emitter
   ) {
-    return std::make_shared<source<T>>(
-      std::dynamic_pointer_cast<source_base>(upstream),
-      emitter
-    );
+    return std::make_shared<source<T>>(emitter);
   }
 };
 
@@ -47,8 +34,7 @@ public:
   using observer_type     = observer<value_type>;
   using subscriber_type   = subscriber<value_type>;
   using subscriber_sp     = std::shared_ptr<subscriber_type>;
-  using creator_fn_t      = std::function<void(subscriber_type)>;
-  using emitter_fn_t      = std::function<void(sp, subscriber_type)>;
+  using emitter_fn_t      = std::function<void(subscriber_type)>;
 
 private:
   emitter_fn_t  emitter_fn_;
@@ -57,7 +43,6 @@ private:
 
 protected:
   source() = default;
-  emitter_fn_t emitter() { return emitter_fn_; }
 
   virtual void unsubscribe_upstreams() {
     auto s = subscriber_;
@@ -85,11 +70,12 @@ public:
       /* on_unsubscribe */
       [THIS]() {
         THIS->set_state_unsubscribed();
+        THIS->unsubscribe_upstreams();
       }
     );
     set_subscription(sbsc);
     try{
-      emitter_fn_(THIS, *subscriber);
+      emitter_fn_(*subscriber);
     }
     catch(...){
       subscriber->on_error(std::current_exception());
