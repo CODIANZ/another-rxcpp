@@ -13,6 +13,7 @@ public:
   using observer_type = observer<value_type>;
 
 private:
+  using source_base = internal::source_base;
   using source_sp   = typename source_base::sp;
   using observer_sp = typename observer_type::sp;
   using source_wp   = std::weak_ptr<source_base>;

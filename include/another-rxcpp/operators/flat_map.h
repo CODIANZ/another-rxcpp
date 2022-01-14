@@ -11,7 +11,7 @@ namespace operators {
 
 template <typename F> auto flat_map(F f)
 {
-  using OUT_OB  = lambda_invoke_result_t<F>;
+  using OUT_OB  = internal::lambda_invoke_result_t<F>;
   using OUT     = typename OUT_OB::value_type;
   return [f](auto src){
     return observable<>::create<OUT>([src, f](subscriber<OUT> s) {

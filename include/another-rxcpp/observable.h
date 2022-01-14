@@ -15,10 +15,10 @@ template <typename T> struct is_observable<observable<T>> : std::true_type {};
 template <> class observable<void> {
 public:
   template<typename T>
-    static auto create(typename source<T>::emitter_fn_t f)
+    static auto create(typename internal::source<T>::emitter_fn_t f)
   {
     return observable<T>([f](){
-      return source<>::create<T>(f);
+      return internal::source<>::create<T>(f);
     });
   }
 
@@ -29,7 +29,7 @@ public:
 
 class observable_base {
 protected:
-  template <typename T> static typename source<T>::sp execute_source_creator(const observable<T>& o){
+  template <typename T> static typename internal::source<T>::sp execute_source_creator(const observable<T>& o){
     return o.source_creator_fn_();
   }
 public:
@@ -41,7 +41,7 @@ template <typename T> class observable : public observable_base {
 friend observable_base;
 public:
   using value_type    = T;
-  using source_type   = source<value_type>;
+  using source_type   = internal::source<value_type>;
   using source_sp     = typename source_type::sp;
   using observer_type = typename source_type::observer_type;
   using source_creator_fn_t = std::function<source_sp()>;

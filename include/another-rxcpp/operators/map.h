@@ -9,7 +9,7 @@ namespace operators {
 
 template <typename F> auto map(F f)
 {
-  using OUT = lambda_invoke_result_t<F>;
+  using OUT = internal::lambda_invoke_result_t<F>;
   return [f](auto src){
     return observable<>::create<OUT>([src, f](subscriber<OUT> s) {
       auto upstream = src.create_source();

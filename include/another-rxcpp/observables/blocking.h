@@ -60,7 +60,7 @@ protected:
     bool                    done_ = false;
     std::atomic_bool        started_{false};
   };
-  shared_with_will<member>  m_;
+  internal::shared_with_will<member>  m_;
   observable<value_type>    src_;
 
   blocking(observable<T> src) :

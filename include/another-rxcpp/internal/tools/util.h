@@ -4,7 +4,7 @@
 #include <tuple>
 #include <type_traits>
 
-namespace another_rxcpp {
+namespace another_rxcpp { namespace internal {
 
 template <typename T> struct strip_const_referece {
   using type = typename std::remove_const<typename std::remove_reference<T>::type>::type;
@@ -39,7 +39,6 @@ template <typename SP>
     return std::weak_ptr<typename SP::element_type>(sp);
   }
 
-
-} /* namespace another_rxcpp */
+}} /* namespace another_rxcpp::internal */
 
 #endif /* !defined(__another_rxcpp_h_util__) */

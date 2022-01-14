@@ -90,7 +90,7 @@ public:
 
     auto ups = upstream_;
     return subscription(
-      any_sp_keeper::create(),
+      internal::any_sp_keeper::create(),
       /* is_subscribed() */
       [ups](){
         return ups->is_subscribed();
@@ -110,7 +110,7 @@ public:
     auto sinks  = sinks_;
     auto ups    = upstream_;
     subscription sbsc(
-      any_sp_keeper::create(),
+      internal::any_sp_keeper::create(),
       /* is_subscribed() */
       [serial, mtx, sinks, ups]() {
         std::lock_guard<std::mutex> lock(*mtx);

@@ -13,7 +13,7 @@
 #include "../../subscription.h"
 #include "source_base.h"
 
-namespace another_rxcpp {
+namespace another_rxcpp { namespace internal {
 
 template <typename T = void> class source;
 
@@ -84,6 +84,6 @@ public:
   }
 };
 
-} /* namespace another_rxcpp */
+}} /* namespace another_rxcpp::internal */
 
 #endif /* !defined(__another_rxcpp_h_source__) */

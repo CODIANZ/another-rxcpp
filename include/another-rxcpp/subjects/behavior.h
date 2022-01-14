@@ -18,7 +18,7 @@ private:
     subscription    subscription_;
     member(const T& last) : last_(last) {}
   };
-  shared_with_will<member> m_;
+  internal::shared_with_will<member> m_;
 
 protected:
 

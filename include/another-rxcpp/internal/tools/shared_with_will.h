@@ -5,6 +5,8 @@
 #include <thread>
 #include <functional>
 
+namespace another_rxcpp { namespace internal {
+
 template <typename T> class shared_with_will {
 public:
   using element_type  = T;
@@ -60,5 +62,6 @@ public:
   }
 };
 
+}} /* namespace another_rxcpp::internal */
 
 #endif /* !defined(__another_rxcpp_h_shared_with_will__) */

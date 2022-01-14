@@ -25,7 +25,7 @@ private:
     std::exception_ptr  error_;
     subscription        subscription_;
   };
-  shared_with_will<member> m_;
+  internal::shared_with_will<member> m_;
 
 protected:
   bool completed() const { return !m_->subscription_.is_subscribed(); }
@@ -37,7 +37,7 @@ public:
       x->subscription_.unsubscribe();
     })
   {
-    auto wm = to_weak(m_.capture_element());
+    auto wm = internal::to_weak(m_.capture_element());
     m_->source_ = observable<>::create<value_type>([wm](subscriber_type s){
       auto m = wm.lock();
       if(m) m->subscriber_ = s;
