@@ -14,8 +14,9 @@ template <typename T>
     using OUT_OB = decltype(src);
     using OUT = typename OUT_OB::value_type;
     return observable<>::create<OUT>([src, obs](subscriber<OUT> s) {
-      auto upstream = src.create_source();
-      s.add_upstream(upstream);
+      using namespace another_rxcpp::internal;
+      auto upstream = private_access::observable::create_source(src);
+      private_access::subscriber::add_upstream(s, upstream);
       upstream->subscribe({
         .on_next = [s, obs](auto x){
           if(obs.on_next) obs.on_next(x);
@@ -45,8 +46,9 @@ template <typename NEXT>
     using OUT_OB = decltype(src);
     using OUT = typename OUT_OB::value_type;
     return observable<>::create<OUT>([src, n, e, c](subscriber<OUT> s) {
-      auto upstream = src.create_source();
-      s.add_upstream(upstream);
+      using namespace another_rxcpp::internal;
+      auto upstream = private_access::observable::create_source(src);
+      private_access::subscriber::add_upstream(s, upstream);
       upstream->subscribe({
         .on_next = [s, n](auto x){
           n(x);

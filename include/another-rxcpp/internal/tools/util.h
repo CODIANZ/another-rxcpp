@@ -39,6 +39,11 @@ template <typename SP>
     return std::weak_ptr<typename SP::element_type>(sp);
   }
 
+template <typename T>
+  auto to_shared(T value) {
+    return std::make_shared<T>(std::forward<T>(value));
+  }
+
 }} /* namespace another_rxcpp::internal */
 
 #endif /* !defined(__another_rxcpp_h_util__) */

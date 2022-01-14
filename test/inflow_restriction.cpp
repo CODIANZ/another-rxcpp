@@ -16,17 +16,17 @@ void test_inflow_restriction() {
     std::mutex mtx;
     int count_ = 0;
     observable<result> call() {
-      return observable<>::just(unit{}, observe_on_new_thread())
-      .tap([=](unit){
+      return observables::just(unit{}, new_thread_scheduler())
+      | tap([=](unit){
         std::lock_guard<std::mutex> lock(mtx);
         const int x = count_++; 
         std::cout << std::this_thread::get_id() << " : enter #" << x << std::endl;
       })
-      .delay(std::chrono::seconds(1), observe_on_new_thread())
-      .map([=](unit){
+      | delay(std::chrono::seconds(1), new_thread_scheduler())
+      | map([=](unit){
         return result::success;
       })
-      .tap([=](result){
+      | tap([=](result){
         std::lock_guard<std::mutex> lock(mtx);
         const int x = count_--;
         std::cout << std::this_thread::get_id() << " : leave #" << x << std::endl;
@@ -41,7 +41,7 @@ void test_inflow_restriction() {
     auto api = std::make_shared<long_api>();
 
     auto sbsc = (
-      observable<>::iterate(list)
+      observables::iterate(list)
       | flat_map([=](int n){
         return api->call()
         | map([=](result){
@@ -75,7 +75,7 @@ void test_inflow_restriction() {
     auto ifr = std::make_shared<inflow_restriction<4>>();
 
     auto sbsc = (
-      observable<>::iterate(list)
+      observables::iterate(list)
       | flat_map([=](int n){
         return ifr->enter(api->call())
         | map([=](result){

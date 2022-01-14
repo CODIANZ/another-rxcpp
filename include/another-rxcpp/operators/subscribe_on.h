@@ -16,8 +16,9 @@ inline auto subscribe_on(scheduler::creator_fn sccr)
       auto scdl = sccr();
       auto keepalive = scdl;
       scdl.schedule([s, src, keepalive]() mutable {
-        auto upstream = src.create_source();
-        s.add_upstream(upstream);
+        using namespace another_rxcpp::internal;
+        auto upstream = private_access::observable::create_source(src);
+        private_access::subscriber::add_upstream(s, upstream);
         upstream->subscribe({
           .on_next = [s, keepalive](auto x){
             s.on_next(std::move(x));

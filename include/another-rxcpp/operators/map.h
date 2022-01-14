@@ -12,8 +12,9 @@ template <typename F> auto map(F f)
   using OUT = internal::lambda_invoke_result_t<F>;
   return [f](auto src){
     return observable<>::create<OUT>([src, f](subscriber<OUT> s) {
-      auto upstream = src.create_source();
-      s.add_upstream(upstream);
+      using namespace another_rxcpp::internal;
+      auto upstream = private_access::observable::create_source(src);
+      private_access::subscriber::add_upstream(s, upstream);
       upstream->subscribe({
         .on_next = [s, f](auto x){
           try{

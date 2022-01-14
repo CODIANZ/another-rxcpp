@@ -1,7 +1,7 @@
 #if !defined(__another_rxcpp_h_publish__)
 #define __another_rxcpp_h_publish__
 
-#include "../observables.h"
+#include "../observables/connectable.h"
 
 namespace another_rxcpp {
 namespace operators {

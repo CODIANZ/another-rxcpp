@@ -4,6 +4,7 @@
 #include "internal/source/source.h"
 #include "schedulers.h"
 #include "internal/tools/util.h"
+#include "internal/tools/private_access.h"
 
 namespace another_rxcpp {
 
@@ -38,7 +39,8 @@ public:
 };
 
 template <typename T> class observable : public observable_base {
-friend observable_base;
+friend class observable_base;
+friend class internal::private_access::observable;
 public:
   using value_type    = T;
   using source_type   = internal::source<value_type>;
@@ -51,6 +53,7 @@ private:
 
 protected:
   observable() = default;
+  source_sp create_source() const { return source_creator_fn_(); }
 
 public: 
   observable(source_creator_fn_t source_creator) :
@@ -67,8 +70,6 @@ public:
     /** F -> observable<OUT> f(observable<IN>) */
     return f(*this);
   }
-
-  source_sp create_source() const { return source_creator_fn_(); }
 
   #if defined(SUPPORTS_OPERATORS_IN_OBSERVABLE)
     #include "internal/supports/operators_in_observables_decl.inc"

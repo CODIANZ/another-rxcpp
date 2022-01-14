@@ -14,10 +14,11 @@ inline auto take_last(std::size_t n)
     using OUT_OB = decltype(src);
     using OUT = typename OUT_OB::value_type;
     return observable<>::create<OUT>([src, n](subscriber<OUT> s) {
+      using namespace another_rxcpp::internal;
       auto mtx = std::make_shared<std::mutex>();
       auto arr = std::make_shared<std::queue<OUT>>();
-      auto upstream = src.create_source();
-      s.add_upstream(upstream);
+      auto upstream = private_access::observable::create_source(src);
+      private_access::subscriber::add_upstream(s, upstream);
       upstream->subscribe({
         .on_next = [s, upstream, n, mtx, arr](auto x){
           std::lock_guard<std::mutex> lock(*mtx);

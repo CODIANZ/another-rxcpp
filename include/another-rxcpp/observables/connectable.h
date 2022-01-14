@@ -50,7 +50,7 @@ public:
     mtx_(std::make_shared<std::mutex>()),
     serial_(std::make_shared<std::atomic_int>(0)),
     sinks_(std::make_shared<sinks_type>()),
-    upstream_(src.create_source())
+    upstream_(internal::private_access::observable::create_source(src))
   {}
 
   subscription connect() const {

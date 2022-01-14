@@ -21,13 +21,14 @@ inline auto timeout(std::chrono::milliseconds msec)
     using OUT_OB = decltype(src);
     using OUT = typename OUT_OB::value_type;
     return observable<>::create<OUT>([src, msec](subscriber<OUT> s) {
+      using namespace another_rxcpp::internal;
       struct member {
         std::mutex              mtx_;
         std::condition_variable cond_;
       };
       auto m = std::make_shared<member>();
-      auto upstream = src.create_source();
-      s.add_upstream(upstream);
+      auto upstream = private_access::observable::create_source(src);
+      private_access::subscriber::add_upstream(s, upstream);
 
       std::thread([s, upstream, m, msec]{
         std::unique_lock<std::mutex> lock(m->mtx_);

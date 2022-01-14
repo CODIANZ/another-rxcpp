@@ -6,13 +6,14 @@
 namespace another_rxcpp {
 namespace operators {
 
-namespace internal{ namespace retry {
+namespace retry_internal {
 
 template <typename T>
   void do_retry(subscriber<T> s, observable<T> src, const std::size_t max_retry_count, const std::size_t count)
 {
-  auto upstream = src.create_source();
-  s.add_upstream(upstream);
+  using namespace another_rxcpp::internal;
+  auto upstream = private_access::observable::create_source(src);
+  private_access::subscriber::add_upstream(s, upstream);
   upstream->subscribe({
     .on_next = [s](auto x){
       s.on_next(std::move(x));
@@ -32,7 +33,7 @@ template <typename T>
   });
 }
 
-}} /* namespace internal::retry */
+} /* namespace retry_internal */
 
 inline auto retry(std::size_t max_retry_count = 0 /* infinite */)
 {
@@ -40,7 +41,7 @@ inline auto retry(std::size_t max_retry_count = 0 /* infinite */)
     using OUT_OB = decltype(src);
     using OUT = typename OUT_OB::value_type;
     return observable<>::create<OUT>([src, max_retry_count](subscriber<OUT> s) {
-      internal::retry::do_retry<OUT>(s, src, max_retry_count, 0);
+      retry_internal::do_retry<OUT>(s, src, max_retry_count, 0);
     });
   };  
 }

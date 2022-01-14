@@ -11,6 +11,7 @@
 #include "../../subscriber.h"
 #include "../../observer.h"
 #include "../../subscription.h"
+#include "../tools/util.h"
 #include "source_base.h"
 
 namespace another_rxcpp { namespace internal {
@@ -48,7 +49,8 @@ protected:
     auto s = subscriber_;
     subscriber_.reset();
     if(s){
-      s->unsubscribe_upstreams();
+      using namespace another_rxcpp::internal;
+      private_access::subscriber::unsubscribe_upstreams(*s);
     }
   }
 
@@ -58,7 +60,7 @@ public:
 
   virtual subscription subscribe(observer_type ob) {
     auto THIS = shared_this();
-    auto obs = ob.to_shared();
+    auto obs = internal::to_shared(std::move(ob));
     subscriber_ = std::make_shared<subscriber_type>(THIS, obs);
     auto subscriber = subscriber_;
     subscription sbsc(

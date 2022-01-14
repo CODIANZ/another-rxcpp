@@ -18,8 +18,9 @@ inline auto delay(std::chrono::milliseconds msec, scheduler::creator_fn sccr = s
     return observable<>::create<OUT>([src, msec, sccr](subscriber<OUT> s) {
       auto scdl = sccr();
       scdl.schedule([src, msec, s](){
-        auto upstream = src.create_source();
-        s.add_upstream(upstream);
+        using namespace another_rxcpp::internal;
+        auto upstream = private_access::observable::create_source(src);
+        private_access::subscriber::add_upstream(s, upstream);
         upstream->subscribe({
           .on_next = [s, upstream, msec](auto x){
             std::this_thread::sleep_for(msec);

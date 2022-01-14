@@ -15,10 +15,6 @@ template <typename T> struct observer {
   on_next_fn_t        on_next = {};
   on_error_fn_t       on_error = {};
   on_completed_fn_t   on_completed = {};
-
-  sp to_shared() {
-    return std::make_shared<observer<value_type>>(std::move(*this));
-  }
 };
 
 } /* namespace another_rxcpp */

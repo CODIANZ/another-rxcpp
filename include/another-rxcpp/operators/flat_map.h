@@ -15,16 +15,17 @@ template <typename F> auto flat_map(F f)
   using OUT     = typename OUT_OB::value_type;
   return [f](auto src){
     return observable<>::create<OUT>([src, f](subscriber<OUT> s) {
+      using namespace another_rxcpp::internal;
       auto bUpstreamCompleted = std::make_shared<std::atomic_bool>(false);
       auto fxCounter = std::make_shared<std::atomic_int>(0);
-      auto upstream = src.create_source();
-      s.add_upstream(upstream);
+      auto upstream = private_access::observable::create_source(src);
+      private_access::subscriber::add_upstream(s, upstream);
       upstream->subscribe({
         .on_next = [s, f, upstream, bUpstreamCompleted, fxCounter](auto x){
           try{
             (*fxCounter)++;
-            auto fsrc = f(std::move(x)).create_source();
-            s.add_upstream(fsrc);
+            auto fsrc = private_access::observable::create_source(f(std::move(x)));
+            private_access::subscriber::add_upstream(s, fsrc);
             fsrc->subscribe({
               .on_next = [s](auto x){
                 s.on_next(std::move(x));

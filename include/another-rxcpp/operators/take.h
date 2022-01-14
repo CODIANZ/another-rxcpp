@@ -12,9 +12,10 @@ inline auto take(std::size_t n)
     using OUT_OB = decltype(src);
     using OUT = typename OUT_OB::value_type;
     return observable<>::create<OUT>([src, n](subscriber<OUT> s) {
+      using namespace another_rxcpp::internal;
       auto counter = std::make_shared<std::atomic_size_t>(1);
-      auto upstream = src.create_source();
-      s.add_upstream(upstream);
+      auto upstream = private_access::observable::create_source(src);
+      private_access::subscriber::add_upstream(s, upstream);
       upstream->subscribe({
         .on_next = [s, n, upstream, counter](auto x){
           const auto now = counter->fetch_add(1);
