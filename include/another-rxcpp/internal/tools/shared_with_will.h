@@ -18,16 +18,6 @@ private:
   will_fn_t   will_fn_;
   refcount_sp refcount_;
 
-  void release(){
-    if(!refcount_) return;
-    const auto n = refcount_->fetch_sub(1);
-    if(n == 1){
-      if(will_fn_){
-        will_fn_(element_);
-      }
-    }
-  }
-
 public:
   shared_with_will(element_sp element, will_fn_t will_fn) :
     element_(element),
@@ -57,6 +47,17 @@ public:
   element_sp operator-> () const { return element_; }
 
   element_sp capture_element() const { return element_; }
+
+  void release(){
+    if(!refcount_) return;
+    const auto n = refcount_->fetch_sub(1);
+    if(n == 1){
+      if(will_fn_){
+        will_fn_(element_);
+        will_fn_ = {};
+      }
+    }
+  }
 };
 
 

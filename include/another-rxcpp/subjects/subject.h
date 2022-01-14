@@ -57,30 +57,59 @@ public:
     return m_->subscriber_;
   }
 
+  // virtual observable<T> as_observable() const {
+  //   auto mm = m_;
+  //   return observable<>::create<value_type>([mm](subscriber_type s) mutable {
+  //     auto wm = to_weak(mm.capture_element());
+  //     auto m = wm.lock();
+  //     mm.release();
+  //     if(m->error_){
+  //       s.on_error(m->error_);
+  //     }
+  //     else if(!m->subscription_.is_subscribed()){
+  //       s.on_completed();
+  //     }
+  //     m->source_.subscribe({
+  //       .on_next = [s](value_type x){
+  //         s.on_next(std::move(x));
+  //       },
+  //       .on_error = [s](std::exception_ptr err) mutable {
+  //         s.on_error(err);
+  //       },
+  //       .on_completed = [s]() mutable {
+  //         s.on_completed();
+  //       },
+  //     });
+  //   });
+  // }
+
+
   virtual observable<T> as_observable() const {
-    auto wm = to_weak(m_.capture_element());
-    return observable<>::create<value_type>([wm](subscriber_type s){
-      auto m = wm.lock();
-      if(!m) return;
-      if(m->error_){
+    auto m = m_;
+    return observable<>::create<value_type>([m](subscriber_type s) mutable {
+      auto mm = m.capture_element();
+      m.release();
+      if(mm->error_){
         s.on_error(m->error_);
       }
-      else if(!m->subscription_.is_subscribed()){
+      else if(!mm->subscription_.is_subscribed()){
         s.on_completed();
       }
-      m->source_.subscribe({
+      mm->source_.subscribe({
         .on_next = [s](value_type x){
           s.on_next(std::move(x));
         },
-        .on_error = [s](std::exception_ptr err){
+        .on_error = [s](std::exception_ptr err) mutable {
           s.on_error(err);
         },
-        .on_completed = [s](){
+        .on_completed = [s]() mutable {
           s.on_completed();
         },
       });
     });
   }
+
+
 
   #if defined(SUPPORTS_RXCPP_COMPATIBLE)
     auto get_subscriber() const { return as_subscriber(); }
