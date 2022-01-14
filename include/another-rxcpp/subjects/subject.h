@@ -57,33 +57,6 @@ public:
     return m_->subscriber_;
   }
 
-  // virtual observable<T> as_observable() const {
-  //   auto mm = m_;
-  //   return observable<>::create<value_type>([mm](subscriber_type s) mutable {
-  //     auto wm = to_weak(mm.capture_element());
-  //     auto m = wm.lock();
-  //     mm.release();
-  //     if(m->error_){
-  //       s.on_error(m->error_);
-  //     }
-  //     else if(!m->subscription_.is_subscribed()){
-  //       s.on_completed();
-  //     }
-  //     m->source_.subscribe({
-  //       .on_next = [s](value_type x){
-  //         s.on_next(std::move(x));
-  //       },
-  //       .on_error = [s](std::exception_ptr err) mutable {
-  //         s.on_error(err);
-  //       },
-  //       .on_completed = [s]() mutable {
-  //         s.on_completed();
-  //       },
-  //     });
-  //   });
-  // }
-
-
   virtual observable<T> as_observable() const {
     auto m = m_;
     return observable<>::create<value_type>([m](subscriber_type s) mutable {
