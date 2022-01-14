@@ -65,9 +65,13 @@ public:
   }
 
   template <typename F> auto operator | (F f) const
-    -> decltype(f(std::declval<observable<value_type>>()))
   {
-    /** F -> observable<OUT> f(observable<IN>) */
+    /**
+     * F = auto f(observable<T>)
+     * ex)
+     *   auto map(std::function<T(T)>)
+     *    -> std::function<observable<T>(observable<T>)>
+     **/
     return f(*this);
   }
 

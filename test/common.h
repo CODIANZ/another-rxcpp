@@ -5,8 +5,10 @@
 #include <thread>
 #include <iostream>
 #include <another-rxcpp/observable.h>
+#include <another-rxcpp/operators.h>
 
 using namespace another_rxcpp;
+using namespace another_rxcpp::operators;
 
 inline void setTimeout(std::function<void()> f, int x) {
   auto t = std::thread([f, x]{
@@ -46,7 +48,7 @@ auto ovalue(T&& value, int delay = 0) -> observable<TT> {
 
 template <typename T> auto doSubscribe(T source) {
   log() << "doSubscribe" << std::endl;
-  return source.subscribe({
+  return source | subscribe<typename T::value_type>({
     .on_next = [](auto x) {
       log() << "  [on_next] " << x << std::endl;
     },
