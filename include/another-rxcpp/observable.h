@@ -84,7 +84,17 @@ public:
      *   auto map(std::function<T(T)>)
      *    -> std::function<observable<T>(observable<T>)>
      **/
+
     return f(*this);
+
+    /**
+     * !! CAUTION !!
+     * When observable is derived, 
+     * (* this) is treated as a base class
+     * and the copy constructor works,
+     * so it does not work as expected.
+     * Derived classes also need to define "operator | ()"".
+     **/
   }
 
   #if defined(SUPPORTS_OPERATORS_IN_OBSERVABLE)
