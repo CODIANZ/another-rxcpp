@@ -35,11 +35,11 @@ template <typename T>
   };
 }
 
-template <typename NEXT>
+template <typename ON_NEXT>
   auto tap(
-    NEXT  n,
-    std::function<void(std::exception_ptr)> e = {},
-    std::function<void()> c = {}
+    ON_NEXT                 n,
+    observer<>::error_t     e = {},
+    observer<>::completed_t c = {}
   )
 {
   return [n, e, c](auto src){

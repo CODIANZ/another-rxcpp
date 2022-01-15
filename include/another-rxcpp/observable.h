@@ -64,6 +64,18 @@ public:
     return source_creator_fn_()->subscribe(ob);
   }
 
+  subscription subscribe(
+    typename observer_type::on_next_fn_t      on_next = {},
+    typename observer_type::on_error_fn_t     on_error = {},
+    typename observer_type::on_completed_fn_t on_completed = {}
+  ) const {
+    return subscribe({
+      .on_next      = on_next,
+      .on_error     = on_error,
+      .on_completed = on_completed
+    });
+  }
+
   template <typename F> auto operator | (F f) const
   {
     /**
@@ -80,24 +92,10 @@ public:
   #endif /* defined(SUPPORTS_OPERATORS_IN_OBSERVABLE) */
 
   #if defined(SUPPORTS_RXCPP_COMPATIBLE)
-
     auto as_dynamic() const -> observable<value_type>
     {
       return *this;
     }
-  
-    subscription subscribe(
-      std::function<void(value_type)>         on_next = {},
-      std::function<void(std::exception_ptr)> on_error = {},
-      std::function<void()>                   on_completed = {}
-    ) const {
-      return subscribe({
-        .on_next      = on_next,
-        .on_error     = on_error,
-        .on_completed = on_completed
-      });
-    }
-  
   #endif /* defined(SUPPORTS_RXCPP_COMPATIBLE) */
 };
 

@@ -14,6 +14,17 @@ template <typename T>
   };
 }
 
+template <typename ON_NEXT>
+  auto subscribe(
+    ON_NEXT                 next,
+    observer<>::error_t     error,
+    observer<>::completed_t completed)
+{
+  return [next, error, completed](auto src){
+    return src.subscribe(next, error, completed);
+  };
+}
+
 } /* namespace operators */
 } /* namespace another_rxcpp */
 
