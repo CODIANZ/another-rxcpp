@@ -134,19 +134,6 @@ public:
     return sbsc;
   }
 
-  /* TODO: Find out if this is really needed. */
-  subscription subscribe(
-    typename observer_type::on_next_fn_t      on_next = {},
-    typename observer_type::on_error_fn_t     on_error = {},
-    typename observer_type::on_completed_fn_t on_completed = {}
-  ) const {
-    return subscribe({
-      .on_next      = on_next,
-      .on_error     = on_error,
-      .on_completed = on_completed
-    });
-  }
-
   template <typename F> auto operator | (F f) const
   {
     /**

@@ -21,7 +21,12 @@ template <typename ON_NEXT>
     observer<>::completed_t completed)
 {
   return [next, error, completed](auto src){
-    return src.subscribe(next, error, completed);
+    using observer_type = typename decltype(src)::observer_type;
+    return src.subscribe(observer_type{
+      .on_next = next,
+      .on_error = error,
+      .on_completed = completed
+    });
   };
 }
 
