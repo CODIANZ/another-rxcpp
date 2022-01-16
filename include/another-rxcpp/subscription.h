@@ -13,6 +13,7 @@ public:
   using is_subscribed_fn_t  = std::function<bool()>;
   using on_unsubscribe_fn_t = std::function<void()>;
   using cond_sp             = std::shared_ptr<std::condition_variable>;
+  using any_sp_keeper       = internal::any_sp_keeper;
 
 private:
   struct member {

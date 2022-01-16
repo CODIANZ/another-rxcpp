@@ -25,14 +25,18 @@ public:
     auto sem = sem_;
     return observable<>::create<T>([sem, o](subscriber<T> s){
       sem->lock();
-      o.subscribe([s](T v){
-        s.on_next(v);
-      }, [s, sem](std::exception_ptr e){
-        s.on_error(e);
-        sem->unlock();
-      }, [s, sem](){
-        s.on_completed();
-        sem->unlock();
+      o.subscribe({
+        .on_next = [s](T v){
+          s.on_next(std::move(v));
+        },
+        .on_error = [s, sem](std::exception_ptr e){
+            s.on_error(e);
+          sem->unlock();
+        },
+        .on_completed = [s, sem](){
+          s.on_completed();
+          sem->unlock();
+        }
       });
     });
   }

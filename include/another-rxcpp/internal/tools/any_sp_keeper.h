@@ -4,7 +4,7 @@
 #include <memory>
 #include <vector>
 
-namespace another_rxcpp {
+namespace another_rxcpp { namespace internal {
 
 class typed_sp_keeper_base {
 public:
@@ -60,6 +60,6 @@ public:
   virtual ~typed_sp_keeper() = default;
 };
 
-} /* namespace another_rxcpp */
+}} /* namespace another_rxcpp::internal */
 
 #endif /* !defined(__another_rxcpp_h_any_sp_keeper__) */

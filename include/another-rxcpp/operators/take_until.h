@@ -12,10 +12,11 @@ template <typename TRIGGER_OB> auto take_until(TRIGGER_OB trigger)
     using OUT_OB = decltype(src);
     using OUT = typename OUT_OB::value_type;
     return observable<>::create<OUT>([src, trigger](subscriber<OUT> s) mutable {
-      auto upstream = src.create_source();
-      s.add_upstream(upstream);
-      auto trig = trigger.create_source();
-      s.add_upstream(trig);
+      using namespace another_rxcpp::internal;
+      auto upstream = private_access::observable::create_source(src);
+      private_access::subscriber::add_upstream(s, upstream);
+      auto trig = private_access::observable::create_source(trigger);
+      private_access::subscriber::add_upstream(s, trig);
       trig->subscribe({
         .on_next = [s](auto){
           s.on_completed();

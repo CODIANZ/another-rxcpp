@@ -13,9 +13,10 @@ inline auto observe_on(scheduler::creator_fn sccr)
     using OUT_OB = decltype(src);
     using OUT = typename OUT_OB::value_type;
     return observable<>::create<OUT>([src, sccr](subscriber<OUT> s) {
+      using namespace another_rxcpp::internal;
       auto scdl = sccr();
-      auto upstream = src.create_source();
-      s.add_upstream(upstream);
+      auto upstream =private_access::observable::create_source(src);
+      private_access::subscriber::add_upstream(s, upstream);
       upstream->subscribe({
         .on_next = [s, scdl, upstream](auto x){
           scdl.schedule([s, x]() {

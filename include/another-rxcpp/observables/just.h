@@ -10,9 +10,9 @@ namespace observables {
 
 template <typename T>
   inline auto just(T&& value, scheduler::creator_fn sccr = schedulers::default_scheduler())
-    -> observable<typename strip_const_referece<T>::type>
+    -> observable<typename internal::strip_const_referece<T>::type>
 {
-  using TT = typename strip_const_referece<T>::type;
+  using TT = typename internal::strip_const_referece<T>::type;
   auto _value = std::forward<T>(value);
   return observable<>::create<TT>([_value, sccr](subscriber<TT> s){
     auto scdl = sccr();

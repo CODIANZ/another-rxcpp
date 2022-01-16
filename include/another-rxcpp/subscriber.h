@@ -3,16 +3,20 @@
 
 #include "observer.h"
 #include "internal/source/source_base.h"
+#include "internal/tools/private_access.h"
 #include <cassert>
 
 namespace another_rxcpp {
 
 template <typename T> class subscriber {
+friend class internal::private_access::subscriber;
+
 public:
   using value_type    = T;
   using observer_type = observer<value_type>;
 
 private:
+  using source_base = internal::source_base;
   using source_sp   = typename source_base::sp;
   using observer_sp = typename observer_type::sp;
   using source_wp   = std::weak_ptr<source_base>;
@@ -25,6 +29,22 @@ private:
     std::recursive_mutex  mtx_;
   };
   std::shared_ptr<member> m_;
+
+  template <typename X> void add_upstream(X upstream) const {
+    std::lock_guard<std::recursive_mutex> lock(m_->mtx_);
+    m_->upstreams_.push_back(std::dynamic_pointer_cast<source_base>(upstream));
+  }
+
+  void unsubscribe_upstreams() const {
+    std::lock_guard<std::recursive_mutex> lock(m_->mtx_);
+    for(auto it : m_->upstreams_){
+      auto u = it;
+      if(u){
+        u->unsubscribe();
+      }
+    }
+    m_->upstreams_.clear();
+  }
 
 public:
   subscriber() :
@@ -56,6 +76,7 @@ public:
   }
 
   void on_error(std::exception_ptr err) const {
+    unsubscribe_upstreams();
     auto s = m_->source_;
     auto o = m_->observer_.lock();
     if(s){
@@ -72,6 +93,7 @@ public:
   }
 
   void on_completed() const {
+    unsubscribe_upstreams();
     auto s = m_->source_;
     auto o = m_->observer_.lock();
     if(s){
@@ -97,22 +119,6 @@ public:
     if(s){
       s->unsubscribe();
     }
-  }
-
-  template <typename X> void add_upstream(X upstream) const {
-    std::lock_guard<std::recursive_mutex> lock(m_->mtx_);
-    m_->upstreams_.push_back(std::dynamic_pointer_cast<source_base>(upstream));
-  }
-
-  void unsubscribe_upstreams() const {
-    std::lock_guard<std::recursive_mutex> lock(m_->mtx_);
-    for(auto it : m_->upstreams_){
-      auto u = it;
-      if(u){
-        u->unsubscribe();
-      }
-    }
-    m_->upstreams_.clear();
   }
 };
 

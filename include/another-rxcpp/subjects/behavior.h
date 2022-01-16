@@ -18,7 +18,7 @@ private:
     subscription    subscription_;
     member(const T& last) : last_(last) {}
   };
-  shared_with_will<member> m_;
+  internal::shared_with_will<member> m_;
 
 protected:
 
@@ -29,11 +29,14 @@ public:
     })
   {
     auto m = m_.capture_element();
-    m->subscription_ = as_observable().subscribe([m](T x){
-      std::lock_guard<std::mutex> lock(m->mtx_);
-      m->last_ = std::move(x);
-    }, [](std::exception_ptr) {
-    }, [](){
+    m->subscription_ = as_observable().subscribe({
+      .on_next = [m](T x){
+        std::lock_guard<std::mutex> lock(m->mtx_);
+        m->last_ = std::move(x);
+      },
+      .on_error = [](std::exception_ptr) {
+      },
+      .on_completed = [](){}
     });
   }
 

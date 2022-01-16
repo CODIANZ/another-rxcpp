@@ -6,19 +6,24 @@
 
 namespace another_rxcpp {
 
+template <typename T = void> struct observer;
+
+template <> struct observer<void> {
+  template <typename T>
+    using next_t    = std::function<void(T)>;
+  using error_t     = std::function<void(std::exception_ptr)>;
+  using completed_t = std::function<void()>;
+};
+
 template <typename T> struct observer {
   using value_type        = T;
   using sp                = std::shared_ptr<observer<value_type>>;
-  using on_next_fn_t      = std::function<void(value_type)>;
-  using on_error_fn_t     = std::function<void(std::exception_ptr)>;
-  using on_completed_fn_t = std::function<void()>;
+  using on_next_fn_t      = observer<>::next_t<value_type>;
+  using on_error_fn_t     = observer<>::error_t;
+  using on_completed_fn_t = observer<>::completed_t;
   on_next_fn_t        on_next = {};
   on_error_fn_t       on_error = {};
   on_completed_fn_t   on_completed = {};
-
-  sp to_shared() {
-    return std::make_shared<observer<value_type>>(std::move(*this));
-  }
 };
 
 } /* namespace another_rxcpp */

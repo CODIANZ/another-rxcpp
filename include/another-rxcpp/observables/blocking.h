@@ -60,7 +60,7 @@ protected:
     bool                    done_ = false;
     std::atomic_bool        started_{false};
   };
-  shared_with_will<member>  m_;
+  internal::shared_with_will<member>  m_;
   observable<value_type>    src_;
 
   blocking(observable<T> src) :
@@ -80,7 +80,7 @@ protected:
 
   void start_subscribing_if_not() const {
     if(m_->started_.exchange(true)) return;
-    m_->upstream_ = src_.create_source();
+    m_->upstream_ = internal::private_access::observable::create_source(src_);
     auto m = m_.capture_element();
     std::thread([m](){
       m->subscription_ = m->upstream_->subscribe({
@@ -89,21 +89,21 @@ protected:
           m->cond_.wait(lock, [m]{ return m->read_ > 0 || m->done_; });
           if(m->done_) return;
           m->read_--;
-          m->sbj_.get_subscriber().on_next(std::move(x));
+          m->sbj_.as_subscriber().on_next(std::move(x));
         },
         .on_error = [m](std::exception_ptr err){
           std::unique_lock<std::mutex> lock(m->mtx_);
           m->cond_.wait(lock, [m]{ return m->read_ > 0; });
           if(m->done_) return;
           m->read_--;
-          m->sbj_.get_subscriber().on_error(err);
+          m->sbj_.as_subscriber().on_error(err);
         },
         .on_completed = [m]() {
           std::unique_lock<std::mutex> lock(m->mtx_);
           m->cond_.wait(lock, [m]{ return m->read_ > 0; });
           if(m->done_) return;
           m->read_--;
-          m->sbj_.get_subscriber().on_completed();
+          m->sbj_.as_subscriber().on_completed();
         }
       });
     }).detach();
@@ -119,7 +119,7 @@ protected:
       std::condition_variable cond;
     };
     auto result = std::make_shared<_result>();
-    auto o = m_->sbj_.get_observable() | operators::take(1);
+    auto o = m_->sbj_.as_observable() | operators::take(1);
     auto sbsc = o.subscribe({
       .on_next = [result](value_type x){
         result->value = std::move(x);

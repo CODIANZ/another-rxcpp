@@ -14,8 +14,9 @@ template <typename T>
     using OUT_OB = decltype(src);
     using OUT = typename OUT_OB::value_type;
     return observable<>::create<OUT>([src, obs](subscriber<OUT> s) {
-      auto upstream = src.create_source();
-      s.add_upstream(upstream);
+      using namespace another_rxcpp::internal;
+      auto upstream = private_access::observable::create_source(src);
+      private_access::subscriber::add_upstream(s, upstream);
       upstream->subscribe({
         .on_next = [s, obs](auto x){
           if(obs.on_next) obs.on_next(x);
@@ -34,19 +35,20 @@ template <typename T>
   };
 }
 
-template <typename NEXT>
+template <typename ON_NEXT>
   auto tap(
-    NEXT  n,
-    std::function<void(std::exception_ptr)> e = {},
-    std::function<void()> c = {}
+    ON_NEXT                 n,
+    observer<>::error_t     e = {},
+    observer<>::completed_t c = {}
   )
 {
   return [n, e, c](auto src){
     using OUT_OB = decltype(src);
     using OUT = typename OUT_OB::value_type;
     return observable<>::create<OUT>([src, n, e, c](subscriber<OUT> s) {
-      auto upstream = src.create_source();
-      s.add_upstream(upstream);
+      using namespace another_rxcpp::internal;
+      auto upstream = private_access::observable::create_source(src);
+      private_access::subscriber::add_upstream(s, upstream);
       upstream->subscribe({
         .on_next = [s, n](auto x){
           n(x);

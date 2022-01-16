@@ -10,7 +10,7 @@
 namespace another_rxcpp {
 namespace operators {
 
-namespace internal {
+namespace amb_internal {
   template <typename T, typename OB>
   auto amb(scheduler::creator_fn sccr, std::vector<observable<T>>& arr, OB ob){
     arr.push_back(ob);
@@ -18,6 +18,7 @@ namespace internal {
       return observable<>::create<T>([src, sccr, arr](subscriber<T> s) mutable {
         auto scdl = sccr();
         scdl.schedule([src, arr, s](){
+          using namespace another_rxcpp::internal;
           using source_sp = typename OB::source_sp;
           using source_type = typename OB::source_type;
 
@@ -25,13 +26,14 @@ namespace internal {
           auto top = std::make_shared<source_type*>();
           std::vector<source_sp> sources;
 
-          sources.push_back(src.create_source());
+          auto upstream = private_access::observable::create_source(src);
+          sources.push_back(private_access::observable::create_source(src));
           std::for_each(arr.begin(), arr.end(), [&](auto it){
-            sources.push_back(it.create_source());
+            sources.push_back(private_access::observable::create_source(it));
           });
 
           std::for_each(sources.begin(), sources.end(), [&](auto it){
-            s.add_upstream(it);
+            private_access::subscriber::add_upstream(s, it);
           });
 
           auto do_on_next = [sources, s, mtx, top](source_sp sp, auto value){
@@ -74,20 +76,20 @@ namespace internal {
     arr.push_back(ob);
     return amb(sccr, arr, args...);
   }
-} /* namespace internal */
+} /* namespace amb_internal */
 
 template <typename OB, typename...ARGS, std::enable_if_t<is_observable<OB>::value, bool> = true>
 auto amb(OB ob, ARGS...args) {
   using T = typename OB::value_type;
   std::vector<observable<T>> arr;
-  return internal::amb<T>(schedulers::default_scheduler(), arr, ob, args...);
+  return amb_internal::amb<T>(schedulers::default_scheduler(), arr, ob, args...);
 }
 
 template <typename OB, typename...ARGS>
 auto amb(scheduler::creator_fn sccr, OB ob, ARGS...args) {
   using T = typename OB::value_type;
   std::vector<observable<T>> arr;
-  return internal::amb<T>(sccr, arr, ob, args...);
+  return amb_internal::amb<T>(sccr, arr, ob, args...);
 }
 
 } /* namespace operators */

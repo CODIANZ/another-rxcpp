@@ -22,4 +22,6 @@
 #include "operators/timeout.h"
 #include "operators/blocking.h"
 
+#include "operators/subscribe.h"
+
 #endif /* !defined(__another_rxcpp_h_operators__) */

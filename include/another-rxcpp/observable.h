@@ -4,6 +4,7 @@
 #include "internal/source/source.h"
 #include "schedulers.h"
 #include "internal/tools/util.h"
+#include "internal/tools/private_access.h"
 
 namespace another_rxcpp {
 
@@ -15,10 +16,10 @@ template <typename T> struct is_observable<observable<T>> : std::true_type {};
 template <> class observable<void> {
 public:
   template<typename T>
-    static auto create(typename source<T>::emitter_fn_t f)
+    static auto create(typename internal::source<T>::emitter_fn_t f)
   {
     return observable<T>([f](){
-      return source<>::create<T>(f);
+      return internal::source<>::create<T>(f);
     });
   }
 
@@ -29,7 +30,7 @@ public:
 
 class observable_base {
 protected:
-  template <typename T> static typename source<T>::sp execute_source_creator(const observable<T>& o){
+  template <typename T> static typename internal::source<T>::sp execute_source_creator(const observable<T>& o){
     return o.source_creator_fn_();
   }
 public:
@@ -38,10 +39,11 @@ public:
 };
 
 template <typename T> class observable : public observable_base {
-friend observable_base;
+friend class observable_base;
+friend class internal::private_access::observable;
 public:
   using value_type    = T;
-  using source_type   = source<value_type>;
+  using source_type   = internal::source<value_type>;
   using source_sp     = typename source_type::sp;
   using observer_type = typename source_type::observer_type;
   using source_creator_fn_t = std::function<source_sp()>;
@@ -51,6 +53,10 @@ private:
 
 protected:
   observable() = default;
+  source_sp create_source() const { return source_creator_fn_(); }
+  void set_source_creator_fn(source_creator_fn_t source_creator) {
+    source_creator_fn_ = source_creator;
+  }
 
 public: 
   observable(source_creator_fn_t source_creator) :
@@ -61,38 +67,38 @@ public:
     return source_creator_fn_()->subscribe(ob);
   }
 
-  template <typename F> auto operator | (F f) const
-    -> decltype(f(std::declval<observable<value_type>>()))
-  {
-    /** F -> observable<OUT> f(observable<IN>) */
-    return f(*this);
+  subscription subscribe(
+    typename observer_type::on_next_fn_t      on_next = {},
+    typename observer_type::on_error_fn_t     on_error = {},
+    typename observer_type::on_completed_fn_t on_completed = {}
+  ) const {
+    return subscribe({
+      .on_next      = on_next,
+      .on_error     = on_error,
+      .on_completed = on_completed
+    });
   }
 
-  source_sp create_source() const { return source_creator_fn_(); }
+  template <typename F> auto operator | (F f) const
+  {
+    /**
+     * F = auto f(observable<T>)
+     * ex)
+     *   auto map(std::function<T(T)>)
+     *    -> std::function<observable<T>(observable<T>)>
+     **/
+    return f(*this);
+  }
 
   #if defined(SUPPORTS_OPERATORS_IN_OBSERVABLE)
     #include "internal/supports/operators_in_observables_decl.inc"
   #endif /* defined(SUPPORTS_OPERATORS_IN_OBSERVABLE) */
 
   #if defined(SUPPORTS_RXCPP_COMPATIBLE)
-
     auto as_dynamic() const -> observable<value_type>
     {
       return *this;
     }
-  
-    subscription subscribe(
-      std::function<void(value_type)>         on_next = {},
-      std::function<void(std::exception_ptr)> on_error = {},
-      std::function<void()>                   on_completed = {}
-    ) const {
-      return subscribe({
-        .on_next      = on_next,
-        .on_error     = on_error,
-        .on_completed = on_completed
-      });
-    }
-  
   #endif /* defined(SUPPORTS_RXCPP_COMPATIBLE) */
 };
 

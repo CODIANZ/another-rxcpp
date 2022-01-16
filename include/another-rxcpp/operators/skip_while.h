@@ -13,8 +13,9 @@ template <typename F> auto skip_while(F f)
     using OUT_OB = decltype(src);
     using OUT = typename OUT_OB::value_type;
     return observable<>::create<OUT>([src, f](subscriber<OUT> s) {
-      auto upstream = src.create_source();
-      s.add_upstream(upstream);
+      using namespace another_rxcpp::internal;
+      auto upstream = private_access::observable::create_source(src);
+      private_access::subscriber::add_upstream(s, upstream);
       auto skip = std::make_shared<bool>(true);
       upstream->subscribe({
         .on_next = [s, f, skip](auto x){

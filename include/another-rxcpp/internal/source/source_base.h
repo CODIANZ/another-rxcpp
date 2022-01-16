@@ -6,7 +6,7 @@
 #include <vector>
 #include "../../subscription.h"
 
-namespace another_rxcpp {
+namespace another_rxcpp { namespace internal {
 
 class source_base : public std::enable_shared_from_this<source_base> {
 public:
@@ -88,6 +88,6 @@ public:
   }
 };
 
-} /* namespace another_rxcpp */
+}} /* namespace another_rxcpp::internal */
 
 #endif /* !defined(__another_rxcpp_h_state_holder__) */

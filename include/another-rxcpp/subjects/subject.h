@@ -25,7 +25,7 @@ private:
     std::exception_ptr  error_;
     subscription        subscription_;
   };
-  shared_with_will<member> m_;
+  internal::shared_with_will<member> m_;
 
 protected:
   bool completed() const { return !m_->subscription_.is_subscribed(); }
@@ -37,7 +37,7 @@ public:
       x->subscription_.unsubscribe();
     })
   {
-    auto wm = to_weak(m_.capture_element());
+    auto wm = internal::to_weak(m_.capture_element());
     m_->source_ = observable<>::create<value_type>([wm](subscriber_type s){
       auto m = wm.lock();
       if(m) m->subscriber_ = s;
@@ -56,33 +56,6 @@ public:
   auto as_subscriber() const {
     return m_->subscriber_;
   }
-
-  // virtual observable<T> as_observable() const {
-  //   auto mm = m_;
-  //   return observable<>::create<value_type>([mm](subscriber_type s) mutable {
-  //     auto wm = to_weak(mm.capture_element());
-  //     auto m = wm.lock();
-  //     mm.release();
-  //     if(m->error_){
-  //       s.on_error(m->error_);
-  //     }
-  //     else if(!m->subscription_.is_subscribed()){
-  //       s.on_completed();
-  //     }
-  //     m->source_.subscribe({
-  //       .on_next = [s](value_type x){
-  //         s.on_next(std::move(x));
-  //       },
-  //       .on_error = [s](std::exception_ptr err) mutable {
-  //         s.on_error(err);
-  //       },
-  //       .on_completed = [s]() mutable {
-  //         s.on_completed();
-  //       },
-  //     });
-  //   });
-  // }
-
 
   virtual observable<T> as_observable() const {
     auto m = m_;
