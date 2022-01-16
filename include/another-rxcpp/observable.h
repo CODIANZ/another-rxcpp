@@ -54,6 +54,9 @@ private:
 protected:
   observable() = default;
   source_sp create_source() const { return source_creator_fn_(); }
+  void set_source_creator_fn(source_creator_fn_t source_creator) {
+    source_creator_fn_ = source_creator;
+  }
 
 public: 
   observable(source_creator_fn_t source_creator) :
@@ -84,17 +87,7 @@ public:
      *   auto map(std::function<T(T)>)
      *    -> std::function<observable<T>(observable<T>)>
      **/
-
     return f(*this);
-
-    /**
-     * !! CAUTION !!
-     * When observable is derived, 
-     * (* this) is treated as a base class
-     * and the copy constructor works,
-     * so it does not work as expected.
-     * Derived classes also need to define "operator | ()"".
-     **/
   }
 
   #if defined(SUPPORTS_OPERATORS_IN_OBSERVABLE)
