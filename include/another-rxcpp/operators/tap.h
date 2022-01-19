@@ -67,10 +67,6 @@ template <typename ON_NEXT>
   };
 }
 
-
-
-
-
 } /* namespace operators */
 } /* namespace another_rxcpp */
 
