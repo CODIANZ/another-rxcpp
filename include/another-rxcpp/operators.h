@@ -12,6 +12,7 @@
 #include "operators/skip_until.h"
 #include "operators/subscribe_on.h"
 #include "operators/take_until.h"
+#include "operators/take_while.h"
 #include "operators/merge.h"
 #include "operators/amb.h"
 #include "operators/distinct_until_changed.h"
