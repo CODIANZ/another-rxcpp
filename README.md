@@ -22,7 +22,12 @@
 
 ## 特徴
 
-* C++14 以降に対応しました。
+* コンパイル時間が短縮されます。
+* バイナリサイズが小さくなります。
+* デバッグシンボルのサイズが小さくなることで、デバッガの起動が高速になります。
+
+### 詳細
+
 * `Observable` に上流の `Type` を持たせないことで、 `as_dynamic()` を不要としました。これにより、コンパイル時間とデバッガへの負荷を軽減します。（弊社のプロダクトでは`RxCpp`よりもコンパイル時間が半分程度、デバッグシンボルは10分の1程度になりました。）
 * `Observable` の `Operators` をメンバメソッドから分離しました。（現行の`RxCPP`にも存在しますが、`another-rxcpp`ではこれがデフォルトです）
 * `Take` などの内部で判定が必要なオペレータをスレッドセーフにしました。（ブロッキングしないバージョンも準備する予定です）
@@ -31,9 +36,39 @@
 * `SUPPORTS_RXCPP_COMPATIBLE` を定義することで、`subscribe()` が `RxCpp` に準じた引数を使用することができます。また、`as_dynamic()` も実装されます。（`as_dynamic()`は何も行わず `Observable` をコピーして返却するだけです）
 
 
-## 実装状況
+## 使用方法
 
-現状は未実装なソースやオペレーターがありますが、合間をみながら実装していく予定です。
+`another-rxcpp` はヘッダファイルのみで構成されています。このリポジトリの `include` ディレクトリをインクルード検索に追加してください。
+
+下記のインクルードファイルを指定してください。
+```cpp
+#include <another-rxcpp/rx.h>
+```
+
+`namespace` は `another_rxcpp` になります。
+
+`RxCpp` と互換性が必要な場合は`rx.h`をインクルードする前に下記のように定義をします。（コンパイルオプションに入れると良いでしょう）
+
+```cpp
+#define SUPPORTS_OPERATORS_IN_OBSERVABLE
+#define SUPPORTS_RXCPP_COMPATIBLE
+#include <another-rxcpp/rx.h>
+```
+
+
+### 動作環境
+
+* C++14以上
+
+### 確認環境
+
+* Xcode 12.3
+* Android Studio 4.3.0
+* gcc 7.5.0
+* clang 6.0.0
+
+
+## 実装状況
 
 ### observable
 
@@ -64,6 +99,7 @@
 * publish
 * retry
 * subscribe_on
+* skip_until
 * skip_while
 * skip_until
 * take_last
@@ -92,26 +128,6 @@
 * sem
 * unit
 
-## 使用方法
-
-`another-rxcpp` はヘッダファイルのみで構成されています。このリポジトリの `include` ディレクトリをインクルード検索に追加してください。
-
-下記のインクルードファイルを指定してください。（そのうち、まとめる予定です）
-```cpp
-#include <another-rxcpp/rx.h>
-```
-
-`namespace` は `another_rxcpp` になります。
-
-`RxCpp` と互換性が必要な場合は下記のようにします。
-
-```cpp
-#define SUPPORTS_OPERATORS_IN_OBSERVABLE
-#define SUPPORTS_RXCPP_COMPATIBLE
-#include <another-rxcpp/rx.h>
-```
-
-定義はコンパイルオプションで設定すると良いでしょう。
 
 ## 使用例
 
@@ -137,7 +153,7 @@ inline void wait(int ms) {
 }
 
 template <typename T, typename TT = typename std::remove_const<typename std::remove_reference<T>::type>::type>
-auto ovalue(T&& value, int delay = 0) -> observable<TT> {
+auto ovalue(T value, int delay = 0) -> observable<TT> {
   auto _value = std::forward<T>(value);
   return observable<>::create<TT>([_value, delay](subscriber<TT> s) {
     if(delay == 0){
