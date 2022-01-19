@@ -36,6 +36,7 @@ int main() {
   DO(test_take_last)
   DO(test_last)
   DO(test_timeout)
+  DO(test_skip_until)
   DO(test_skip_while)
   DO(test_iterate)
   DO(test_blocking)
