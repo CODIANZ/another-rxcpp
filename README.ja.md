@@ -98,12 +98,12 @@
 * on_error_resume_next
 * publish
 * retry
-* subscribe_on
 * skip_until
 * skip_while
-* skip_until
+* subscribe_on
 * take_last
 * take_until
+* take_while
 * take
 * tap
 * timeout
