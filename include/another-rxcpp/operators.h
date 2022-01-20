@@ -9,8 +9,10 @@
 #include "operators/retry.h"
 #include "operators/observe_on.h"
 #include "operators/skip_while.h"
+#include "operators/skip_until.h"
 #include "operators/subscribe_on.h"
 #include "operators/take_until.h"
+#include "operators/take_while.h"
 #include "operators/merge.h"
 #include "operators/amb.h"
 #include "operators/distinct_until_changed.h"
@@ -21,6 +23,7 @@
 #include "operators/take_last.h"
 #include "operators/timeout.h"
 #include "operators/blocking.h"
+#include "operators/zip.h"
 
 #include "operators/subscribe.h"
 

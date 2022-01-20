@@ -24,6 +24,7 @@ int main() {
   DO(test_subscribe_on)
   DO(test_new_thread_scheduler)
   DO(test_take_until)
+  DO(test_take_while)
   DO(test_merge)
   DO(test_amb)
   DO(test_behavior_subject)
@@ -36,11 +37,13 @@ int main() {
   DO(test_take_last)
   DO(test_last)
   DO(test_timeout)
+  DO(test_skip_until)
   DO(test_skip_while)
   DO(test_iterate)
   DO(test_blocking)
   DO(test_ready_set_go)
   DO(test_inflow_restriction)
+  DO(test_zip);
 
   DO(test_case_1)
   DO(test_case_2)
