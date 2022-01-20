@@ -1,23 +1,23 @@
 # another-rxcpp
 
-`another-rxcpp` is a` Reactive Extensions` with a different implementation than `RxCpp`.
+`another-rxcpp` is a `Reactive Extensions` with a different implementation than `RxCpp`.
 
 ## Why not `RxCpp`?
 
 `RxCpp` is a great library.
 
 However, `RxCpp` has the only and biggest problem.
-That is, the `Observable` of` RxCpp` has a structure that holds the entire type of the upstream `Observable` in the second template parameter.
+That is, the `Observable` of `RxCpp` has a structure that holds the entire type of the upstream `Observable` in the second template parameter.
 This problem is not a concern for small projects, but for medium-sized projects and above, the development environment becomes quite poor as shown below.
 
 * The generated binary size will be huge. (Because the number of embodied templates increases)
 * The debug symbol becomes huge. (If it gets too big, the debugger will crash)
 * Build time is not unusually long.
 
-`RxCpp` uses` as_dynamic()`and` Observable` can be improved by clearing the second template parameter, but the effect is insignificant.
+`RxCpp` uses `as_dynamic()` and `Observable` can be improved by clearing the second template parameter, but the effect is insignificant.
 
-However, it is not practical to radically eliminate the `Observable` second template parameter of` RxCpp`.
-So I created a new `Reactive Extensions` for` C++ `to solve these problems as` another-rxcpp`.
+However, it is not practical to radically eliminate the `Observable` second template parameter of `RxCpp`.
+So I created a new `Reactive Extensions` for `C++ `to solve these problems as `another-rxcpp`.
 
 
 ## Features
@@ -28,12 +28,12 @@ So I created a new `Reactive Extensions` for` C++ `to solve these problems as` a
 
 ### Details
 
-* By not giving `Observable` an upstream` Type`, we no longer need `as_dynamic()`. This reduces compile time and load on the debugger. (In our product, the compile time is about half that of `RxCpp`, and the debug symbol is about 1/10.)
-* Separated the `Operators` of the` Observable` from the member methods. (Although it also exists in the current `RxCPP`, this is the default in` another-rxcpp`)
+* By not giving `Observable` an upstream `Type`, we no longer need `as_dynamic()`. This reduces compile time and load on the debugger. (In our product, the compile time is about half that of `RxCpp`, and the debug symbol is about 1/10.)
+* Separated the `Operators` of the `Observable` from the member methods. (Although it also exists in the current `RxCPP`, this is the default in `another-rxcpp`)
 * Made operators that need to be judged internally, such as `Take`, thread-safe. (We plan to prepare a version that does not block)
 * Added the function using multithreading of `C++`. (For example, `subscription::unsubscribe_notice()`)
 * Support traditional method chains by defining `SUPPORTS_OPERATORS_IN_OBSERVABLE`. (There is a merit that type inference works, but there is a demerit that the amount of function instances for each type of observable increases.)
-* By defining `SUPPORTS_RXCPP_COMPATIBLE`,` subscribe()`can use arguments similar to` RxCpp`. It also implements `as_dynamic()`. (`As_dynamic()` does nothing, just copy and return` Observable`)
+* By defining `SUPPORTS_RXCPP_COMPATIBLE`,`subscribe()`can use arguments similar to`RxCpp`. It also implements `as_dynamic()`. (`as_dynamic()` does nothing, just copy and return `Observable`)
 
 
 ## Usage
@@ -46,9 +46,9 @@ Specify the following include file.
 #include <another-rxcpp/rx.h>
 ```
 
-`namespace` is` another_rxcpp`.
+`namespace` is `another_rxcpp`.
 
-If compatibility with `RxCpp` is required, define as follows before including` rx.h`. (It should be included in the compile options.)
+If compatibility with `RxCpp` is required, define as follows before including `rx.h`. (It should be included in the compile options.)
 
 ```cpp
 #define SUPPORTS_OPERATORS_IN_OBSERVABLE
@@ -57,9 +57,9 @@ If compatibility with `RxCpp` is required, define as follows before including` r
 ```
 
 
-### Operating environment
+### Development environment
 
-* C++14以上
+* C++14 and above
 
 ### Test environment
 
