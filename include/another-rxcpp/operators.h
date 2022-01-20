@@ -22,6 +22,7 @@
 #include "operators/take_last.h"
 #include "operators/timeout.h"
 #include "operators/blocking.h"
+#include "operators/zip.h"
 
 #include "operators/subscribe.h"
 

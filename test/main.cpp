@@ -42,6 +42,7 @@ int main() {
   DO(test_blocking)
   DO(test_ready_set_go)
   DO(test_inflow_restriction)
+  DO(test_zip);
 
   DO(test_case_1)
   DO(test_case_2)

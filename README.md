@@ -65,11 +65,13 @@
 * retry
 * subscribe_on
 * skip_while
+* skip_until
 * take_last
 * take_until
 * take
 * tap
 * timeout
+* zip
 
 ### subject
 
