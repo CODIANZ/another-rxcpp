@@ -229,6 +229,32 @@ namespace zip_internal {
       });
     };
   }
+
+  /**
+   *  function type generator 
+   **/
+  template <typename ...> struct bundle;
+
+  template <typename ...> struct function_parameter_impl;
+
+  template <typename ...BARGS>
+    struct function_parameter_impl<bundle<BARGS...>>
+  {
+    /** evaluate the return value if you pass BARGS... */
+    template <typename F> static auto feval(F f) {
+      return f(std::declval<BARGS>()...);
+    }
+    /** generate function type */
+    template <typename RET>
+      using ftype = std::function<RET(BARGS...)>;
+  };
+
+  template <typename ...BARGS, typename OB, typename ...ARGS>
+    struct function_parameter_impl<bundle<BARGS...>, OB, ARGS...> :
+      function_parameter_impl<bundle<BARGS..., typename OB::value_type>, ARGS...> {};
+
+  template <typename ...ARGS> struct function_parameter :
+    function_parameter_impl<bundle<>, ARGS...> {};
 } /* zip_internal */
 
 template <typename X, typename...ARGS, std::enable_if_t<is_observable<X>::value, bool> = true>

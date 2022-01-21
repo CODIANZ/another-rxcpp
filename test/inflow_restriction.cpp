@@ -13,12 +13,12 @@ void test_inflow_restriction() {
 
   enum class result { success, failure };
   struct long_api {
-    std::mutex mtx;
+    std::mutex mtx_;
     int count_ = 0;
     observable<result> call() {
       return observables::just(unit{}, new_thread_scheduler())
       | tap([=](unit){
-        std::lock_guard<std::mutex> lock(mtx);
+        std::lock_guard<std::mutex> lock(mtx_);
         const int x = count_++; 
         std::cout << std::this_thread::get_id() << " : enter #" << x << std::endl;
       })
@@ -27,7 +27,7 @@ void test_inflow_restriction() {
         return result::success;
       })
       | tap([=](result){
-        std::lock_guard<std::mutex> lock(mtx);
+        std::lock_guard<std::mutex> lock(mtx_);
         const int x = count_--;
         std::cout << std::this_thread::get_id() << " : leave #" << x << std::endl;
       });
@@ -36,7 +36,7 @@ void test_inflow_restriction() {
 
   {
     log() << "without inflow_restriction" << std::endl;
-    std::mutex mtx;
+    auto mtx = std::make_shared<std::mutex>();
     auto list = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
     auto api = std::make_shared<long_api>();
 
@@ -50,16 +50,16 @@ void test_inflow_restriction() {
       })
     )
     .subscribe({
-      .on_next = [&](int x){
-        std::lock_guard<std::mutex> lock(mtx);
+      .on_next = [=](int x){
+        std::lock_guard<std::mutex> lock(*mtx);
         log() << "next " << x << std::endl;
       },
-      .on_error = [&](std::exception_ptr){
-        std::lock_guard<std::mutex> lock(mtx);
+      .on_error = [=](std::exception_ptr){
+        std::lock_guard<std::mutex> lock(*mtx);
         log() << "error " << std::endl;
       },
-      .on_completed = [&](){
-        std::lock_guard<std::mutex> lock(mtx);
+      .on_completed = [=](){
+        std::lock_guard<std::mutex> lock(*mtx);
         log() << "completed " << std::endl;
       }
     });
@@ -69,7 +69,7 @@ void test_inflow_restriction() {
 
   {
     log() << "use inflow_restriction" << std::endl;
-    std::mutex mtx;
+    auto mtx = std::make_shared<std::mutex>();
     auto list = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
     auto api = std::make_shared<long_api>();
     auto ifr = std::make_shared<inflow_restriction<4>>();
@@ -84,16 +84,16 @@ void test_inflow_restriction() {
       })
     )
     .subscribe({
-      .on_next = [&](int x){
-        std::lock_guard<std::mutex> lock(mtx);
+      .on_next = [=](int x){
+        std::lock_guard<std::mutex> lock(*mtx);
         log() << "next " << x << std::endl;
       },
-      .on_error = [&](std::exception_ptr){
-        std::lock_guard<std::mutex> lock(mtx);
+      .on_error = [=](std::exception_ptr){
+        std::lock_guard<std::mutex> lock(*mtx);
         log() << "error " << std::endl;
       },
-      .on_completed = [&](){
-        std::lock_guard<std::mutex> lock(mtx);
+      .on_completed = [=](){
+        std::lock_guard<std::mutex> lock(*mtx);
         log() << "completed " << std::endl;
       }
     });

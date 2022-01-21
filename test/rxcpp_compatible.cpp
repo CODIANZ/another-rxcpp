@@ -47,12 +47,18 @@ void test_rxcpp_compatible() {
   .retry()
   .retry(123)
   .subscribe_on(schedulers::observe_on_new_thread())
+  .skip_until(o)
   .skip_while([](auto x) { return true; })
   .take_last(1)
   .take_until(o)
+  .take_while([](auto x) { return true; })
   .take(100)
   .tap([](auto){})
   .timeout(std::chrono::hours(2))
+  .zip(o, o, o)
+  .zip([](auto a, auto b, auto c, auto d){
+    return std::get<0>(a);
+  }, o, o, o)
   .as_blocking();
 
   log() << "test_rxcpp_compatible -- end" << std::endl << std::endl;
