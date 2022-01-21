@@ -26,6 +26,23 @@ namespace another_rxcpp {
   }
 
   template <typename T>
+    template <typename OB, typename...ARGS, std::enable_if_t<is_observable<OB>::value, bool>>
+      auto observable<T>::zip(OB ob, ARGS...args) const
+  {
+    return *this | operators::zip(std::forward<OB>(ob), std::forward<ARGS>(args)...);
+  }
+
+  template <typename T>
+    template <typename F, typename...ARGS, std::enable_if_t<!is_observable<F>::value, bool>>
+      auto observable<T>::zip(F f, ARGS...args) const
+  {
+    using fargs = operators::zip_internal::function_parameter<observable<value_type>, ARGS...>;
+    using fret = decltype(fargs::feval(f));
+    using FTYPE = typename fargs::template ftype<fret>;
+    return *this | operators::zip<FTYPE, ARGS...>(std::forward<F>(f), std::forward<ARGS>(args)...);
+  }
+
+  template <typename T>
     template <typename...ARGS>
       auto observable<T>::take(ARGS...args) const
   {
@@ -62,6 +79,13 @@ namespace another_rxcpp {
 
   template <typename T>
     template <typename...ARGS>
+      auto observable<T>::skip_until(ARGS...args) const
+  {
+    return *this | operators::skip_until(std::forward<ARGS>(args)...);
+  }
+
+  template <typename T>
+    template <typename...ARGS>
       auto observable<T>::skip_while(ARGS...args) const
   {
     return *this | operators::skip_while(std::forward<ARGS>(args)...);
@@ -79,6 +103,13 @@ namespace another_rxcpp {
       auto observable<T>::take_until(ARGS...args) const
   {
     return *this | operators::take_until(std::forward<ARGS>(args)...);
+  }
+
+  template <typename T>
+    template <typename...ARGS>
+      auto observable<T>::take_while(ARGS...args) const
+  {
+    return *this | operators::take_while(std::forward<ARGS>(args)...);
   }
 
   template <typename T>
