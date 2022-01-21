@@ -91,6 +91,8 @@
 * distinct_until_changed
 * finally
 * flat_map
+* filter
+* first
 * last
 * map
 * merge

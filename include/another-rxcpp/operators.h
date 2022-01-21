@@ -24,6 +24,8 @@
 #include "operators/timeout.h"
 #include "operators/blocking.h"
 #include "operators/zip.h"
+#include "operators/first.h"
+#include "operators/filter.h"
 
 #include "operators/subscribe.h"
 
