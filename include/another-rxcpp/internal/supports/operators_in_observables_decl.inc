@@ -19,7 +19,6 @@ template <typename...ARGS> auto take_until(ARGS...) const;
 template <typename...ARGS> auto take_while(ARGS...) const;
 template <typename...ARGS> auto merge(ARGS...) const;
 template <typename...ARGS> auto amb(ARGS...) const;
-template <typename...ARGS> auto zip(ARGS...) const;
 template <typename...ARGS> auto timeout(ARGS...) const;
 template <typename...ARGS> auto delay(ARGS...) const;
 template <typename...ARGS> auto finally(ARGS...) const;
