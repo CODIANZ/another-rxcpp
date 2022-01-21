@@ -146,7 +146,21 @@ namespace another_rxcpp {
   {
     return *this | operators::finally(std::forward<ARGS>(args)...);
   }
-  
+
+  template <typename T>
+    template <typename...ARGS>
+      auto observable<T>::filter(ARGS...args) const
+  {
+    return *this | operators::filter(std::forward<ARGS>(args)...);
+  }
+
+  template <typename T>
+    template <typename...ARGS>
+      auto observable<T>::first(ARGS...args) const
+  {
+    return *this | operators::first(std::forward<ARGS>(args)...);
+  }
+
   template <typename T>
     auto observable<T>::publish() const
   {

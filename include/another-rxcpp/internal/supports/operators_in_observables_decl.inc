@@ -22,6 +22,8 @@ template <typename...ARGS> auto amb(ARGS...) const;
 template <typename...ARGS> auto timeout(ARGS...) const;
 template <typename...ARGS> auto delay(ARGS...) const;
 template <typename...ARGS> auto finally(ARGS...) const;
+template <typename...ARGS> auto filter(ARGS...) const;
+template <typename...ARGS> auto first(ARGS...) const;
       
 auto publish() const;
 auto as_blocking() const;

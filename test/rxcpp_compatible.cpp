@@ -40,6 +40,10 @@ void test_rxcpp_compatible() {
   .flat_map([](auto x){ return observable<>::just(x); })
   .last()
   .map([](auto x){ return x + 1; })
+  .first()
+  .filter([](auto x){
+    return x < 1;
+  })
   .merge(o)
   .observe_on(schedulers::observe_on_new_thread())
   .on_error_resume_next([](auto err){ return observable<>::error<int>(err); })

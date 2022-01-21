@@ -92,6 +92,8 @@ If compatibility with `RxCpp` is required, define as follows before including `r
 * distinct_until_changed
 * finally
 * flat_map
+* filter
+* first
 * last
 * map
 * merge
