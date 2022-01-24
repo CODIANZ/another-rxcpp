@@ -242,8 +242,9 @@ namespace zip_internal {
   {
     /** evaluate the return value if you pass BARGS... */
     template <typename F> static auto feval(F f) {
-      return f(std::declval<BARGS>()...);
+      return decltype(f(std::declval<BARGS>()...)){};
     }
+
     /** generate function type */
     template <typename RET>
       using ftype = std::function<RET(BARGS...)>;
