@@ -30,16 +30,21 @@ namespace merge_internal {
             private_access::subscriber::add_upstream(s, it);
           });
 
-          std::for_each(sources.begin(), sources.end(), [s](auto it){
+          auto completed = std::make_shared<std::atomic_size_t>(0);
+
+          std::for_each(sources.begin(), sources.end(), [s, completed, sources](auto it){
             it->subscribe({
-              .on_next = [s](auto x){
+              .on_next = [s](auto&& x){
                 s.on_next(std::move(x));
               },
               .on_error = [s](std::exception_ptr err){
                 s.on_error(err);
               },
-              .on_completed = [s](){
-                s.on_completed();
+              .on_completed = [s, completed, sources](){
+                (*completed)++;
+                if(*completed == sources.size()){
+                  s.on_completed();
+                }
               }
             });
           });

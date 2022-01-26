@@ -50,7 +50,7 @@ void test_inflow_restriction() {
       })
     )
     .subscribe({
-      .on_next = [=](int x){
+      .on_next = [=](int&& x){
         std::lock_guard<std::mutex> lock(*mtx);
         log() << "next " << x << std::endl;
       },
@@ -84,7 +84,7 @@ void test_inflow_restriction() {
       })
     )
     .subscribe({
-      .on_next = [=](int x){
+      .on_next = [=](int&& x){
         std::lock_guard<std::mutex> lock(*mtx);
         log() << "next " << x << std::endl;
       },

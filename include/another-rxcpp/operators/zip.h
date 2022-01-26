@@ -92,7 +92,7 @@ namespace zip_internal {
 
     sbsc.push_back(
       src->subscribe({
-        .on_next = [values, sync](auto x){
+        .on_next = [values, sync](auto&& x){
           {
             std::lock_guard<std::mutex> lock(sync->mtx_);
             values->push(std::move(x));
@@ -275,7 +275,7 @@ template <typename X, typename...ARGS, std::enable_if_t<!is_observable<X>::value
       );
       internal::private_access::subscriber::add_upstream(s, ups);
       ups->subscribe({
-        .on_next = [s, x](auto r){
+        .on_next = [s, x](auto&& r){
           s.on_next(zip_internal::apply(x, r));
         },
         .on_error = [s](std::exception_ptr err){

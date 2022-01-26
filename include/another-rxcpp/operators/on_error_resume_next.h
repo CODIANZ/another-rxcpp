@@ -16,14 +16,14 @@ template <typename NEXT_FN> auto on_error_resume_next(NEXT_FN f)
       auto upstream = private_access::observable::create_source(src);
       private_access::subscriber::add_upstream(s, upstream);
       upstream->subscribe({
-        .on_next = [s](auto x){
+        .on_next = [s](auto&& x){
           s.on_next(std::move(x));
         },
         .on_error = [s, f](std::exception_ptr err){
           try{
             f(err)
             .subscribe({
-              .on_next = [s](auto x){
+              .on_next = [s](auto&& x){
                 s.on_next(std::move(x));
               },
               .on_error = [s](std::exception_ptr err){

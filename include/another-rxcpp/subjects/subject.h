@@ -69,7 +69,7 @@ public:
         s.on_completed();
       }
       mm->source_.subscribe({
-        .on_next = [s](value_type x){
+        .on_next = [s](value_type&& x){
           s.on_next(std::move(x));
         },
         .on_error = [s](std::exception_ptr err) mutable {

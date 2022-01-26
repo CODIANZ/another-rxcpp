@@ -30,7 +30,7 @@ public:
   {
     auto m = m_.capture_element();
     m->subscription_ = as_observable().subscribe({
-      .on_next = [m](T x){
+      .on_next = [m](T&& x){
         std::lock_guard<std::mutex> lock(m->mtx_);
         m->last_ = std::move(x);
       },
@@ -62,7 +62,7 @@ public:
           return m->last_;
         }());
         src.subscribe({
-          .on_next = [s](T x){
+          .on_next = [s](T&& x){
             s.on_next(std::move(x));
           },
           .on_error = [s](std::exception_ptr err){
