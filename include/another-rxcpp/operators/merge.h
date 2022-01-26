@@ -32,7 +32,7 @@ namespace merge_internal {
 
           std::for_each(sources.begin(), sources.end(), [s](auto it){
             it->subscribe({
-              .on_next = [s](auto x){
+              .on_next = [s](auto&& x){
                 s.on_next(std::move(x));
               },
               .on_error = [s](std::exception_ptr err){

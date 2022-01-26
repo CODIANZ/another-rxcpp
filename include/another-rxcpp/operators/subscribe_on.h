@@ -20,7 +20,7 @@ inline auto subscribe_on(scheduler::creator_fn sccr)
         auto upstream = private_access::observable::create_source(src);
         private_access::subscriber::add_upstream(s, upstream);
         upstream->subscribe({
-          .on_next = [s, keepalive](auto x){
+          .on_next = [s, keepalive](auto&& x){
             s.on_next(std::move(x));
           },
           .on_error = [s, keepalive](std::exception_ptr err){

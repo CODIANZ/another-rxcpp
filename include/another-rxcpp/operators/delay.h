@@ -21,7 +21,7 @@ inline auto delay(std::chrono::milliseconds msec, scheduler::creator_fn sccr = s
         auto upstream = private_access::observable::create_source(src);
         private_access::subscriber::add_upstream(s, upstream);
         upstream->subscribe({
-          .on_next = [s, upstream, msec](auto x){
+          .on_next = [s, upstream, msec](auto&& x){
             std::this_thread::sleep_for(msec);
             s.on_next(std::move(x));
           },

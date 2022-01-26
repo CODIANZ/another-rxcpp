@@ -18,7 +18,7 @@ template <typename T>
       auto upstream = private_access::observable::create_source(src);
       private_access::subscriber::add_upstream(s, upstream);
       upstream->subscribe({
-        .on_next = [s, obs](auto x){
+        .on_next = [s, obs](auto&& x){
           if(obs.on_next) obs.on_next(x);
           s.on_next(std::move(x));
         },
@@ -50,7 +50,7 @@ template <typename ON_NEXT>
       auto upstream = private_access::observable::create_source(src);
       private_access::subscriber::add_upstream(s, upstream);
       upstream->subscribe({
-        .on_next = [s, n](auto x){
+        .on_next = [s, n](auto&& x){
           n(x);
           s.on_next(std::move(x));
         },

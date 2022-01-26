@@ -43,7 +43,7 @@ inline auto timeout(std::chrono::milliseconds msec)
       }).detach();
 
       upstream->subscribe({
-        .on_next = [s, m](auto x){
+        .on_next = [s, m](auto&& x){
           m->cond_.notify_one();
           s.on_next(std::move(x));
         },
