@@ -11,7 +11,7 @@ void test_tap() {
 
   auto o = observables::range(1, 10)
   | tap<int>({
-    .on_next = [](auto x) { log() << "tap next " << x << std::endl; },
+    .on_next = [](auto&& x) { log() << "tap next " << x << std::endl; },
     .on_error = [](auto err) { log() << "tap error" << std::endl; },
     .on_completed = []() { log() << "tap completed" << std::endl; }
   })
