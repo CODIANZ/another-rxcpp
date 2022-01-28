@@ -16,13 +16,12 @@ template <typename T>
   });
 }
 
-template <typename T>
-  inline auto error(const std::exception& err)
+template <typename T, typename ERR>
+  inline auto error(const ERR& err)
     -> observable<T>
 {
   return error<T>(std::make_exception_ptr(err));
 }
-
 
 
 } /* namespace observables */

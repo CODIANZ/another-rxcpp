@@ -52,7 +52,16 @@ template <typename T> auto doSubscribe(T source) {
   | subscribe([](typename T::value_type x) {
     log() << "  [on_next] " << x << std::endl;
   }, [](std::exception_ptr err) {
-    log() << "  [on_error] " << std::endl;
+    std::string w = [err](){
+      try{ std::rethrow_exception(err); }
+      catch(std::exception& e){
+        return e.what();
+      }
+      catch(...){
+        return "unknown";
+      }
+    }();
+    log() << "  [on_error] " << w << std::endl;
   }, []() {
     log() << "  [on_completed] " << std::endl;
   });
