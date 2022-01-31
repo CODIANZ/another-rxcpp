@@ -18,15 +18,15 @@ template <typename T>
       auto upstream = private_access::observable::create_source(src);
       private_access::subscriber::add_upstream(s, upstream);
       upstream->subscribe({
-        .on_next = [s, obs](auto&& x){
+        [s, obs](auto&& x){
           if(obs.on_next) obs.on_next(x);
           s.on_next(std::move(x));
         },
-        .on_error = [s, obs](std::exception_ptr err){
+        [s, obs](std::exception_ptr err){
           if(obs.on_error) obs.on_error(err);
           s.on_error(err);
         },
-        .on_completed = [s, obs](){
+        [s, obs](){
           if(obs.on_completed) obs.on_completed();
           s.on_completed();
         }
@@ -50,15 +50,15 @@ template <typename ON_NEXT>
       auto upstream = private_access::observable::create_source(src);
       private_access::subscriber::add_upstream(s, upstream);
       upstream->subscribe({
-        .on_next = [s, n](auto&& x){
+        [s, n](auto&& x){
           n(x);
           s.on_next(std::move(x));
         },
-        .on_error = [s, e](std::exception_ptr err){
+        [s, e](std::exception_ptr err){
           if(e) e(err);
           s.on_error(err);
         },
-        .on_completed = [s, c](){
+        [s, c](){
           if(c) c();
           s.on_completed();
         }

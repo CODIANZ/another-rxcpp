@@ -21,9 +21,17 @@ template <typename T> struct observer {
   using on_next_fn_t      = observer<>::next_t<value_type>;
   using on_error_fn_t     = observer<>::error_t;
   using on_completed_fn_t = observer<>::completed_t;
-  on_next_fn_t        on_next = {};
-  on_error_fn_t       on_error = {};
-  on_completed_fn_t   on_completed = {};
+  on_next_fn_t        on_next;
+  on_error_fn_t       on_error;
+  on_completed_fn_t   on_completed;
+  observer(
+    on_next_fn_t n = {},
+    on_error_fn_t e = {},
+    on_completed_fn_t c = {}
+  ) :
+    on_next(n),
+    on_error(e),
+    on_completed(c) {}
 };
 
 } /* namespace another_rxcpp */

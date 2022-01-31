@@ -73,9 +73,9 @@ public:
     typename observer_type::on_completed_fn_t on_completed = {}
   ) const {
     return subscribe({
-      .on_next      = on_next,
-      .on_error     = on_error,
-      .on_completed = on_completed
+      on_next,
+      on_error,
+      on_completed
     });
   }
 

@@ -57,8 +57,9 @@ protected:
     subjects::subject<value_type> sbj_;
     subscription            subscription_;
     source_sp               upstream_;
-    bool                    done_ = false;
-    std::atomic_bool        started_{false};
+    bool                    done_;
+    std::atomic_bool        started_;
+    /* the default constructor for this structure is undefined because it adopts the default constructor for each property. */
   };
   internal::shared_with_will<member>  m_;
   observable<value_type>    src_;
@@ -84,21 +85,21 @@ protected:
     auto m = m_.capture_element();
     std::thread([m](){
       m->subscription_ = m->upstream_->subscribe({
-        .on_next = [m](value_type&& x){
+        [m](value_type&& x){
           std::unique_lock<std::mutex> lock(m->mtx_);
           m->cond_.wait(lock, [m]{ return m->read_ > 0 || m->done_; });
           if(m->done_) return;
           m->read_--;
           m->sbj_.as_subscriber().on_next(std::move(x));
         },
-        .on_error = [m](std::exception_ptr err){
+        [m](std::exception_ptr err){
           std::unique_lock<std::mutex> lock(m->mtx_);
           m->cond_.wait(lock, [m]{ return m->read_ > 0; });
           if(m->done_) return;
           m->read_--;
           m->sbj_.as_subscriber().on_error(err);
         },
-        .on_completed = [m]() {
+        [m]() {
           std::unique_lock<std::mutex> lock(m->mtx_);
           m->cond_.wait(lock, [m]{ return m->read_ > 0; });
           if(m->done_) return;
@@ -111,30 +112,29 @@ protected:
 
   bool subscribe_one(value_type& value) const {
     struct _result {
-      std::exception_ptr  err = nullptr;
-      bool        gotValue = false;
-      value_type  value;
-      bool        bDone = false;
+      std::exception_ptr  err;
+      std::shared_ptr<value_type> pvalue;
+      bool        bDone;
       std::mutex  mtx;
       std::condition_variable cond;
+      /* the default constructor for this structure is undefined because it adopts the default constructor for each property. */
     };
     auto result = std::make_shared<_result>();
     auto o = m_->sbj_.as_observable() | operators::take(1);
     auto sbsc = o.subscribe({
-      .on_next = [result](value_type&& x){
-        result->value = std::move(x);
-        result->gotValue = true;
+      [result](value_type&& x){
         std::lock_guard<std::mutex> lock(result->mtx);
+        result->pvalue = std::make_shared<value_type>(std::move(x));
         result->bDone = true;
         result->cond.notify_one();
       },
-      .on_error = [result](std::exception_ptr e){
+      [result](std::exception_ptr e){
         result->err = e;
         std::lock_guard<std::mutex> lock(result->mtx);
         result->bDone = true;
         result->cond.notify_one();
       },
-      .on_completed = [result](){
+      [result](){
         std::lock_guard<std::mutex> lock(result->mtx);
         result->bDone = true;
         result->cond.notify_one();
@@ -151,8 +151,8 @@ protected:
       result->cond.wait(lock, [result]{ return result->bDone; });
     }
     if(result->err) std::rethrow_exception(result->err);
-    if(!result->gotValue) return false;
-    value = std::move(result->value);
+    if(!result->pvalue) return false;
+    value = std::move(*result->pvalue);
     return true;
   }
 

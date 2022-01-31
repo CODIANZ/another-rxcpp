@@ -43,15 +43,15 @@ inline auto timeout(std::chrono::milliseconds msec)
       }).detach();
 
       upstream->subscribe({
-        .on_next = [s, m](auto&& x){
+        [s, m](auto&& x){
           m->cond_.notify_one();
           s.on_next(std::move(x));
         },
-        .on_error = [s, m](std::exception_ptr err){
+        [s, m](std::exception_ptr err){
           s.on_error(err);
           m->cond_.notify_one();
         },
-        .on_completed = [s, m](){
+        [s, m](){
           s.on_completed();
           m->cond_.notify_one();
         }

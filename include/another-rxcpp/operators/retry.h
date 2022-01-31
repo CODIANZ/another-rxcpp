@@ -15,10 +15,10 @@ template <typename T>
   auto upstream = private_access::observable::create_source(src);
   private_access::subscriber::add_upstream(s, upstream);
   upstream->subscribe({
-    .on_next = [s](auto&& x){
+    [s](auto&& x){
       s.on_next(std::move(x));
     },
-    .on_error = [s, src, upstream, max_retry_count, count](std::exception_ptr err){
+    [s, src, upstream, max_retry_count, count](std::exception_ptr err){
       upstream->unsubscribe();
       if(max_retry_count == 0 || count < max_retry_count){
         do_retry(s, src, max_retry_count, count + 1);
@@ -27,7 +27,7 @@ template <typename T>
         s.on_error(err);
       }
     },
-    .on_completed = [s](){
+    [s](){
       s.on_completed();
     }
   });

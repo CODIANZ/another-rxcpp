@@ -34,13 +34,13 @@ namespace merge_internal {
 
           std::for_each(sources.begin(), sources.end(), [s, completed, sources](auto it){
             it->subscribe({
-              .on_next = [s](auto&& x){
+              [s](auto&& x){
                 s.on_next(std::move(x));
               },
-              .on_error = [s](std::exception_ptr err){
+              [s](std::exception_ptr err){
                 s.on_error(err);
               },
-              .on_completed = [s, completed, sources](){
+              [s, completed, sources](){
                 (*completed)++;
                 if(*completed == sources.size()){
                   s.on_completed();

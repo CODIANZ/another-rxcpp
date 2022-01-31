@@ -18,17 +18,17 @@ inline auto observe_on(scheduler::creator_fn sccr)
       auto upstream =private_access::observable::create_source(src);
       private_access::subscriber::add_upstream(s, upstream);
       upstream->subscribe({
-        .on_next = [s, scdl, upstream](auto&& x){
+        [s, scdl, upstream](auto&& x){
           scdl.schedule([s, x = std::move(x)]() {
             s.on_next(std::move(x));
           });
         },
-        .on_error = [s, scdl](std::exception_ptr err){
+        [s, scdl](std::exception_ptr err){
           scdl.schedule([s, err]() {
             s.on_error(err);
           });
         },
-        .on_completed = [s, scdl](){
+        [s, scdl](){
           scdl.schedule([s]() {
             s.on_completed();
           });

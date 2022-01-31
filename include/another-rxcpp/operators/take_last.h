@@ -20,15 +20,15 @@ inline auto take_last(std::size_t n)
       auto upstream = private_access::observable::create_source(src);
       private_access::subscriber::add_upstream(s, upstream);
       upstream->subscribe({
-        .on_next = [s, upstream, n, mtx, arr](auto&& x){
+        [s, upstream, n, mtx, arr](auto&& x){
           std::lock_guard<std::mutex> lock(*mtx);
           arr->push(std::move(x));
           if(arr->size() > n) arr->pop();
         },
-        .on_error = [s, upstream](std::exception_ptr err){
+        [s, upstream](std::exception_ptr err){
           s.on_error(err);
         },
-        .on_completed = [s, n, mtx, arr](){
+        [s, n, mtx, arr](){
           {
             /** Should I emit even with a small number of elements? */
             std::lock_guard<std::mutex> lock(*mtx);
