@@ -70,8 +70,9 @@ namespace zip_internal {
     using sp = std::shared_ptr<sync>;
     std::mutex              mtx_;
     std::condition_variable cond_;
-    std::exception_ptr      err_ = nullptr;
-    std::size_t             completed_ = 0;
+    std::exception_ptr      err_;
+    std::size_t             completed_;
+    /* the default constructor for this structure is undefined because it adopts the default constructor for each property. */
   };
 
 
@@ -92,21 +93,21 @@ namespace zip_internal {
 
     sbsc.push_back(
       src->subscribe({
-        .on_next = [values, sync](auto&& x){
+        [values, sync](auto&& x){
           {
             std::lock_guard<std::mutex> lock(sync->mtx_);
             values->push(std::move(x));
             sync->cond_.notify_one();
           }
         },
-        .on_error = [sync](std::exception_ptr err){
+        [sync](std::exception_ptr err){
           {
             std::lock_guard<std::mutex> lock(sync->mtx_);
             if(sync->err_ != nullptr) sync->err_ = err;
             sync->cond_.notify_one();
           }
         },
-        .on_completed = [sync](){
+        [sync](){
           {
             std::lock_guard<std::mutex> lock(sync->mtx_);
             sync->completed_++;
@@ -275,13 +276,13 @@ template <typename X, typename...ARGS, std::enable_if_t<!is_observable<X>::value
       );
       internal::private_access::subscriber::add_upstream(s, ups);
       ups->subscribe({
-        .on_next = [s, x](auto&& r){
+        [s, x](auto&& r){
           s.on_next(zip_internal::apply(x, r));
         },
-        .on_error = [s](std::exception_ptr err){
+        [s](std::exception_ptr err){
           s.on_error(err);
         },
-        .on_completed = [s](){
+        [s](){
           s.on_completed();
         }
       });

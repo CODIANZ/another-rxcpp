@@ -18,7 +18,7 @@ inline auto distinct_until_changed()
       auto upstream = private_access::observable::create_source(src);
       private_access::subscriber::add_upstream(s, upstream);
       upstream->subscribe({
-        .on_next = [s, mtx, last_value](auto&& x){
+        [s, mtx, last_value](auto&& x){
           const bool bNext = [&](){
             std::lock_guard<std::mutex> lock(*mtx);
             if(!*last_value){
@@ -33,10 +33,10 @@ inline auto distinct_until_changed()
           }();
           if(bNext) s.on_next(**last_value);
         },
-        .on_error = [s](std::exception_ptr err){
+        [s](std::exception_ptr err){
           s.on_error(err);
         },
-        .on_completed = [s](){
+        [s](){
           s.on_completed();
         }
       });

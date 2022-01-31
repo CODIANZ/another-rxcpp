@@ -17,7 +17,7 @@ inline auto take(std::size_t n)
       auto upstream = private_access::observable::create_source(src);
       private_access::subscriber::add_upstream(s, upstream);
       upstream->subscribe({
-        .on_next = [s, n, upstream, counter](auto&& x){
+        [s, n, upstream, counter](auto&& x){
           const auto now = counter->fetch_add(1);
           if(now == n) {
             s.on_next(std::move(x));
@@ -27,10 +27,10 @@ inline auto take(std::size_t n)
             s.on_next(std::move(x));
           }
         },
-        .on_error = [s](std::exception_ptr err){
+        [s](std::exception_ptr err){
           s.on_error(err);
         },
-        .on_completed = [s](){
+        [s](){
           s.on_completed();
         }
       });

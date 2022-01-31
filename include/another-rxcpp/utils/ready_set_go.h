@@ -12,13 +12,13 @@ template <typename OB>
   using T = typename OB::value_type;
   return observable<>::create<T>([f, o](subscriber<T> s){
     o.subscribe({
-      .on_next = [s](T&& x) {
+      [s](T&& x) {
         s.on_next(std::move(x));
       },
-      .on_error = [s](std::exception_ptr err){
+      [s](std::exception_ptr err){
         s.on_error(err);
       },
-      .on_completed = [s](){
+      [s](){
         s.on_completed();
       }
     });

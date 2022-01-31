@@ -20,26 +20,26 @@ template <typename TRIGGER_OB> auto skip_until(TRIGGER_OB trigger)
       auto bOpen = std::make_shared<std::atomic_bool>(false);
 
       trig->subscribe({
-        .on_next = [s, bOpen, trig](auto&&){
+        [s, bOpen, trig](auto&&){
           trig->unsubscribe();
           (*bOpen) = true;
         },
-        .on_error = [](std::exception_ptr){
+        [](std::exception_ptr){
         },
-        .on_completed = [](){
+        [](){
         }
       });
 
       upstream->subscribe({
-        .on_next = [s, bOpen](auto&& x){
+        [s, bOpen](auto&& x){
           if(*bOpen){
             s.on_next(std::move(x));
           }
         },
-        .on_error = [s, trig](std::exception_ptr err){
+        [s, trig](std::exception_ptr err){
           s.on_error(err);
         },
-        .on_completed = [s, trig](){
+        [s, trig](){
           s.on_completed();
         }
       });

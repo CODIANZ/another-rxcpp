@@ -24,6 +24,7 @@ private:
     subscriber_type     subscriber_;
     std::exception_ptr  error_;
     subscription        subscription_;
+    /* the default constructor for this structure is undefined because it adopts the default constructor for each property. */
   };
   internal::shared_with_will<member> m_;
 
@@ -69,13 +70,13 @@ public:
         s.on_completed();
       }
       mm->source_.subscribe({
-        .on_next = [s](value_type&& x){
+        [s](value_type&& x){
           s.on_next(std::move(x));
         },
-        .on_error = [s](std::exception_ptr err) mutable {
+        [s](std::exception_ptr err) mutable {
           s.on_error(err);
         },
-        .on_completed = [s]() mutable {
+        [s]() mutable {
           s.on_completed();
         },
       });

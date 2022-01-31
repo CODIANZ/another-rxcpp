@@ -14,7 +14,7 @@ void test_inflow_restriction() {
   enum class result { success, failure };
   struct long_api {
     std::mutex mtx_;
-    int count_ = 0;
+    int count_;
     observable<result> call() {
       return observables::just(unit{}, new_thread_scheduler())
       | tap([=](unit){
@@ -50,15 +50,15 @@ void test_inflow_restriction() {
       })
     )
     .subscribe({
-      .on_next = [=](int&& x){
+      [=](int&& x){
         std::lock_guard<std::mutex> lock(*mtx);
         log() << "next " << x << std::endl;
       },
-      .on_error = [=](std::exception_ptr){
+      [=](std::exception_ptr){
         std::lock_guard<std::mutex> lock(*mtx);
         log() << "error " << std::endl;
       },
-      .on_completed = [=](){
+      [=](){
         std::lock_guard<std::mutex> lock(*mtx);
         log() << "completed " << std::endl;
       }
@@ -84,15 +84,15 @@ void test_inflow_restriction() {
       })
     )
     .subscribe({
-      .on_next = [=](int&& x){
+      [=](int&& x){
         std::lock_guard<std::mutex> lock(*mtx);
         log() << "next " << x << std::endl;
       },
-      .on_error = [=](std::exception_ptr){
+      [=](std::exception_ptr){
         std::lock_guard<std::mutex> lock(*mtx);
         log() << "error " << std::endl;
       },
-      .on_completed = [=](){
+      [=](){
         std::lock_guard<std::mutex> lock(*mtx);
         log() << "completed " << std::endl;
       }

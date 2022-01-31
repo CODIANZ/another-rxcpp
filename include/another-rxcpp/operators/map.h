@@ -16,7 +16,7 @@ template <typename F> auto map(F f)
       auto upstream = private_access::observable::create_source(src);
       private_access::subscriber::add_upstream(s, upstream);
       upstream->subscribe({
-        .on_next = [s, f](auto&& x){
+        [s, f](auto&& x){
           try{
             s.on_next(f(std::move(x)));
           }
@@ -24,10 +24,10 @@ template <typename F> auto map(F f)
             s.on_error(std::current_exception());
           }
         },
-        .on_error = [s](std::exception_ptr err){
+        [s](std::exception_ptr err){
           s.on_error(err);
         },
-        .on_completed = [s](){
+        [s](){
           s.on_completed();
         }
       });

@@ -18,7 +18,7 @@ template <typename F> auto skip_while(F f)
       private_access::subscriber::add_upstream(s, upstream);
       auto skip = std::make_shared<bool>(true);
       upstream->subscribe({
-        .on_next = [s, f, skip](auto&& x){
+        [s, f, skip](auto&& x){
           try{
             if(*skip){
               *skip = f(x);
@@ -31,10 +31,10 @@ template <typename F> auto skip_while(F f)
             s.on_error(std::current_exception());
           }
         },
-        .on_error = [s](std::exception_ptr err){
+        [s](std::exception_ptr err){
           s.on_error(err);
         },
-        .on_completed = [s](){
+        [s](){
           s.on_completed();
         }
       });

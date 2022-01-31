@@ -40,6 +40,7 @@ private:
     std::mutex      mtx_;
     std::atomic_int serial_;
     source_sp       upstream_;
+    /* the default constructor for this structure is undefined because it adopts the default constructor for each property. */
   };
   std::shared_ptr<member> m_;
 
@@ -109,19 +110,19 @@ public:
     };
 
     m->upstream_->subscribe({
-      .on_next = [collect](value_type&& x) {
+      [collect](value_type&& x) {
         auto obs = collect();
         std::for_each(obs.begin(), obs.end(), [&](auto ob){
           ob.on_next(x);
         });
       },
-      .on_error = [collect](std::exception_ptr err){
+      [collect](std::exception_ptr err){
         auto obs = collect();
         std::for_each(obs.begin(), obs.end(), [&](auto ob){
           ob.on_error(err);
         });
       },
-      .on_completed = [collect](){
+      [collect](){
         auto obs = collect();
         std::for_each(obs.begin(), obs.end(), [&](auto ob){
           ob.on_completed();
