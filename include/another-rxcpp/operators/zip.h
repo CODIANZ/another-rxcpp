@@ -70,9 +70,8 @@ namespace zip_internal {
     using sp = std::shared_ptr<sync>;
     std::mutex              mtx_;
     std::condition_variable cond_;
-    std::exception_ptr      err_;
-    std::size_t             completed_;
-    /* the default constructor for this structure is undefined because it adopts the default constructor for each property. */
+    std::exception_ptr      err_ = nullptr;
+    std::size_t             completed_ = 0;
   };
 
 

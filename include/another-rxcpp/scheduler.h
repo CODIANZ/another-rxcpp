@@ -42,8 +42,7 @@ private:
     std::mutex                mtx_;
     std::condition_variable   cond_;
     std::queue<function_type> queue_;
-    int                       refcount_;
-    /* the default constructor for this structure is undefined because it adopts the default constructor for each property. */
+    int                       refcount_ = 0;
   };
   std::shared_ptr<member>     m_;
 

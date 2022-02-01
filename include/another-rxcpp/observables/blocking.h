@@ -57,9 +57,8 @@ protected:
     subjects::subject<value_type> sbj_;
     subscription            subscription_;
     source_sp               upstream_;
-    bool                    done_;
-    std::atomic_bool        started_;
-    /* the default constructor for this structure is undefined because it adopts the default constructor for each property. */
+    bool                    done_ = false;
+    std::atomic_bool        started_{false};
   };
   internal::shared_with_will<member>  m_;
   observable<value_type>    src_;
@@ -112,12 +111,11 @@ protected:
 
   bool subscribe_one(value_type& value) const {
     struct _result {
-      std::exception_ptr  err;
+      std::exception_ptr          err = nullptr;
       std::shared_ptr<value_type> pvalue;
-      bool        bDone;
-      std::mutex  mtx;
-      std::condition_variable cond;
-      /* the default constructor for this structure is undefined because it adopts the default constructor for each property. */
+      bool                        bDone = false;
+      std::mutex                  mtx;
+      std::condition_variable     cond;
     };
     auto result = std::make_shared<_result>();
     auto o = m_->sbj_.as_observable() | operators::take(1);

@@ -22,9 +22,8 @@ private:
   struct member {
     source_type         source_;
     subscriber_type     subscriber_;
-    std::exception_ptr  error_;
+    std::exception_ptr  error_ = nullptr;
     subscription        subscription_;
-    /* the default constructor for this structure is undefined because it adopts the default constructor for each property. */
   };
   internal::shared_with_will<member> m_;
 
