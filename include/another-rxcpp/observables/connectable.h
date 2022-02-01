@@ -38,9 +38,8 @@ private:
   struct member {
     sinks_type      sinks_;
     std::mutex      mtx_;
-    std::atomic_int serial_;
+    std::atomic_int serial_{0};
     source_sp       upstream_;
-    /* the default constructor for this structure is undefined because it adopts the default constructor for each property. */
   };
   std::shared_ptr<member> m_;
 

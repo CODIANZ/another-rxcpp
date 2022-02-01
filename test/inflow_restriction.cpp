@@ -14,7 +14,7 @@ void test_inflow_restriction() {
   enum class result { success, failure };
   struct long_api {
     std::mutex mtx_;
-    int count_;
+    int count_ = 0;
     observable<result> call() {
       return observables::just(unit{}, new_thread_scheduler())
       | tap([=](unit){
