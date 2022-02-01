@@ -35,12 +35,12 @@ template <typename FUNC, std::size_t N>
   using lambda_arg_t = typename std::tuple_element<N, typename lambda_traits<FUNC>::args>::type;
 
 template <typename SP>
-  inline auto to_weak(SP sp) {
+  inline auto to_weak(SP sp) noexcept {
     return std::weak_ptr<typename SP::element_type>(sp);
   }
 
 template <typename T>
-  auto to_shared(T value) {
+  auto to_shared(T value) noexcept {
     return std::make_shared<T>(std::forward<T>(value));
   }
 

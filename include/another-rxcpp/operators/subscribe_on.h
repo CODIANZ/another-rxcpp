@@ -7,7 +7,7 @@
 namespace another_rxcpp {
 namespace operators {
 
-inline auto subscribe_on(scheduler::creator_fn sccr)
+inline auto subscribe_on(scheduler::creator_fn sccr) noexcept
 {
   return [sccr](auto src){
     using OUT_OB = decltype(src);

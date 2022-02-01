@@ -18,7 +18,7 @@ template <typename ON_NEXT>
   auto subscribe(
     ON_NEXT                 next,
     observer<>::error_t     error,
-    observer<>::completed_t completed)
+    observer<>::completed_t completed) noexcept
 {
   return [next, error, completed](auto src){
     using observer_type = typename decltype(src)::observer_type;

@@ -14,16 +14,16 @@ template <> class something<void> {
 private:
   class retry_trigger : public std::exception {};
 public:
-  [[noreturn]] static void retry() {
+  [[noreturn]] static void retry() noexcept(false) {
     throw retry_trigger{};
   }
   template<typename T, typename TT = typename internal::strip_const_referece<T>::type>
-  static something<TT> success(T v) {
+  static something<TT> success(T v) noexcept {
     return something<TT>(
       observables::just(std::forward<T>(v))
     );
   }
-  template<typename T> static something<T> error(std::exception_ptr err) {
+  template<typename T> static something<T> error(std::exception_ptr err) noexcept {
     return something<T>(
       observables::error<T>(err)
     );
@@ -34,9 +34,9 @@ template<typename T> class something {
 friend class something<>;
 private:
   observable<T> o_;
-  something(observable<T> o) : o_(o) {}
+  something(observable<T> o) noexcept : o_(o) {}
 public:
-  observable<T> proceed() { return o_; }
+  observable<T> proceed() noexcept { return o_; }
 };
 
 } /* namespace utils */

@@ -26,13 +26,13 @@ private:
   cond_sp                 cond_;
 
 public:
-  subscription() :
+  subscription() noexcept :
     cond_(std::make_shared<std::condition_variable>()) {}
   subscription(
     any_sp_keeper       sp_keeper,
     is_subscribed_fn_t  is_subscribed_fn,
     on_unsubscribe_fn_t on_unsubscribe_fn
-  ) : 
+  ) noexcept : 
     m_(std::make_shared<member>()),
     cond_(std::make_shared<std::condition_variable>())
   {
@@ -42,7 +42,7 @@ public:
   }
   ~subscription() = default;
 
-  void unsubscribe() const {
+  void unsubscribe() const noexcept {
     auto m = m_;
     if(!m) return;
     auto fn = [m](){
@@ -61,7 +61,7 @@ public:
     }
   }
 
-  bool is_subscribed() const {
+  bool is_subscribed() const noexcept {
     auto m = m_;
     if(!m) return false;
     auto fn = [m](){
@@ -72,7 +72,7 @@ public:
     return fn ? fn() : false;
   }
 
-  auto unsubscribe_notice() const { return cond_; }
+  auto unsubscribe_notice() const noexcept { return cond_; }
 };
 
 } /* namespace another_rxcpp */

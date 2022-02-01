@@ -15,26 +15,26 @@ private:
   std::future<void> future_;
 
 public:
-  async_scheduler_interface() :
+  async_scheduler_interface() noexcept :
     scheduler_interface(schedule_type::queuing) {}
   virtual ~async_scheduler_interface() = default;
 
-  virtual void run(call_in_context_fn_t call_in_context) override {
+  virtual void run(call_in_context_fn_t call_in_context) noexcept override {
     future_ = std::async(std::launch::async, [call_in_context](){
       call_in_context();
     });
   }
 
-  virtual void detach() override {
+  virtual void detach() noexcept override {
     future_ = {};
   }
 
-  virtual void schedule(function_type f) override {
+  virtual void schedule(function_type f) noexcept override {
     f();
   }
 };
 
-inline auto async_scheduler() {
+inline auto async_scheduler() noexcept {
   return []{
     return scheduler(
       std::make_shared<async_scheduler_interface>()

@@ -6,7 +6,7 @@
 namespace another_rxcpp {
 namespace operators {
 
-inline auto blocking()
+inline auto blocking() noexcept
 {
   return [](auto src){
     using OUT_OB = decltype(src);

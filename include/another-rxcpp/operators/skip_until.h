@@ -6,7 +6,7 @@
 namespace another_rxcpp {
 namespace operators {
 
-template <typename TRIGGER_OB> auto skip_until(TRIGGER_OB trigger)
+template <typename TRIGGER_OB> auto skip_until(TRIGGER_OB trigger) noexcept
 {
   return [trigger](auto src) mutable {
     using OUT_OB = decltype(src);

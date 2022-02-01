@@ -23,7 +23,7 @@ private:
 protected:
 
 public:
-  behavior(T initial_value) :
+  behavior(T initial_value) noexcept :
     m_(std::make_shared<member>(std::move(initial_value)), [](auto x){
       x->subscription_.unsubscribe();
     })
@@ -42,7 +42,7 @@ public:
 
   virtual ~behavior() = default;
 
-  virtual observable<T> as_observable() const override {
+  virtual observable<T> as_observable() const noexcept override {
     auto src = subject<T>::as_observable();
     auto m = m_.capture_element();
     auto base_completed = subject<T>::completed();

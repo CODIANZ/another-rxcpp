@@ -16,7 +16,7 @@ template <typename T> struct is_observable<observable<T>> : std::true_type {};
 template <> class observable<void> {
 public:
   template<typename T>
-    static auto create(typename internal::source<T>::emitter_fn_t f)
+    static auto create(typename internal::source<T>::emitter_fn_t f) noexcept
   {
     return observable<T>([f](){
       return internal::source<>::create<T>(f);
@@ -30,7 +30,7 @@ public:
 
 class observable_base {
 protected:
-  template <typename T> static typename internal::source<T>::sp execute_source_creator(const observable<T>& o){
+  template <typename T> static typename internal::source<T>::sp execute_source_creator(const observable<T>& o) noexcept {
     return o.source_creator_fn_();
   }
 public:
@@ -53,17 +53,17 @@ private:
 
 protected:
   observable() = default;
-  source_sp create_source() const { return source_creator_fn_(); }
-  void set_source_creator_fn(source_creator_fn_t source_creator) {
+  source_sp create_source() const noexcept { return source_creator_fn_(); }
+  void set_source_creator_fn(source_creator_fn_t source_creator) noexcept {
     source_creator_fn_ = source_creator;
   }
 
 public: 
-  observable(source_creator_fn_t source_creator) :
+  observable(source_creator_fn_t source_creator) noexcept :
     source_creator_fn_(source_creator) {}
   virtual ~observable() = default;
 
-  virtual subscription subscribe(observer_type ob) const {
+  virtual subscription subscribe(observer_type ob) const noexcept {
     return source_creator_fn_()->subscribe(ob);
   }
 
@@ -71,7 +71,7 @@ public:
     typename observer_type::on_next_fn_t      on_next = {},
     typename observer_type::on_error_fn_t     on_error = {},
     typename observer_type::on_completed_fn_t on_completed = {}
-  ) const {
+  ) const noexcept {
     return subscribe({
       on_next,
       on_error,
@@ -79,7 +79,7 @@ public:
     });
   }
 
-  template <typename F> auto operator | (F f) const
+  template <typename F> auto operator | (F f) const noexcept
   {
     /**
      * F = auto f(observable<T>)
@@ -95,7 +95,7 @@ public:
   #endif /* defined(SUPPORTS_OPERATORS_IN_OBSERVABLE) */
 
   #if defined(SUPPORTS_RXCPP_COMPATIBLE)
-    auto as_dynamic() const -> observable<value_type>
+    auto as_dynamic() const noexcept -> observable<value_type>
     {
       return *this;
     }

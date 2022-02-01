@@ -7,7 +7,7 @@ namespace another_rxcpp {
 namespace observables {
 
 template <typename T>
-  inline auto empty()
+  inline auto empty() noexcept
     -> observable<T>
 {
   return observable<>::create<T>([](subscriber<T> s){

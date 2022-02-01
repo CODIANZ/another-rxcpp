@@ -7,7 +7,7 @@ namespace another_rxcpp {
 namespace observables {
 
 template <typename T>
-  inline auto never()
+  inline auto never() noexcept
     -> observable<T>
 {
   return observable<>::create<T>([](subscriber<T> s){

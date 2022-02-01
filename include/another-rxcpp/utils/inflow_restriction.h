@@ -14,13 +14,13 @@ private:
   std::shared_ptr<sem_type> sem_;
 
 public:
-  inflow_restriction() :
+  inflow_restriction() noexcept :
     sem_(std::make_shared<sem_type>()) {}
   inflow_restriction(const inflow_restriction&) = delete;
   ~inflow_restriction() = default;
 
   template <typename T>
-    auto enter(observable<T> o)
+    auto enter(observable<T> o) noexcept
   {
     auto sem = sem_;
     return observable<>::create<T>([sem, o](subscriber<T> s){

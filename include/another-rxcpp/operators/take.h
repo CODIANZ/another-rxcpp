@@ -6,7 +6,7 @@
 namespace another_rxcpp {
 namespace operators {
 
-inline auto take(std::size_t n)
+inline auto take(std::size_t n) noexcept
 {
   return [n](auto src){
     using OUT_OB = decltype(src);

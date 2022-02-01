@@ -7,7 +7,7 @@
 namespace another_rxcpp {
 namespace operators {
 
-template <typename F> auto map(F f)
+template <typename F> auto map(F f) noexcept
 {
   using OUT = internal::lambda_invoke_result_t<F>;
   return [f](auto src){

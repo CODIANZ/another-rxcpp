@@ -12,7 +12,7 @@ namespace operators {
 
 namespace merge_internal {
   template <typename T, typename OB>
-  auto merge(scheduler::creator_fn sccr, std::vector<observable<T>>& arr, OB ob){
+  auto merge(scheduler::creator_fn sccr, std::vector<observable<T>>& arr, OB ob) noexcept {
     arr.push_back(ob);
     return [sccr, arr](auto src) mutable {
       return observable<>::create<T>([src, sccr, arr](subscriber<T> s) mutable {

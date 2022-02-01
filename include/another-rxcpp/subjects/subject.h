@@ -28,11 +28,11 @@ private:
   internal::shared_with_will<member> m_;
 
 protected:
-  bool completed() const { return !m_->subscription_.is_subscribed(); }
-  std::exception_ptr error() const { return m_->error_; }
+  bool completed() const noexcept { return !m_->subscription_.is_subscribed(); }
+  std::exception_ptr error() const noexcept { return m_->error_; }
 
 public:
-  subject() :
+  subject() noexcept :
     m_(std::make_shared<member>(), [](auto x){
       x->subscription_.unsubscribe();
     })
@@ -53,11 +53,11 @@ public:
 
   virtual ~subject() = default;
 
-  auto as_subscriber() const {
+  auto as_subscriber() const noexcept {
     return m_->subscriber_;
   }
 
-  virtual observable<T> as_observable() const {
+  virtual observable<T> as_observable() const noexcept {
     auto m = m_;
     return observable<>::create<value_type>([m](subscriber_type s) mutable {
       auto mm = m.capture_element();

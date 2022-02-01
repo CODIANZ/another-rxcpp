@@ -9,7 +9,7 @@
 namespace another_rxcpp {
 namespace operators {
 
-inline auto delay(std::chrono::milliseconds msec, scheduler::creator_fn sccr = schedulers::default_scheduler())
+inline auto delay(std::chrono::milliseconds msec, scheduler::creator_fn sccr = schedulers::default_scheduler()) noexcept
 {
   return [msec, sccr](auto src){
     using OUT_OB = decltype(src);

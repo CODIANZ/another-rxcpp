@@ -21,7 +21,7 @@ private:
   refcount_sp refcount_;
 
 public:
-  shared_with_will(element_sp element, will_fn_t will_fn) :
+  shared_with_will(element_sp element, will_fn_t will_fn) noexcept :
     element_(element),
     will_fn_(will_fn),
     refcount_(std::make_shared<std::atomic_size_t>())
@@ -29,11 +29,11 @@ public:
     *refcount_ = 1;
   }
 
-  shared_with_will(const shared_with_will& src){
+  shared_with_will(const shared_with_will& src) noexcept {
     *this = src;
   }
 
-  shared_with_will& operator = (const shared_with_will& src){
+  shared_with_will& operator = (const shared_with_will& src) noexcept {
     (*src.refcount_)++;
     release();
     element_  = src.element_;
@@ -42,15 +42,15 @@ public:
     return *this;
   }
 
-  ~shared_with_will(){
+  ~shared_with_will() noexcept {
     release();
   }
 
-  element_sp operator-> () const { return element_; }
+  element_sp operator-> () const noexcept { return element_; }
 
-  element_sp capture_element() const { return element_; }
+  element_sp capture_element() const noexcept { return element_; }
 
-  void release(){
+  void release() noexcept {
     if(!refcount_) return;
     const auto n = refcount_->fetch_sub(1);
     if(n == 1){
