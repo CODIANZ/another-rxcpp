@@ -7,7 +7,7 @@
 namespace another_rxcpp {
 namespace operators {
 
-inline auto first()
+inline auto first() noexcept
 {
   return take(1);
 }

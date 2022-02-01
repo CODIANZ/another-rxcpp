@@ -30,12 +30,12 @@ private:
   };
   std::shared_ptr<member> m_;
 
-  template <typename X> void add_upstream(X upstream) const {
+  template <typename X> void add_upstream(X upstream) const noexcept {
     std::lock_guard<std::recursive_mutex> lock(m_->mtx_);
     m_->upstreams_.push_back(std::dynamic_pointer_cast<source_base>(upstream));
   }
 
-  void unsubscribe_upstreams() const {
+  void unsubscribe_upstreams() const noexcept {
     std::lock_guard<std::recursive_mutex> lock(m_->mtx_);
     for(auto it : m_->upstreams_){
       auto u = it;
@@ -47,18 +47,18 @@ private:
   }
 
 public:
-  subscriber() :
+  subscriber() noexcept :
     m_(std::make_shared<member>()) {}
 
   template <typename SOURCE_SP>
-    subscriber(SOURCE_SP source, observer_sp observer) :
+    subscriber(SOURCE_SP source, observer_sp observer) noexcept :
       m_(std::make_shared<member>())
   {
     m_->source_ = std::dynamic_pointer_cast<source_base>(source);
     m_->observer_ = observer;
   }
 
-  template <typename U> void on_next(U&& value) const {
+  template <typename U> void on_next(U&& value) const noexcept {
     auto s = m_->source_;
     auto o = m_->observer_.lock();
     auto v = std::forward<U>(value);
@@ -75,7 +75,7 @@ public:
     }
   }
 
-  void on_error(std::exception_ptr err) const {
+  void on_error(std::exception_ptr err) const noexcept {
     unsubscribe_upstreams();
     auto s = m_->source_;
     auto o = m_->observer_.lock();
@@ -92,7 +92,7 @@ public:
     unsubscribe();
   }
 
-  void on_completed() const {
+  void on_completed() const noexcept {
     unsubscribe_upstreams();
     auto s = m_->source_;
     auto o = m_->observer_.lock();
@@ -106,13 +106,13 @@ public:
     unsubscribe();
   }
 
-  bool is_subscribed() const {
+  bool is_subscribed() const noexcept {
     std::lock_guard<std::recursive_mutex> lock(m_->mtx_);
     auto s = m_->source_;
     return s ? s->is_subscribed() : false;
   }
 
-  void unsubscribe() const {
+  void unsubscribe() const noexcept {
     unsubscribe_upstreams();
     std::lock_guard<std::recursive_mutex> lock(m_->mtx_);
     auto s = m_->source_;

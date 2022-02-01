@@ -8,7 +8,7 @@ namespace another_rxcpp {
 namespace observables {
 
 template <typename T>
-  auto iterate(T arr)
+  auto iterate(T arr) noexcept
     -> observable<typename T::value_type>
 {
   using TT = typename T::value_type;

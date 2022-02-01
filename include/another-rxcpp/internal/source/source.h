@@ -23,7 +23,7 @@ public:
   template <typename T>
   static typename source<T>::sp create(
     typename source<T>::emitter_fn_t emitter
-  ) {
+  ) noexcept {
     return std::make_shared<source<T>>(emitter);
   }
 };
@@ -40,12 +40,12 @@ public:
 private:
   emitter_fn_t  emitter_fn_;
   subscriber_sp subscriber_;
-  sp shared_this() { return std::dynamic_pointer_cast<source<T>>(shared_base()); }
+  sp shared_this() noexcept { return std::dynamic_pointer_cast<source<T>>(shared_base()); }
 
 protected:
   source() = default;
 
-  virtual void unsubscribe_upstreams() {
+  virtual void unsubscribe_upstreams() noexcept override {
     auto s = subscriber_;
     subscriber_.reset();
     if(s){
@@ -55,10 +55,10 @@ protected:
   }
 
 public:
-  source(emitter_fn_t emitter_fn) : emitter_fn_(emitter_fn) {}
+  source(emitter_fn_t emitter_fn) noexcept : emitter_fn_(emitter_fn) {}
   virtual ~source() = default;
 
-  virtual subscription subscribe(observer_type ob) {
+  virtual subscription subscribe(observer_type ob) noexcept {
     auto THIS = shared_this();
     auto obs = internal::to_shared(std::move(ob));
     subscriber_ = std::make_shared<subscriber_type>(THIS, obs);

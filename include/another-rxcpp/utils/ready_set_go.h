@@ -7,7 +7,7 @@ namespace another_rxcpp {
 namespace utils {
 
 template <typename OB>
-  auto ready_set_go(std::function<void()> f, OB o)
+  auto ready_set_go(std::function<void()> f, OB o) noexcept
 {
   using T = typename OB::value_type;
   return observable<>::create<T>([f, o](subscriber<T> s){

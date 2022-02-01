@@ -28,7 +28,7 @@ template <typename T> struct observer {
     on_next_fn_t n = {},
     on_error_fn_t e = {},
     on_completed_fn_t c = {}
-  ) :
+  ) noexcept :
     on_next(n),
     on_error(e),
     on_completed(c) {}

@@ -13,7 +13,7 @@ template <typename T = void> class connectable;
 
 template <> class connectable<void> {
 public:
-  template <typename T> static auto create(observable<T> src) {
+  template <typename T> static auto create(observable<T> src) noexcept {
     return connectable<T>(src);
   }
 };
@@ -48,9 +48,9 @@ private:
     std::shared_ptr<member> m_;
 
   public:
-    connectable_source(std::shared_ptr<member> m) : m_(m) {}
+    connectable_source(std::shared_ptr<member> m) noexcept : m_(m) {}
 
-    virtual subscription subscribe(observer_type ob) {
+    virtual subscription subscribe(observer_type ob) noexcept override {
       const auto serial = m_->serial_.fetch_add(1);
       auto m = m_;
       subscription sbsc(
@@ -81,7 +81,7 @@ private:
 
 public:
   connectable() = default; /* do not use this normally! */
-  connectable(observable<T> src) : 
+  connectable(observable<T> src) noexcept : 
     m_(std::make_shared<member>())
   {
     m_->upstream_ = internal::private_access::observable::create_source(src);
@@ -95,7 +95,7 @@ public:
     );
   }
 
-  subscription connect() const {
+  subscription connect() const noexcept {
     auto m = m_;
 
     auto collect = [m](){

@@ -15,7 +15,7 @@ public:
   timeout_error(const std::string& msg) : runtime_error(msg) {}
 };
 
-inline auto timeout(std::chrono::milliseconds msec)
+inline auto timeout(std::chrono::milliseconds msec) noexcept
 {
   return [msec](auto src){
     using OUT_OB = decltype(src);

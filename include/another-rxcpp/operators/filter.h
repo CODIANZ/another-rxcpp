@@ -7,7 +7,7 @@
 namespace another_rxcpp {
 namespace operators {
 
-template <typename F> auto filter(F f)
+template <typename F> auto filter(F f) noexcept
 {
   return [f](auto src){
     using OUT_OB = decltype(src);

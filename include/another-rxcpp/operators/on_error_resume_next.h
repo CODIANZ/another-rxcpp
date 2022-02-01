@@ -6,7 +6,7 @@
 namespace another_rxcpp {
 namespace operators {
 
-template <typename NEXT_FN> auto on_error_resume_next(NEXT_FN f)
+template <typename NEXT_FN> auto on_error_resume_next(NEXT_FN f) noexcept
 {
   return [f](auto src){
     using OUT_OB = decltype(src);

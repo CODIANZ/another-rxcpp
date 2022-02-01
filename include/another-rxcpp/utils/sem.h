@@ -16,12 +16,12 @@ private:
   std::condition_variable cond_;
 
 public:
-  explicit sem(int initial_count = count_max_) : count_(initial_count) {}
+  explicit sem(int initial_count = count_max_) noexcept : count_(initial_count) {}
   sem(const sem&) = delete; /** non copyable */
   ~sem() = default;
 
   /** BasicLockable */
-  void lock() { 
+  void lock() noexcept { 
     std::unique_lock<std::mutex> lock(mtx_);
     cond_.wait(lock, [&]{
       return count_ > 0;
@@ -29,7 +29,7 @@ public:
     count_--;    
   }
 
-  void unlock() { 
+  void unlock() noexcept { 
     std::lock_guard<std::mutex> lock(mtx_);
     if (count_ < count_max_) {
       count_++;
@@ -38,7 +38,7 @@ public:
   }
 
   /** Lockable */
-  bool try_lock() {
+  bool try_lock() noexcept {
     std::lock_guard<std::mutex> lock(mtx_);
     if(count_ > 0) {
       count_--;

@@ -6,7 +6,7 @@
 namespace another_rxcpp {
 namespace operators {
 
-inline auto distinct_until_changed()
+inline auto distinct_until_changed() noexcept
 {
   return [](auto src){
     using OUT_OB = decltype(src);

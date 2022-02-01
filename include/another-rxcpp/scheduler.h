@@ -16,16 +16,16 @@ private:
   schedule_type schedule_type_;
 
 protected:
-  scheduler_interface(schedule_type stype) : schedule_type_(stype) {}
+  scheduler_interface(schedule_type stype) noexcept : schedule_type_(stype) {}
 
 public:
   virtual ~scheduler_interface() = default;
 
-  schedule_type get_schedule_type() const { return schedule_type_; }
+  schedule_type get_schedule_type() const noexcept { return schedule_type_; }
 
-  virtual void run(call_in_context_fn_t call_in_context) = 0;
-  virtual void detach() = 0;
-  virtual void schedule(function_type f) = 0;
+  virtual void run(call_in_context_fn_t call_in_context) noexcept = 0;
+  virtual void detach() noexcept = 0;
+  virtual void schedule(function_type f) noexcept = 0;
 };
 
 class scheduler {
@@ -46,7 +46,7 @@ private:
   };
   std::shared_ptr<member>     m_;
 
-  void release() {
+  void release() noexcept {
     if(!m_) return;
     if(m_->interface_->get_schedule_type() == scheduler_interface::schedule_type::queuing){
       std::unique_lock<std::mutex> lock(m_->mtx_);
@@ -61,7 +61,7 @@ private:
   }
 
 public:
-  template <typename ISP> scheduler(ISP isp) :
+  template <typename ISP> scheduler(ISP isp) noexcept :
     m_(std::make_shared<member>())
   {
     m_->interface_ = std::dynamic_pointer_cast<scheduler_interface>(isp);
@@ -86,11 +86,11 @@ public:
     }
   }
 
-  scheduler(const scheduler& src){
+  scheduler(const scheduler& src) noexcept {
     *this = src;
   }
 
-  scheduler& operator= (const scheduler& src) {
+  scheduler& operator= (const scheduler& src) noexcept {
     release();
     m_ = src.m_;
     if(m_->interface_->get_schedule_type() == scheduler_interface::schedule_type::queuing){
@@ -100,11 +100,11 @@ public:
     return *this;
   }
 
-  virtual ~scheduler() {
+  virtual ~scheduler() noexcept {
     release();
   }
 
-  void schedule(function_type f) const {
+  void schedule(function_type f) const noexcept {
     if(m_->interface_->get_schedule_type() == scheduler_interface::schedule_type::queuing){
       std::unique_lock<std::mutex> lock(m_->mtx_);
       m_->queue_.push(f);

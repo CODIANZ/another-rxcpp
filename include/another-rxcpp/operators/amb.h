@@ -12,7 +12,7 @@ namespace operators {
 
 namespace amb_internal {
   template <typename T, typename OB>
-  auto amb(scheduler::creator_fn sccr, std::vector<observable<T>>& arr, OB ob){
+  auto amb(scheduler::creator_fn sccr, std::vector<observable<T>>& arr, OB ob) noexcept {
     arr.push_back(ob);
     return [sccr, arr](auto src) mutable {
       return observable<>::create<T>([src, sccr, arr](subscriber<T> s) mutable {
@@ -72,21 +72,21 @@ namespace amb_internal {
   }
 
   template <typename T, typename OB, typename...ARGS>
-  auto amb(scheduler::creator_fn sccr, std::vector<observable<T>>& arr, OB ob, ARGS...args){
+  auto amb(scheduler::creator_fn sccr, std::vector<observable<T>>& arr, OB ob, ARGS...args) noexcept {
     arr.push_back(ob);
     return amb(sccr, arr, args...);
   }
 } /* namespace amb_internal */
 
 template <typename OB, typename...ARGS, std::enable_if_t<is_observable<OB>::value, bool> = true>
-auto amb(OB ob, ARGS...args) {
+auto amb(OB ob, ARGS...args) noexcept {
   using T = typename OB::value_type;
   std::vector<observable<T>> arr;
   return amb_internal::amb<T>(schedulers::default_scheduler(), arr, ob, args...);
 }
 
 template <typename OB, typename...ARGS>
-auto amb(scheduler::creator_fn sccr, OB ob, ARGS...args) {
+auto amb(scheduler::creator_fn sccr, OB ob, ARGS...args) noexcept {
   using T = typename OB::value_type;
   std::vector<observable<T>> arr;
   return amb_internal::amb<T>(sccr, arr, ob, args...);

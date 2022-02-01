@@ -8,7 +8,7 @@ namespace observables {
 
 
 template <typename T>
-  inline auto error(std::exception_ptr err)
+  inline auto error(std::exception_ptr err) noexcept
     -> observable<T>
 {
   return observable<>::create<T>([err](subscriber<T> s){

@@ -9,7 +9,7 @@ namespace operators {
 namespace retry_internal {
 
 template <typename T>
-  void do_retry(subscriber<T> s, observable<T> src, const std::size_t max_retry_count, const std::size_t count)
+  void do_retry(subscriber<T> s, observable<T> src, const std::size_t max_retry_count, const std::size_t count) noexcept
 {
   using namespace another_rxcpp::internal;
   auto upstream = private_access::observable::create_source(src);

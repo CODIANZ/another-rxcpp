@@ -8,7 +8,7 @@ namespace another_rxcpp {
 namespace operators {
 
 template <typename T>
-  auto tap(observer<T> obs)
+  auto tap(observer<T> obs) noexcept
 {
   return [obs](auto src){
     using OUT_OB = decltype(src);
@@ -40,7 +40,7 @@ template <typename ON_NEXT>
     ON_NEXT                 n,
     observer<>::error_t     e = {},
     observer<>::completed_t c = {}
-  )
+  ) noexcept
 {
   return [n, e, c](auto src){
     using OUT_OB = decltype(src);

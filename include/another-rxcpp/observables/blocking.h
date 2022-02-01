@@ -21,7 +21,7 @@ public:
     typename T,
     std::enable_if_t<!std::is_arithmetic<T>::value, bool> = true
   >
-  static auto create(observable<T> src)
+  static auto create(observable<T> src) noexcept
   {
     return blocking<T>(src);
   }
@@ -30,7 +30,7 @@ public:
     typename T,
     std::enable_if_t<std::is_arithmetic<T>::value, bool> = true
   >
-  static auto create(observable<T> src)
+  static auto create(observable<T> src) noexcept
   {
     return calculable_blocking<T>(src);
   }
@@ -38,7 +38,7 @@ public:
 
 class empty_error : public std::runtime_error {
 public:
-  empty_error(const std::string& msg) : runtime_error(msg) {}
+  empty_error(const std::string& msg) noexcept : runtime_error(msg) {}
 };
 
 template <typename T> class blocking : public observable<T> {
@@ -52,7 +52,7 @@ public:
 protected:
   struct member {
     std::mutex              mtx_;
-    std::size_t             read_;
+    std::size_t             read_ = 0;
     std::condition_variable cond_;
     subjects::subject<value_type> sbj_;
     subscription            subscription_;
@@ -63,7 +63,7 @@ protected:
   internal::shared_with_will<member>  m_;
   observable<value_type>    src_;
 
-  blocking(observable<T> src) :
+  blocking(observable<T> src) noexcept :
     m_(std::make_shared<member>(), [](auto x){
       if(x->started_.exchange(false)){
         {
@@ -78,7 +78,7 @@ protected:
     src_(src)
   {}
 
-  void start_subscribing_if_not() const {
+  void start_subscribing_if_not() const noexcept {
     if(m_->started_.exchange(true)) return;
     m_->upstream_ = internal::private_access::observable::create_source(src_);
     auto m = m_.capture_element();
@@ -109,7 +109,7 @@ protected:
     }).detach();
   }
 
-  bool subscribe_one(value_type& value) const {
+  bool subscribe_one(value_type& value) const noexcept(false) {
     struct _result {
       std::exception_ptr          err = nullptr;
       std::shared_ptr<value_type> pvalue;
@@ -154,7 +154,7 @@ protected:
     return true;
   }
 
-  auto subscribe_all() const {
+  auto subscribe_all() const noexcept(false) {
     std::vector<value_type> values;
     value_type value;
     while(subscribe_one(value)){
@@ -165,7 +165,7 @@ protected:
 
 public:
 
-  virtual subscription subscribe(observer_type ob) const override {
+  virtual subscription subscribe(observer_type ob) const noexcept override {
     try{
       auto values = subscribe_all();
       std::for_each(
@@ -182,19 +182,19 @@ public:
     return subscription();
   }
 
-  value_type first() const {
+  value_type first() const noexcept(false) {
     value_type value;
     if(!subscribe_one(value)) throw empty_error("empty");
     return value;
   }
 
-  value_type last() const {
+  value_type last() const noexcept(false) {
     auto  values = subscribe_all();
     if(values.empty()) throw empty_error("empty");
     return values.back();
   }
 
-  std::size_t count() const {
+  std::size_t count() const noexcept(false) {
     auto  values = subscribe_all();
     return values.size();
   }
@@ -210,29 +210,29 @@ public:
 private:
   using base   = blocking<T>;
 
-  calculable_blocking(observable<T> src) : blocking<T>(src) {}
+  calculable_blocking(observable<T> src) noexcept : blocking<T>(src) {}
 
 public:
-  value_type sum() const {
+  value_type sum() const noexcept(false) {
     auto  values = base::subscribe_all();
     if(values.empty()) throw empty_error("empty");
     return std::accumulate(std::cbegin(values), std::cend(values), 0);
   }
 
-  double average() const {
+  double average() const noexcept(false) {
     auto  values = base::subscribe_all();
     if(values.empty()) throw empty_error("empty");
     auto sum = std::accumulate(std::cbegin(values), std::cend(values), 0);
     return static_cast<double>(sum) / static_cast<double>(values.size());
   }
 
-  value_type max() const {
+  value_type max() const noexcept(false) {
     auto  values = base::subscribe_all();
     if(values.empty()) throw empty_error("empty");
     return *std::max_element(std::cbegin(values), std::cend(values));
   }
 
-  value_type min() const {
+  value_type min() const noexcept(false) {
     auto  values = base::subscribe_all();
     if(values.empty()) throw empty_error("empty");
     return *std::min_element(std::cbegin(values), std::cend(values));

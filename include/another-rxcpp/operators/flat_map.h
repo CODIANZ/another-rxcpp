@@ -9,7 +9,7 @@
 namespace another_rxcpp {
 namespace operators {
 
-template <typename F> auto flat_map(F f)
+template <typename F> auto flat_map(F f) noexcept
 {
   using OUT_OB  = internal::lambda_invoke_result_t<F>;
   using OUT     = typename OUT_OB::value_type;

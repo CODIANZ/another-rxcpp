@@ -15,22 +15,22 @@ private:
   std::thread thread_;
 
 public:
-  new_thread_scheduler_interface() :
+  new_thread_scheduler_interface() noexcept :
     scheduler_interface(schedule_type::queuing) {}
 
   virtual ~new_thread_scheduler_interface() = default;
 
-  virtual void run(call_in_context_fn_t call_in_context) override {
+  virtual void run(call_in_context_fn_t call_in_context) noexcept override {
     thread_ = std::thread([call_in_context](){
       call_in_context();
     });
   }
 
-  virtual void detach() override {
+  virtual void detach() noexcept override {
     thread_.detach();
   }
 
-  virtual void schedule(function_type f) override {
+  virtual void schedule(function_type f) noexcept override {
     f();
   }
 };

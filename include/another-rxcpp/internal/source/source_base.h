@@ -19,26 +19,26 @@ private:
   subscription  subscription_; 
 
 protected:
-  sp shared_base() { return this->shared_from_this(); }
-  void set_subscription(subscription sbsc) {
+  sp shared_base() noexcept { return this->shared_from_this(); }
+  void set_subscription(subscription sbsc) noexcept {
     subscription_ = std::move(sbsc);
   }
 
-  void set_state_unsubscribed() {
+  void set_state_unsubscribed() noexcept {
     std::lock_guard<decltype(mtx_)> lock(mtx_);
     if(state_ == state::active){
       state_ = state::unsubscribed;
     }
   }
 
-  virtual void unsubscribe_upstreams() = 0;
+  virtual void unsubscribe_upstreams() noexcept = 0;
 
 public:
-  source_base() : state_(state::active) {}
+  source_base() noexcept : state_(state::active) {}
   virtual ~source_base() = default;
 
   /** conditional emitters */
-  void on_next_function(std::function<void()> f){
+  void on_next_function(std::function<void()> f) noexcept {
     if(!subscription_.is_subscribed()) return;
     const bool bExecute = [&](){
       std::lock_guard<decltype(mtx_)> lock(mtx_);
@@ -49,7 +49,7 @@ public:
     }
   }
 
-  void on_error_function(std::function<void()> f){
+  void on_error_function(std::function<void()> f) noexcept {
     const bool bExecute = [&](){
       std::lock_guard<decltype(mtx_)> lock(mtx_);
       if(state_ == state::active){
@@ -64,7 +64,7 @@ public:
     }
   }
 
-  void on_completed_function(std::function<void()> f){
+  void on_completed_function(std::function<void()> f) noexcept {
     const bool bExecute = [&](){
       std::lock_guard<decltype(mtx_)> lock(mtx_);
       if(state_ == state::active){
@@ -79,10 +79,10 @@ public:
     }
   }
 
-  state state() const { return state_; }
+  state state() const noexcept { return state_; }
   
-  bool is_subscribed() const { return subscription_.is_subscribed(); }
-  void unsubscribe() {
+  bool is_subscribed() const noexcept { return subscription_.is_subscribed(); }
+  void unsubscribe() noexcept {
     unsubscribe_upstreams();
     subscription_.unsubscribe();
   }

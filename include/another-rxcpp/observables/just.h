@@ -9,7 +9,7 @@ namespace another_rxcpp {
 namespace observables {
 
 template <typename T>
-  inline auto just(T&& value, scheduler::creator_fn sccr = schedulers::default_scheduler())
+  inline auto just(T&& value, scheduler::creator_fn sccr = schedulers::default_scheduler()) noexcept
     -> observable<typename internal::strip_const_referece<T>::type>
 {
   using TT = typename internal::strip_const_referece<T>::type;
