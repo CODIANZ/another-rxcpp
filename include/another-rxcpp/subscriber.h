@@ -61,15 +61,14 @@ public:
   template <typename U> void on_next(U&& value) const noexcept {
     auto s = m_->source_;
     auto o = m_->observer_.lock();
-    auto v = std::forward<U>(value);
     if(!is_subscribed()){
       unsubscribe();
       return;
     }
     if(s){
-      s->on_next_function([o, &v](){
+      s->on_next_function([o, &value](){
         if(o && o->on_next){
-          o->on_next(std::move(v));
+          o->on_next(std::forward<U>(value));
         }
       });
     }

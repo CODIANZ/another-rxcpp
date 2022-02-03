@@ -12,7 +12,7 @@ public:
 
 class subscriber {
 public:
-  template <typename SUBSCRIBER, typename UPSTREAM> static void add_upstream(const SUBSCRIBER& s, UPSTREAM upstream) noexcept {
+  template <typename SUBSCRIBER, typename UPSTREAM> static void add_upstream(const SUBSCRIBER& s, UPSTREAM&& upstream) noexcept {
     s.add_upstream(std::forward<UPSTREAM>(upstream));
   }
   template <typename SUBSCRIBER> static void unsubscribe_upstreams(const SUBSCRIBER& s) noexcept {

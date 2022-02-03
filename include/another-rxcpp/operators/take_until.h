@@ -8,10 +8,10 @@ namespace operators {
 
 template <typename TRIGGER_OB> auto take_until(TRIGGER_OB trigger) noexcept
 {
-  return [trigger](auto src) mutable {
+  return [trigger](auto src) {
     using OUT_OB = decltype(src);
     using OUT = typename OUT_OB::value_type;
-    return observable<>::create<OUT>([src, trigger](subscriber<OUT> s) mutable {
+    return observable<>::create<OUT>([src, trigger](subscriber<OUT> s) {
       using namespace another_rxcpp::internal;
       auto upstream = private_access::observable::create_source(src);
       private_access::subscriber::add_upstream(s, upstream);
