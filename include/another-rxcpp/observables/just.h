@@ -13,7 +13,7 @@ template <typename T>
     -> observable<typename internal::strip_const_referece<T>::type>
 {
   using TT = typename internal::strip_const_referece<T>::type;
-  return observable<>::create<TT>([value = std::forward<T>(value), sccr](subscriber<TT> s){
+  return observable<>::create<TT>([value = std::forward<T>(value), sccr](subscriber<TT> s) mutable { /* mutable is required for move */
     auto scdl = sccr();
     scdl.schedule([value = std::move(value), s](){
       s.on_next(std::move(value));
