@@ -72,10 +72,10 @@ public:
         [s](value_type&& x){
           s.on_next(std::move(x));
         },
-        [s](std::exception_ptr err) mutable {
+        [s](std::exception_ptr err) {
           s.on_error(err);
         },
-        [s]() mutable {
+        [s]() {
           s.on_completed();
         },
       });

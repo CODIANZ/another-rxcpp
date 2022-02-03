@@ -15,7 +15,7 @@ inline auto subscribe_on(scheduler::creator_fn sccr) noexcept
     return observable<>::create<OUT>([src, sccr](subscriber<OUT> s) {
       auto scdl = sccr();
       auto keepalive = scdl;
-      scdl.schedule([s, src, keepalive]() mutable {
+      scdl.schedule([s, src, keepalive]() {
         using namespace another_rxcpp::internal;
         auto upstream = private_access::observable::create_source(src);
         private_access::subscriber::add_upstream(s, upstream);

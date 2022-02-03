@@ -14,15 +14,15 @@ namespace merge_internal {
   template <typename T, typename OB>
   auto merge(scheduler::creator_fn sccr, std::vector<observable<T>>& arr, OB ob) noexcept {
     arr.push_back(ob);
-    return [sccr, arr](auto src) mutable {
-      return observable<>::create<T>([src, sccr, arr](subscriber<T> s) mutable {
+    return [sccr,  arr = internal::to_shared(std::move(arr))](auto src) {
+      return observable<>::create<T>([src, sccr, arr](subscriber<T> s) {
         auto scdl = sccr();
         scdl.schedule([src, arr, s](){
           using namespace another_rxcpp::internal;
           using source_sp = typename OB::source_sp;
           std::vector<source_sp> sources;
           sources.push_back(private_access::observable::create_source(src));
-          std::for_each(arr.begin(), arr.end(), [&](auto it){
+          std::for_each(arr->begin(), arr->end(), [&](auto it){
             sources.push_back(private_access::observable::create_source(it));
           });
 

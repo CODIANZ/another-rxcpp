@@ -62,7 +62,7 @@ private:
           return it != m->sinks_.end() && m->upstream_->is_subscribed();
         },
         /* on_unsubscribe */
-        [serial, m]() mutable{
+        [serial, m]() {
           std::lock_guard<std::mutex> lock(m->mtx_);
           m->sinks_.erase(serial);
           if(m->sinks_.size() == 0) m->upstream_->unsubscribe();
