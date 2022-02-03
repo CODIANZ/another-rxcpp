@@ -18,7 +18,7 @@ public:
     throw retry_trigger{};
   }
   template<typename T, typename TT = typename internal::strip_const_referece<T>::type>
-  static something<TT> success(T v) noexcept {
+  static something<TT> success(T&& v) noexcept {
     return something<TT>(
       observables::just(std::forward<T>(v))
     );

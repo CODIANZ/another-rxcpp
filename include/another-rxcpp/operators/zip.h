@@ -38,13 +38,13 @@ namespace zip_internal {
    *  tuple< shared_ptr<queue<OB1::value_type>>, shared_ptr<queue<OB1::value_type>>, ...>
    **/
   template <typename TPL>
-    auto create_values_queue_internal(TPL tpl) noexcept
+    auto create_values_queue_internal(TPL tpl)
   { 
     return tpl;
   }
 
   template <typename TPL, typename OB, typename ...ARGS>
-    auto create_values_queue_internal(TPL tpl, OB /* ob */, ARGS...args) noexcept
+    auto create_values_queue_internal(TPL tpl, OB /* ob */, ARGS...args)
   { 
     return create_values_queue_internal(
       std::tuple_cat(
@@ -57,7 +57,7 @@ namespace zip_internal {
   }
 
   template <typename ...ARGS>
-    auto create_values_queue(ARGS...args) noexcept
+    auto create_values_queue(ARGS...args)
   {
     return create_values_queue_internal(std::tuple<>(), args...);
   }
@@ -79,11 +79,11 @@ namespace zip_internal {
    * subscribe each observables
    **/
   template <std::size_t N, typename VALQ>
-    void subscribe_impl(sync::sp, std::vector<subscription>& sbsc, const VALQ& valq) noexcept
+    void subscribe_impl(sync::sp, std::vector<subscription>& sbsc, const VALQ& valq)
   { /** nothing to do */ }
 
   template <std::size_t N, typename VALQ, typename OB, typename... ARGS>
-    void subscribe_impl(sync::sp sync, std::vector<subscription>& sbsc, const VALQ& valq, OB ob, ARGS...args) noexcept
+    void subscribe_impl(sync::sp sync, std::vector<subscription>& sbsc, const VALQ& valq, OB ob, ARGS...args)
   {
     subscribe_impl<N + 1>(sync, sbsc, valq, args...);
 
@@ -118,7 +118,7 @@ namespace zip_internal {
   }
 
   template <typename VALQ, typename... ARGS>
-    void subscribe(sync::sp sync, std::vector<subscription>& sbsc, const VALQ& valq, ARGS...args) noexcept
+    void subscribe(sync::sp sync, std::vector<subscription>& sbsc, const VALQ& valq, ARGS...args)
   {
     subscribe_impl<0>(sync, sbsc, valq, args...);
   }
@@ -128,19 +128,19 @@ namespace zip_internal {
    * check all values are ready
    **/
   template <std::size_t N, typename VALQ>
-    bool ready_values_impl(const VALQ& valq) noexcept
+    bool ready_values_impl(const VALQ& valq)
   {
     return true;
   }
 
   template <std::size_t N, typename VALQ, typename OB, typename... ARGS>
-    bool ready_values_impl(const VALQ& valq, OB /* ob */, ARGS...args) noexcept
+    bool ready_values_impl(const VALQ& valq, OB /* ob */, ARGS...args)
   {
     return std::get<N>(valq)->size() > 0 && ready_values_impl<N + 1>(valq, args...);
   }
 
   template <typename VALQ, typename... ARGS>
-    bool ready_values(const VALQ& valq, ARGS...args) noexcept
+    bool ready_values(const VALQ& valq, ARGS...args)
   {
     return ready_values_impl<0>(valq, args...);
   }
@@ -150,13 +150,13 @@ namespace zip_internal {
    * get all the first values & pop
    **/
   template <std::size_t N, typename VALQ, typename TPL>
-    auto get_values_impl(TPL tpl, const VALQ& valq) noexcept
+    auto get_values_impl(TPL tpl, const VALQ& valq)
   {
     return tpl;
   }
 
   template <std::size_t N, typename VALQ, typename TPL, typename OB, typename... ARGS>
-    auto get_values_impl(TPL tpl, const VALQ& valq, OB /* ob */, ARGS...args) noexcept
+    auto get_values_impl(TPL tpl, const VALQ& valq, OB /* ob */, ARGS...args)
   {
     auto values = std::get<N>(valq);
     auto v = values->front();
@@ -169,7 +169,7 @@ namespace zip_internal {
   }
 
   template <typename VALQ, typename... ARGS>
-    auto get_values(const VALQ& valq, ARGS...args) noexcept
+    auto get_values(const VALQ& valq, ARGS...args)
   {
     return get_values_impl<0>(std::tuple<>(), valq, args...);
   }
@@ -180,13 +180,13 @@ namespace zip_internal {
    *  http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2013/n3802.pdf
    **/
   template <typename F, typename Tuple, std::size_t... I>
-    auto apply_impl(F&& f, Tuple&& t, std::index_sequence<I...>) noexcept
+    auto apply_impl(F&& f, Tuple&& t, std::index_sequence<I...>)
   {
     return std::forward<F>(f)(std::get<I>(std::forward<Tuple>(t))...);
   }
 
   template <typename F, typename Tuple>
-    auto apply(F&& f, Tuple&& t) noexcept
+    auto apply(F&& f, Tuple&& t)
   {
     using Indices = std::make_index_sequence<std::tuple_size<std::decay_t<Tuple>>::value>;
     return apply_impl(std::forward<F>(f), std::forward<Tuple>(t), Indices{});
@@ -197,7 +197,7 @@ namespace zip_internal {
    * zip main function
    */
   template <typename...ARGS>
-  auto zip_main(ARGS...args) noexcept {
+  auto zip_main(ARGS...args) {
     return [args...](auto src) {
       using rtype = typename zip_internal::result_type<decltype(src), ARGS...>::type;
       return observable<>::create<rtype>([src, args...](subscriber<rtype> s) {
@@ -241,7 +241,7 @@ namespace zip_internal {
     struct function_parameter_impl<bundle<BARGS...>>
   {
     /** evaluate the return value if you pass BARGS... */
-    template <typename F> static auto feval(F f) noexcept {
+    template <typename F> static auto feval(F f) {
       return decltype(f(std::declval<BARGS>()...)){};
     }
 
@@ -259,13 +259,13 @@ namespace zip_internal {
 } /* zip_internal */
 
 template <typename X, typename...ARGS, std::enable_if_t<is_observable<X>::value, bool> = true>
-  auto zip(X x, ARGS...args) noexcept
+  auto zip(X x, ARGS...args)
 {
   return zip_internal::zip_main(std::forward<X>(x), std::forward<ARGS>(args)...);
 }
 
 template <typename X, typename...ARGS, std::enable_if_t<!is_observable<X>::value, bool> = true>
-  auto zip(X x, ARGS...args) noexcept
+  auto zip(X x, ARGS...args)
 {
   return [x, args...](auto src){
     using FRET = internal::lambda_invoke_result_t<X>;
