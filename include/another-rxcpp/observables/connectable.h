@@ -50,7 +50,7 @@ private:
   public:
     connectable_source(std::shared_ptr<member> m) noexcept : m_(m) {}
 
-    virtual subscription subscribe(observer_type ob) noexcept override {
+    virtual subscription subscribe(observer_type&& ob) noexcept override {
       const auto serial = m_->serial_.fetch_add(1);
       auto m = m_;
       subscription sbsc(
@@ -72,7 +72,7 @@ private:
         std::lock_guard<std::mutex> lock(m->mtx_);
         m->sinks_.insert({serial, {
           .subscription_ = sbsc,
-          .observer_ = ob
+          .observer_ = std::move(ob)
         }});
       }
       return sbsc;

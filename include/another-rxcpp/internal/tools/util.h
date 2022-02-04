@@ -6,7 +6,7 @@
 
 namespace another_rxcpp { namespace internal {
 
-template <typename T> struct strip_const_referece {
+template <typename T> struct strip_const_reference {
   using type = typename std::remove_const<typename std::remove_reference<T>::type>::type;
 };
 

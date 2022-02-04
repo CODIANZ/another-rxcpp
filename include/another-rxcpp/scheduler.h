@@ -25,7 +25,7 @@ public:
 
   virtual void run(call_in_context_fn_t call_in_context) noexcept = 0;
   virtual void detach() noexcept = 0;
-  virtual void schedule(function_type f) noexcept = 0;
+  virtual void schedule(const function_type& f) noexcept = 0;
 };
 
 class scheduler {
@@ -104,16 +104,27 @@ public:
     release();
   }
 
-  void schedule(function_type f) const noexcept {
+  void schedule(const function_type& f) const noexcept {
+    if(m_->interface_->get_schedule_type() == scheduler_interface::schedule_type::queuing){
+      auto cpf = f;
+      schedule(std::move(f));
+    }
+    else{
+      /* m_->interface_->get_schedule_type() == scheduler_interface::schedule_type::direct */
+      m_->interface_->schedule(f);
+    }
+  }
+
+  void schedule(function_type&& f) const noexcept {
     if(m_->interface_->get_schedule_type() == scheduler_interface::schedule_type::queuing){
       std::unique_lock<std::mutex> lock(m_->mtx_);
-      m_->queue_.push(f);
+      m_->queue_.push(std::move(f));
       lock.unlock();
       m_->cond_.notify_one();
     }
     else{
       /* m_->interface_->get_schedule_type() == scheduler_interface::schedule_type::direct */
-      m_->interface_->schedule(f);
+      m_->interface_->schedule(std::move(f));
     }
   }
 };

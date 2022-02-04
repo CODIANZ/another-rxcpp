@@ -165,13 +165,13 @@ protected:
 
 public:
 
-  virtual subscription subscribe(observer_type ob) const noexcept override {
+  virtual subscription subscribe(observer_type&& ob) const noexcept override {
     try{
       auto values = subscribe_all();
       std::for_each(
         std::cbegin(values),
         std::cend(values),
-        [ob](auto it){
+        [&ob](auto&& it){
           ob.on_next(std::move(it));
         });
       ob.on_completed();

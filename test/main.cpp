@@ -51,6 +51,8 @@ int main() {
   DO(test_case_1)
   DO(test_case_2)
 
+  DO(move_check)
+
   #if defined(SUPPORTS_OPERATORS_IN_OBSERVABLE)
     DO(test_operators_in_observable)
   #endif /* defined(SUPPORTS_OPERATORS_IN_OBSERVABLE) */

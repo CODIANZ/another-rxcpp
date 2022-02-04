@@ -15,11 +15,19 @@ template <typename T> struct is_observable<observable<T>> : std::true_type {};
 
 template <> class observable<void> {
 public:
-  template<typename T>
-    static auto create(typename internal::source<T>::emitter_fn_t f) noexcept
+  template<typename T, typename EMITTER_FN = typename internal::source<T>::emitter_fn_t>
+    static auto create(const EMITTER_FN& f) noexcept
   {
     return observable<T>([f](){
-      return internal::source<>::create<T>(f);
+      return internal::source<>::create<T>(std::move(f));
+    });
+  }
+
+  template<typename T, typename EMITTER_FN = typename internal::source<T>::emitter_fn_t>
+    static auto create(EMITTER_FN&& f) noexcept
+  {
+    return observable<T>([f = std::move(f)](){
+      return internal::source<>::create<T>(std::move(f));
     });
   }
 
@@ -59,12 +67,19 @@ protected:
   }
 
 public: 
-  observable(source_creator_fn_t source_creator) noexcept :
+  observable(const source_creator_fn_t& source_creator) noexcept :
     source_creator_fn_(source_creator) {}
+  observable(source_creator_fn_t&& source_creator) noexcept :
+    source_creator_fn_(std::move(source_creator)) {}
   virtual ~observable() = default;
 
-  virtual subscription subscribe(observer_type ob) const noexcept {
-    return source_creator_fn_()->subscribe(ob);
+  subscription subscribe(const observer_type& ob) const noexcept {
+    auto cpob = ob;
+    return subscribe(std::move(cpob));
+  }
+
+  virtual subscription subscribe(observer_type&& ob) const noexcept {
+    return source_creator_fn_()->subscribe(std::move(ob));
   }
 
   subscription subscribe(
@@ -79,7 +94,7 @@ public:
     });
   }
 
-  template <typename F> auto operator | (F f) const noexcept
+  template <typename F> auto operator | (F&& f) const noexcept
   {
     /**
      * F = auto f(observable<T>)
