@@ -29,7 +29,7 @@ template <typename ON_NEXT>
     const observer<>::completed_t&  completed) noexcept
 {
   return [next = std::forward<ON_NEXT>(next), error, completed](auto&& src){
-    using src_type = typename internal::strip_const_referece<decltype(src)>::type;
+    using src_type = typename internal::strip_const_reference<decltype(src)>::type;
     using observer_type = typename src_type::observer_type;
     return src.subscribe({
       std::move(next),
