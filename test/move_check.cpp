@@ -55,16 +55,42 @@ int A::dtor;
 void move_check() {
   log() << "move_check -- begin" << std::endl;
 
-  A::reset();
-  doSubscribe(observable<>::create<A>([](subscriber<A> s){
+  {
+    log () << "** just **" << std::endl;
+    A::reset();
+    doSubscribe(observables::just(A()));
+    A::dump();
+  }
+
+  auto o = observable<>::create<A>([](subscriber<A> s){
     s.on_next(A());
     s.on_completed();
-  }));
-  A::dump();
+  });
 
-  A::reset();
-  doSubscribe(observables::just(A()));
-  A::dump();
-  
+  {
+    log () << "** plain **" << std::endl;
+    A::reset();
+    doSubscribe(o);
+    A::dump();
+  }
+
+  {
+    log () << "** flat_map **" << std::endl;
+    A::reset();
+    doSubscribe(o | flat_map([&](A&&){
+      return o;
+    }));
+    A::dump();
+  }
+
+  {
+    log () << "** map **" << std::endl;
+    A::reset();
+    doSubscribe(o | map([](A&&){
+      return A();
+    }));
+    A::dump();
+  }
+
   log() << "move_check -- end" << std::endl << std::endl;
 }
