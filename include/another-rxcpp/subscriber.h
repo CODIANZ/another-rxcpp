@@ -66,9 +66,9 @@ public:
       return;
     }
     if(s){
-      s->on_next_function([o, &value](){
+      s->on_next_function([o, value = std::forward<U>(value)]() mutable /* for move */ {
         if(o && o->on_next){
-          o->on_next(std::forward<U>(value));
+          o->on_next(std::move(value));
         }
       });
     }

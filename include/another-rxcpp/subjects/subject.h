@@ -59,7 +59,7 @@ public:
 
   virtual observable<T> as_observable() const noexcept {
     auto m = m_;
-    return observable<>::create<value_type>([m](subscriber_type s) mutable {
+    return observable<>::create<value_type>([m](subscriber_type s) mutable /* for m.release */ {
       auto mm = m.capture_element();
       m.release();
       if(mm->error_){

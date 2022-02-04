@@ -18,5 +18,10 @@ void test_behavior_subject() {
   sbj.as_subscriber().on_completed();
   doSubscribe(sbj.as_observable());  
 
+  const std::string x = "abc";
+  subjects::behavior<std::string> sbj2(x);
+  doSubscribe(sbj.as_observable());
+  sbj.as_subscriber().on_completed();
+
   log() << "test_behavior_subject -- end" << std::endl << std::endl;
 }

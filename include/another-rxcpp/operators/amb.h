@@ -36,7 +36,7 @@ namespace amb_internal {
             private_access::subscriber::add_upstream(s, it);
           });
 
-          auto do_on_next = [sources, s, mtx, top](source_sp sp, auto value){
+          auto do_on_next = [sources, s, mtx, top](source_sp sp, auto&& value){
             {
               std::lock_guard<std::mutex> lock(*mtx);
               if(*top == nullptr){
