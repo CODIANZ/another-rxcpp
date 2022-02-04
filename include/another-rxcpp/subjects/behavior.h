@@ -20,14 +20,7 @@ private:
   };
   internal::shared_with_will<member> m_;
 
-protected:
-
-public:
-  behavior(T initial_value) noexcept :
-    m_(std::make_shared<member>(std::move(initial_value)), [](auto x){
-      x->subscription_.unsubscribe();
-    })
-  {
+  void initialize() {
     auto m = m_.capture_element();
     m->subscription_ = as_observable().subscribe({
       [m](T&& x){
@@ -38,6 +31,25 @@ public:
       },
       [](){}
     });
+  }
+
+protected:
+
+public:
+  behavior(T&& initial_value) noexcept :
+    m_(std::make_shared<member>(std::move(initial_value)), [](auto x){
+      x->subscription_.unsubscribe();
+    })
+  {
+    initialize();
+  }
+
+  behavior(const T& initial_value) noexcept :
+    m_(std::make_shared<member>(initial_value), [](auto x){
+      x->subscription_.unsubscribe();
+    })
+  {
+    initialize();
   }
 
   virtual ~behavior() = default;

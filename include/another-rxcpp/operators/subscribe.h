@@ -9,7 +9,7 @@ namespace operators {
 template <typename T>
   auto subscribe(const observer<T>& ob)
 {
-  return [ob](auto&& src){
+  return [ob](auto&& src) mutable /* for move */ {
     return src.subscribe(std::move(ob));
   };
 }
@@ -17,7 +17,7 @@ template <typename T>
 template <typename T>
   auto subscribe(observer<T>&& ob)
 {
-  return [ob = std::move(ob)](auto&& src){
+  return [ob = std::move(ob)](auto&& src) mutable /* for move */ {
     return src.subscribe(std::move(ob));
   };
 }
@@ -28,7 +28,7 @@ template <typename ON_NEXT>
     const observer<>::error_t&      error,
     const observer<>::completed_t&  completed) noexcept
 {
-  return [next = std::forward<ON_NEXT>(next), error, completed](auto&& src){
+  return [next = std::forward<ON_NEXT>(next), error, completed](auto&& src) mutable /* for move */ {
     using src_type = typename internal::strip_const_reference<decltype(src)>::type;
     using observer_type = typename src_type::observer_type;
     return src.subscribe({

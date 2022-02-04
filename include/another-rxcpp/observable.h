@@ -18,16 +18,16 @@ public:
   template<typename T, typename EMITTER_FN = typename internal::source<T>::emitter_fn_t>
     static auto create(const EMITTER_FN& f) noexcept
   {
-    return observable<T>([f](){
-      return internal::source<>::create<T>(std::move(f));
+    return observable<T>([f]() {
+      return internal::source<>::create<T>(f); /* value copied here, but cannot move (T_T) */
     });
   }
 
   template<typename T, typename EMITTER_FN = typename internal::source<T>::emitter_fn_t>
     static auto create(EMITTER_FN&& f) noexcept
   {
-    return observable<T>([f = std::move(f)](){
-      return internal::source<>::create<T>(std::move(f));
+    return observable<T>([f = std::move(f)]() {
+      return internal::source<>::create<T>(f); /* value copied here, but cannot move (T_T) */
     });
   }
 

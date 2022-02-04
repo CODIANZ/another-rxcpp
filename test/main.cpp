@@ -50,6 +50,7 @@ int main() {
 
   DO(test_case_1)
   DO(test_case_2)
+  DO(test_case_3)
 
   DO(move_check)
 
