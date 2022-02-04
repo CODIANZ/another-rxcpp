@@ -30,7 +30,7 @@ public:
     thread_.detach();
   }
 
-  virtual void schedule(function_type f) noexcept override {
+  virtual void schedule(const function_type& f) noexcept override {
     f();
   }
 };

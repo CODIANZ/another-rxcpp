@@ -20,11 +20,16 @@ template <typename T = void> class source;
 
 template <> class source<void> {
 public:
-  template <typename T>
-  static typename source<T>::sp create(
-    typename source<T>::emitter_fn_t emitter
-  ) noexcept {
+  template <typename T, typename EMITTER_FN = typename source<T>::emitter_fn_t>
+    static typename source<T>::sp create(const EMITTER_FN& emitter) noexcept
+  {
     return std::make_shared<source<T>>(emitter);
+  }
+
+  template <typename T, typename EMITTER_FN = typename source<T>::emitter_fn_t>
+    static typename source<T>::sp create(EMITTER_FN&& emitter) noexcept
+  {
+    return std::make_shared<source<T>>(std::move(emitter));
   }
 };
 
@@ -55,10 +60,16 @@ protected:
   }
 
 public:
-  source(emitter_fn_t emitter_fn) noexcept : emitter_fn_(emitter_fn) {}
+  source(const emitter_fn_t& emitter_fn) noexcept : emitter_fn_(emitter_fn) {}
+  source(emitter_fn_t&& emitter_fn) noexcept : emitter_fn_(std::move(emitter_fn)) {}
   virtual ~source() = default;
 
-  virtual subscription subscribe(observer_type ob) noexcept {
+  subscription subscribe(const observer_type& ob) noexcept {
+    auto cpob = ob;
+    return subscribe(std::move(cpob));
+  }
+
+  virtual subscription subscribe(observer_type&& ob) noexcept {
     auto THIS = shared_this();
     auto obs = internal::to_shared(std::move(ob));
     subscriber_ = std::make_shared<subscriber_type>(THIS, obs);
