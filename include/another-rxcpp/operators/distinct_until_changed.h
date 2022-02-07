@@ -18,15 +18,15 @@ inline auto distinct_until_changed() noexcept
       auto upstream = private_access::observable::create_source(src);
       private_access::subscriber::add_upstream(s, upstream);
       upstream->subscribe({
-        [s, mtx, last_value](auto&& x){
+        [s, mtx, last_value](const auto& x){
           const bool bNext = [&](){
             std::lock_guard<std::mutex> lock(*mtx);
             if(!*last_value){
-              *last_value = std::make_shared<OUT>(std::move(x));
+              *last_value = std::make_shared<OUT>(x);
               return true;
             }
             if(**last_value != x){
-              **last_value = std::move(x);
+              **last_value = x;
               return true;
             }
             return false;

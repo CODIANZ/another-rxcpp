@@ -18,13 +18,13 @@ template <typename F> auto skip_while(F f) noexcept
       private_access::subscriber::add_upstream(s, upstream);
       auto skip = std::make_shared<bool>(true);
       upstream->subscribe({
-        [s, f, skip](auto&& x){
+        [s, f, skip](const auto& x){
           try{
             if(*skip){
               *skip = f(x);
             }
             if(!*skip){
-              s.on_next(std::move(x));
+              s.on_next(x);
             }
           }
           catch(...){

@@ -75,7 +75,7 @@ public:
         }());
         src.subscribe({
           [s](const T& x){
-            s.on_next(std::move(x));
+            s.on_next(x);
           },
           [s](std::exception_ptr err){
             s.on_error(err);

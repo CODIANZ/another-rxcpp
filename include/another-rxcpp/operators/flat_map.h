@@ -28,7 +28,7 @@ template <typename F> auto flat_map(F f) noexcept
             private_access::subscriber::add_upstream(s, fsrc);
             fsrc->subscribe({
               [s](const auto& x){
-                s.on_next(std::move(x));
+                s.on_next(x);
               },
               [s, upstream, fxCounter](std::exception_ptr err){
                 (*fxCounter)--;

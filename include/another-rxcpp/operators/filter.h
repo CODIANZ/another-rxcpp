@@ -17,10 +17,10 @@ template <typename F> auto filter(F f) noexcept
       auto upstream = private_access::observable::create_source(src);
       private_access::subscriber::add_upstream(s, upstream);
       upstream->subscribe({
-        [s, f](auto&& x){
+        [s, f](const auto& x){
           try{
             if(f(x)){
-              s.on_next(std::move(x));
+              s.on_next(x);
             }
           }
           catch(...){

@@ -27,7 +27,7 @@ public:
       sem->lock();
       o.subscribe({
         [s](const T& v){
-          s.on_next(std::move(v));
+          s.on_next(v);
         },
         [s, sem](std::exception_ptr e){
             s.on_error(e);
