@@ -70,7 +70,7 @@ public:
       }
       mm->source_.subscribe({
         [s](const value_type& x){
-          s.on_next(std::move(x));
+          s.on_next(x);
         },
         [s](std::exception_ptr err) {
           s.on_error(err);

@@ -17,14 +17,14 @@ inline auto take(std::size_t n) noexcept
       auto upstream = private_access::observable::create_source(src);
       private_access::subscriber::add_upstream(s, upstream);
       upstream->subscribe({
-        [s, n, upstream, counter](auto&& x){
+        [s, n, upstream, counter](const auto& x){
           const auto now = counter->fetch_add(1);
           if(now == n) {
-            s.on_next(std::move(x));
+            s.on_next(x);
             s.on_completed();
           }
           else if(now < n){
-            s.on_next(std::move(x));
+            s.on_next(x);
           }
         },
         [s](std::exception_ptr err){

@@ -122,7 +122,7 @@ protected:
     auto sbsc = o.subscribe({
       [result](const value_type& x){
         std::lock_guard<std::mutex> lock(result->mtx);
-        result->pvalue = std::make_shared<value_type>(std::move(x));
+        result->pvalue = std::make_shared<value_type>(x);
         result->bDone = true;
         result->cond.notify_one();
       },
@@ -171,8 +171,8 @@ public:
       std::for_each(
         std::cbegin(values),
         std::cend(values),
-        [&ob](auto&& it){
-          ob.on_next(std::move(it));
+        [&ob](const auto& it){
+          ob.on_next(it);
         });
       ob.on_completed();
     }

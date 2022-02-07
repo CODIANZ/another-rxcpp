@@ -15,8 +15,8 @@ template <typename T>
   auto upstream = private_access::observable::create_source(src);
   private_access::subscriber::add_upstream(s, upstream);
   upstream->subscribe({
-    [s](auto&& x){
-      s.on_next(std::move(x));
+    [s](const auto& x){
+      s.on_next(x);
     },
     [s, src, upstream, max_retry_count, count](std::exception_ptr err){
       upstream->unsubscribe();

@@ -17,8 +17,8 @@ template <typename F> auto finally(F f) noexcept
       auto upstream = private_access::observable::create_source(src);
       private_access::subscriber::add_upstream(s, upstream);
       upstream->subscribe({
-        [s, upstream](auto&& x){
-          s.on_next(std::move(x));
+        [s, upstream](const auto& x){
+          s.on_next(x);
         },
         [s, upstream, f](std::exception_ptr err){
           s.on_error(err);

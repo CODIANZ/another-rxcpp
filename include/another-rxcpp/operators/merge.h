@@ -34,8 +34,8 @@ namespace merge_internal {
 
           std::for_each(sources.begin(), sources.end(), [s, completed, sources](auto it){
             it->subscribe({
-              [s](auto&& x){
-                s.on_next(std::move(x));
+              [s](const auto& x){
+                s.on_next(x);
               },
               [s](std::exception_ptr err){
                 s.on_error(err);

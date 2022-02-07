@@ -20,7 +20,7 @@ template <typename TRIGGER_OB> auto skip_until(TRIGGER_OB trigger) noexcept
       auto bOpen = std::make_shared<std::atomic_bool>(false);
 
       trig->subscribe({
-        [s, bOpen, trig](auto&&){
+        [s, bOpen, trig](const auto&){
           trig->unsubscribe();
           (*bOpen) = true;
         },
@@ -31,9 +31,9 @@ template <typename TRIGGER_OB> auto skip_until(TRIGGER_OB trigger) noexcept
       });
 
       upstream->subscribe({
-        [s, bOpen](auto&& x){
+        [s, bOpen](const auto& x){
           if(*bOpen){
-            s.on_next(std::move(x));
+            s.on_next(x);
           }
         },
         [s, trig](std::exception_ptr err){

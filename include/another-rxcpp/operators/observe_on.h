@@ -18,8 +18,8 @@ inline auto observe_on(scheduler::creator_fn sccr) noexcept
       auto upstream =private_access::observable::create_source(src);
       private_access::subscriber::add_upstream(s, upstream);
       upstream->subscribe({
-        [s, scdl, upstream](auto&& x){
-          scdl.schedule([s, x = std::move(x)]() {
+        [s, scdl, upstream](const auto& x){
+          scdl.schedule([s, x]() {
             s.on_next(std::move(x));
           });
         },

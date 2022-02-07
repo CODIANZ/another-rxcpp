@@ -20,7 +20,7 @@ template <typename T>
       upstream->subscribe({
         [s, obs](const auto& x){
           if(obs.on_next) obs.on_next(x);
-          s.on_next(std::move(x));
+          s.on_next(x);
         },
         [s, obs](std::exception_ptr err){
           if(obs.on_error) obs.on_error(err);
@@ -52,7 +52,7 @@ template <typename ON_NEXT>
       upstream->subscribe({
         [s, n](const auto& x){
           n(x);
-          s.on_next(std::move(x));
+          s.on_next(x);
         },
         [s, e](std::exception_ptr err){
           if(e) e(err);

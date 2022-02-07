@@ -157,15 +157,15 @@ inline void wait(int ms) {
 
 template <typename T, typename TT = typename std::remove_const<typename std::remove_reference<T>::type>::type>
 auto ovalue(T value, int delay = 0) -> observable<TT> {
-  auto _value = std::forward<T>(value);
-  return observable<>::create<TT>([_value, delay](subscriber<TT> s) {
+  auto v = std::make_shared<TT>(std::forward<T>(value));
+  return observable<>::create<TT>([v, delay](subscriber<TT> s) {
     if(delay == 0){
-      s.on_next(std::move(_value));
+      s.on_next(*v);
       s.on_completed();
     }
     else{
-      setTimeout([s, _value]() {
-        s.on_next(std::move(_value));
+      setTimeout([s, v](){
+        s.on_next(*v);
         s.on_completed();
       }, delay);
     }

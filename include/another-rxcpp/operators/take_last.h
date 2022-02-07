@@ -20,9 +20,9 @@ inline auto take_last(std::size_t n) noexcept
       auto upstream = private_access::observable::create_source(src);
       private_access::subscriber::add_upstream(s, upstream);
       upstream->subscribe({
-        [s, upstream, n, mtx, arr](auto&& x){
+        [s, upstream, n, mtx, arr](const auto& x){
           std::lock_guard<std::mutex> lock(*mtx);
-          arr->push(std::move(x));
+          arr->push(x);
           if(arr->size() > n) arr->pop();
         },
         [s, upstream](std::exception_ptr err){
