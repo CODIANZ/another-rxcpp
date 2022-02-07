@@ -21,13 +21,13 @@ template <typename F> auto flat_map(F f) noexcept
       auto upstream = private_access::observable::create_source(src);
       private_access::subscriber::add_upstream(s, upstream);
       upstream->subscribe({
-        [s, f, upstream, bUpstreamCompleted, fxCounter](auto&& x){
+        [s, f, upstream, bUpstreamCompleted, fxCounter](const auto& x){
           try{
             (*fxCounter)++;
-            auto fsrc = private_access::observable::create_source(f(std::move(x)));
+            auto fsrc = private_access::observable::create_source(f(x));
             private_access::subscriber::add_upstream(s, fsrc);
             fsrc->subscribe({
-              [s](auto&& x){
+              [s](const auto& x){
                 s.on_next(std::move(x));
               },
               [s, upstream, fxCounter](std::exception_ptr err){

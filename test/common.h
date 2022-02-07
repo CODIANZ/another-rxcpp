@@ -48,8 +48,9 @@ auto ovalue(T&& value, int delay = 0) -> observable<TT> {
 template <typename T> auto doSubscribe(T&& source) {
   using TT = typename another_rxcpp::internal::strip_const_reference<T>::type;
   log() << "doSubscribe" << std::endl;
+  using value_type = typename TT::value_type;
   return source
-  | subscribe([](typename TT::value_type&& x) {
+  | subscribe([](const value_type& x) {
     log() << "  [on_next] " << x << std::endl;
   }, [](std::exception_ptr err) {
     std::string w = [err](){

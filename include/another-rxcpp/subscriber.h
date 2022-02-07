@@ -58,7 +58,7 @@ public:
     m_->observer_ = observer;
   }
 
-  template <typename U> void on_next(U&& value) const noexcept {
+  void on_next(const value_type& value) const noexcept {
     auto s = m_->source_;
     auto o = m_->observer_.lock();
     if(!is_subscribed()){
@@ -66,13 +66,14 @@ public:
       return;
     }
     if(s){
-      s->on_next_function([o, value = std::forward<U>(value)]() mutable /* for move */ {
+      s->on_next_function([&]() {
         if(o && o->on_next){
-          o->on_next(std::move(value));
+          o->on_next(value);
         }
       });
     }
   }
+
 
   void on_error(std::exception_ptr err) const noexcept {
     unsubscribe_upstreams();

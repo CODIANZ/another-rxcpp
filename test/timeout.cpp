@@ -13,7 +13,7 @@ void test_timeout() {
 
   auto o = observables::range(1, 10)
   | tap<int>({
-    [](int&& x){
+    [](const int& x){
     }
   })
   | flat_map([](int x){
@@ -21,7 +21,7 @@ void test_timeout() {
     | delay(std::chrono::milliseconds(x * 100));
   })
   | tap<int>({
-    [](int&& x){
+    [](const int& x){
     }
   })
   | timeout(std::chrono::milliseconds(500));

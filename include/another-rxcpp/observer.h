@@ -10,7 +10,7 @@ template <typename T = void> struct observer;
 
 template <> struct observer<void> {
   template <typename T>
-    using next_t    = std::function<void(T)>;
+    using next_t    = std::function<void(const T&)>;
   using error_t     = std::function<void(std::exception_ptr)>;
   using completed_t = std::function<void()>;
 };
