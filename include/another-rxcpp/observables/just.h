@@ -18,8 +18,6 @@ template <typename T>
     auto scdl = sccr();
     scdl.schedule([v, s]() {
       s.on_next(*v);
-    });
-    scdl.schedule([s](){
       s.on_completed();
     });
   });
