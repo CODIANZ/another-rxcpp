@@ -26,7 +26,7 @@ public:
     return observable<>::create<T>([sem, o](subscriber<T> s){
       sem->lock();
       o.subscribe({
-        [s](T&& v){
+        [s](const T& v){
           s.on_next(std::move(v));
         },
         [s, sem](std::exception_ptr e){

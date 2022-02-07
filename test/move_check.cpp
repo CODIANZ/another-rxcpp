@@ -62,6 +62,18 @@ void move_check() {
     A::dump();
   }
 
+
+  {
+    log () << "** just twice **" << std::endl;
+    A::reset();
+    {
+      auto o = observables::just(A());
+      doSubscribe(o);
+      doSubscribe(o);
+    }
+    A::dump();
+  }
+
   auto o = observable<>::create<A>([](subscriber<A> s){
     s.on_next(A());
     s.on_completed();
@@ -77,7 +89,7 @@ void move_check() {
   {
     log () << "** flat_map **" << std::endl;
     A::reset();
-    doSubscribe(o | flat_map([&](A&&){
+    doSubscribe(o | flat_map([&](const A&){
       return o;
     }));
     A::dump();
@@ -86,7 +98,7 @@ void move_check() {
   {
     log () << "** map **" << std::endl;
     A::reset();
-    doSubscribe(o | map([](A&&){
+    doSubscribe(o | map([](const A&){
       return A();
     }));
     A::dump();

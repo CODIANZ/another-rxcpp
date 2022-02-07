@@ -84,12 +84,12 @@ protected:
     auto m = m_.capture_element();
     std::thread([m](){
       m->subscription_ = m->upstream_->subscribe({
-        [m](value_type&& x){
+        [m](const value_type& x){
           std::unique_lock<std::mutex> lock(m->mtx_);
           m->cond_.wait(lock, [m]{ return m->read_ > 0 || m->done_; });
           if(m->done_) return;
           m->read_--;
-          m->sbj_.as_subscriber().on_next(std::move(x));
+          m->sbj_.as_subscriber().on_next(x);
         },
         [m](std::exception_ptr err){
           std::unique_lock<std::mutex> lock(m->mtx_);
@@ -120,7 +120,7 @@ protected:
     auto result = std::make_shared<_result>();
     auto o = m_->sbj_.as_observable() | operators::take(1);
     auto sbsc = o.subscribe({
-      [result](value_type&& x){
+      [result](const value_type& x){
         std::lock_guard<std::mutex> lock(result->mtx);
         result->pvalue = std::make_shared<value_type>(std::move(x));
         result->bDone = true;

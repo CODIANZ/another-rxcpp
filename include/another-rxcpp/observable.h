@@ -19,7 +19,7 @@ public:
     static auto create(const EMITTER_FN& f) noexcept
   {
     return observable<T>([f]() {
-      return internal::source<>::create<T>(f); /* value copied here, but cannot move (T_T) */
+      return internal::source<>::create<T>(f);
     });
   }
 
@@ -27,7 +27,7 @@ public:
     static auto create(EMITTER_FN&& f) noexcept
   {
     return observable<T>([f = std::move(f)]() {
-      return internal::source<>::create<T>(f); /* value copied here, but cannot move (T_T) */
+      return internal::source<>::create<T>(f);
     });
   }
 
