@@ -25,6 +25,26 @@ So I created a new `Reactive Extensions` for `C++ `to solve these problems as `a
 * Compile time is reduced.
 * The binary size will be smaller.
 * The smaller size of the debug symbol makes the debugger start faster.
+* The number of copy of values and move constructors that flow to `Observable` is reduced.
+
+```cpp
+  /*
+   * RxCpp -> move x2 + copy x3
+   * another-rxcpp -> move x1
+   */
+  struct A {};
+  auto o = observable<>::just(A());
+  {
+    auto sbsc = o
+    .flat_map([&](const auto&){
+      return o;
+    })
+    .subscribe([](const auto&){
+    }, [](std::exception_ptr){
+    }, [](){
+    });
+  }
+```
 
 ### Details
 

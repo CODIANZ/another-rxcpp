@@ -13,22 +13,22 @@ void test_rxcpp_compatible() {
   auto o = ovalue(1);
 
   auto test = observable<>::just(12)
-  .flat_map([](auto){
+  .flat_map([](const auto&){
     return observable<>::error<int>(std::exception());
   })
-  .flat_map([](auto){
+  .flat_map([](const auto&){
     return observable<>::never<int>();
   })
-  .flat_map([](auto){
+  .flat_map([](const auto&){
     return observable<>::range(1, 5);
   })
-  .flat_map([](auto){
+  .flat_map([](const auto&){
     return observable<>::empty<int>();
   })
-  .flat_map([](auto){
+  .flat_map([](const auto&){
     return observable<>::interval(std::chrono::milliseconds(100));
   })
-  .flat_map([](auto){
+  .flat_map([](const auto&){
     auto arr = {1, 2, 3};
     return observable<>::iterate(arr);
   })
@@ -37,11 +37,11 @@ void test_rxcpp_compatible() {
   .delay(std::chrono::seconds(1))
   .distinct_until_changed()
   .finally([](){})
-  .flat_map([](auto x){ return observable<>::just(x); })
+  .flat_map([](const auto& x){ return observable<>::just(x); })
   .last()
-  .map([](auto x){ return x + 1; })
+  .map([](const auto& x){ return x + 1; })
   .first()
-  .filter([](auto x){
+  .filter([](const auto& x){
     return x < 1;
   })
   .merge(o)
@@ -52,15 +52,15 @@ void test_rxcpp_compatible() {
   .retry(123)
   .subscribe_on(schedulers::observe_on_new_thread())
   .skip_until(o)
-  .skip_while([](auto x) { return true; })
+  .skip_while([](const auto& x) { return true; })
   .take_last(1)
   .take_until(o)
-  .take_while([](auto x) { return true; })
+  .take_while([](const auto& x) { return true; })
   .take(100)
-  .tap([](auto){})
+  .tap([](const auto&){})
   .timeout(std::chrono::hours(2))
   .zip(o, o, o)
-  .zip([](auto a, auto b, auto c, auto d){
+  .zip([](const auto& a, const auto& b, const auto& c, const auto& d){
     return std::get<0>(a);
   }, o, o, o)
   .as_blocking();
