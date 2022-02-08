@@ -7,7 +7,7 @@ namespace another_rxcpp {
       auto observable<T>::flat_map(F&& f, ARGS&&...args) const noexcept
   {
     using OUT = decltype(f(std::declval<value_type>()));
-    return *this | operators::flat_map<std::function<OUT(value_type)>>(std::forward<F>(f), std::forward<ARGS>(args)...);
+    return *this | operators::flat_map<std::function<OUT(const value_type&)>>(std::forward<F>(f), std::forward<ARGS>(args)...);
   }
 
   template <typename T>
@@ -15,14 +15,14 @@ namespace another_rxcpp {
       auto observable<T>::map(F&& f, ARGS&&...args) const noexcept
   {
     using OUT = decltype(f(std::declval<value_type>()));
-    return *this | operators::map<std::function<OUT(value_type)>>(std::forward<F>(f), std::forward<ARGS>(args)...);
+    return *this | operators::map<std::function<OUT(const value_type&)>>(std::forward<F>(f), std::forward<ARGS>(args)...);
   }
 
   template <typename T>
     template <typename F, typename...ARGS>
       auto observable<T>::tap(F&& f, ARGS&&...args) const noexcept
   {
-    return *this | operators::tap<std::function<void(value_type)>>(std::forward<F>(f), std::forward<ARGS>(args)...);
+    return *this | operators::tap<std::function<void(const value_type&)>>(std::forward<F>(f), std::forward<ARGS>(args)...);
   }
 
   template <typename T>

@@ -11,7 +11,7 @@ void test_operators_in_observable() {
   log() << "test_operators_in_observable -- begin" << std::endl;
 
   auto o = ovalue(1)
-  .flat_map([](auto x){
+  .flat_map([](const auto& x){
     log() << x << std::endl;
     return observables::error<int>(std::make_exception_ptr(std::exception()));
   })
@@ -19,7 +19,7 @@ void test_operators_in_observable() {
     log() << "operators_in_observable #1" << std::endl;
     return ovalue(2);
   })
-  .map([](auto x){
+  .map([](const auto& x){
     log() << x << std::endl;
     throw std::exception();
     return std::string("abc");
