@@ -25,6 +25,25 @@
 * コンパイル時間が短縮されます。
 * バイナリサイズが小さくなります。
 * デバッグシンボルのサイズが小さくなることで、デバッガの起動が高速になります。
+* `Observable` に流れる値のコピーやムーブコンストラクタの回数が少なくなります。
+
+```cpp
+  /*
+   * RxCpp -> move x2 + copy x3
+   * another-rxcpp -> move x1
+   */
+  auto o = observable<>::just(A());
+  {
+    auto sbsc = o
+    .flat_map([&](const auto&){
+      return o;
+    })
+    .subscribe([](const auto& a){
+    }, [](std::exception_ptr){
+    }, [](){
+    });
+  }
+```
 
 ### 詳細
 
