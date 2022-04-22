@@ -32,6 +32,11 @@ void test_rxcpp_compatible() {
     auto arr = {1, 2, 3};
     return observable<>::iterate(arr);
   })
+  .flat_map([](const auto&){
+    return observable<>::defer([](){
+      return observable<>::range(1, 3);
+    });
+  })
   .amb(o)
   .as_dynamic()
   .delay(std::chrono::seconds(1))

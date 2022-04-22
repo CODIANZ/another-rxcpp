@@ -22,4 +22,7 @@ namespace another_rxcpp {
   template <typename...ARGS> auto observable<void>::iterate(ARGS&&...args) noexcept {
     return observables::iterate(std::forward<ARGS>(args)...);
   }
+  template <typename...ARGS> auto observable<void>::defer(ARGS&&...args) noexcept {
+    return observables::defer(std::forward<ARGS>(args)...);
+  }
 }

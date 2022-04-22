@@ -10,5 +10,6 @@
 #include "observables/interval.h"
 #include "observables/iterate.h"
 #include "observables/blocking.h"
+#include "observables/defer.h"
 
 #endif /* !defined(__another_rxcpp_h_observables__) */
