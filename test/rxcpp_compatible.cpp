@@ -2,6 +2,7 @@
 
 #include <another-rxcpp/observable.h>
 #include <another-rxcpp/operators.h>
+#include <another-rxcpp/schedulers.h>
 #include "common.h"
 
 using namespace another_rxcpp;
@@ -31,6 +32,11 @@ void test_rxcpp_compatible() {
   .flat_map([](const auto&){
     auto arr = {1, 2, 3};
     return observable<>::iterate(arr);
+  })
+  .flat_map([](const auto&){
+    return observable<>::defer([](){
+      return observable<>::range(1, 3);
+    });
   })
   .amb(o)
   .as_dynamic()

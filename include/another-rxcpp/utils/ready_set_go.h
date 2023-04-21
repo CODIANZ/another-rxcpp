@@ -2,12 +2,13 @@
 #define __another_rxcpp_h_ready_set_go__
 
 #include "../observable.h"
+#include "../internal/tools/fn.h"
 
 namespace another_rxcpp {
 namespace utils {
 
 template <typename OB>
-  auto ready_set_go(std::function<void()> f, OB o) noexcept
+  auto ready_set_go(internal::fn<void()> f, OB o) noexcept
 {
   using T = typename OB::value_type;
   return observable<>::create<T>([f, o](subscriber<T> s){

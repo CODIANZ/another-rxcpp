@@ -8,10 +8,10 @@ namespace operators {
 
 inline auto publish() noexcept
 {
-  return [](auto src){
-    using OUT_OB = decltype(src);
-    using OUT = typename OUT_OB::value_type;
-    return observables::connectable<>::create<OUT>(src);
+  return [](auto source){
+    using Source = decltype(source);
+    using Out = typename Source::value_type;
+    return observables::connectable<>::create<Out>(source);
   };
 }
 

@@ -1,7 +1,6 @@
 #if defined(SUPPORTS_OPERATORS_IN_OBSERVABLE)
 
 #include <another-rxcpp/observable.h>
-#include <another-rxcpp/operators.h>
 #include "common.h"
 
 using namespace another_rxcpp;

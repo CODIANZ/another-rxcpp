@@ -101,6 +101,7 @@
 * range
 * interval
 * iterate
+* defer
 
 ### operator
 

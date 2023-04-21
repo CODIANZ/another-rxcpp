@@ -5,7 +5,7 @@
 #include <thread>
 #include <iostream>
 #include <another-rxcpp/observable.h>
-#include <another-rxcpp/operators.h>
+#include <another-rxcpp/operators/subscribe.h>
 
 using namespace another_rxcpp;
 using namespace another_rxcpp::operators;
@@ -52,6 +52,7 @@ template <typename T> auto doSubscribe(T&& source) {
   using value_type = typename TT::value_type;
   return source
   | subscribe([](const value_type& x) {
+  // .subscribe([](value_type&& x) {
     log() << "  [on_next] " << x << std::endl;
   }, [](std::exception_ptr err) {
     std::string w = [err](){

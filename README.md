@@ -103,6 +103,7 @@ If compatibility with `RxCpp` is required, define as follows before including `r
 * range
 * interval
 * iterate
+* defer
 
 ### operator
 

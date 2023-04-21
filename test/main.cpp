@@ -47,10 +47,13 @@ int main() {
   DO(test_first)
   DO(test_filter)
   DO(test_something)
+  DO(test_defer)
 
   DO(test_case_1)
   DO(test_case_2)
   DO(test_case_3)
+  DO(test_case_4)
+  DO(test_case_5)
 
   DO(move_check)
 

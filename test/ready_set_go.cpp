@@ -1,8 +1,7 @@
+#include <another-rxcpp/utils/ready_set_go.h>
+
 #include <another-rxcpp/observable.h>
-#include <another-rxcpp/operators.h>
-#include <another-rxcpp/observables.h>
-#include <another-rxcpp/subjects.h>
-#include <another-rxcpp/utils.h>
+#include <another-rxcpp/subjects/subject.h>
 #include "common.h"
 
 using namespace another_rxcpp;

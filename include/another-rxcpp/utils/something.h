@@ -2,6 +2,8 @@
 #define __another_rxcpp_h_something__
 
 #include "../observable.h"
+#include "../observables/just.h"
+#include "../observables/error.h"
 #include "../internal/tools/util.h"
 #include <exception>
 

@@ -1,6 +1,6 @@
+#include <another-rxcpp/subjects/behavior.h>
+
 #include <another-rxcpp/observable.h>
-#include <another-rxcpp/operators.h>
-#include <another-rxcpp/subjects.h>
 #include "common.h"
 
 using namespace another_rxcpp;

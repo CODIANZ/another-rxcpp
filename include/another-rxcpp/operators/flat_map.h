@@ -1,61 +1,50 @@
 #if !defined(__another_rxcpp_h_flat_map__)
 #define __another_rxcpp_h_flat_map__
 
-#include "../observable.h"
+#include "../internal/tools/stream_controller.h"
 #include "../internal/tools/util.h"
-#include <atomic>
-#include <type_traits>
+#include "../observable.h"
 
 namespace another_rxcpp {
 namespace operators {
 
 template <typename F> auto flat_map(F f) noexcept
 {
-  using OUT_OB  = internal::lambda_invoke_result_t<F>;
-  using OUT     = typename OUT_OB::value_type;
-  return [f](auto src){
-    return observable<>::create<OUT>([src, f](subscriber<OUT> s) {
-      using namespace another_rxcpp::internal;
-      auto bUpstreamCompleted = std::make_shared<std::atomic_bool>(false);
-      auto fxCounter = std::make_shared<std::atomic_int>(0);
-      auto upstream = private_access::observable::create_source(src);
-      private_access::subscriber::add_upstream(s, upstream);
-      upstream->subscribe({
-        [s, f, upstream, bUpstreamCompleted, fxCounter](const auto& x){
+  using OutObs  = internal::lambda_invoke_result_t<F>;
+  using Out     = typename OutObs::value_type;
+  return [f](auto source){
+    return observable<>::create<Out>([source, f](auto s) {
+      using Source = decltype(source);
+      using In = typename Source::value_type;
+
+      auto sctl = internal::stream_controller<Out>(s);
+      
+      source.subscribe(sctl.template new_observer<In>(
+        [sctl, f](auto, const In& x) {
           try{
-            (*fxCounter)++;
-            auto fsrc = private_access::observable::create_source(f(x));
-            private_access::subscriber::add_upstream(s, fsrc);
-            fsrc->subscribe({
-              [s](const auto& x){
-                s.on_next(x);
+            f(x).subscribe(sctl.template new_observer<Out>(
+              [sctl](auto, const Out& x){
+                sctl.sink_next(x);
               },
-              [s, upstream, fxCounter](std::exception_ptr err){
-                (*fxCounter)--;
-                s.on_error(err);
+              [sctl](auto, std::exception_ptr err){
+                sctl.sink_error(err);
               },
-              [s, bUpstreamCompleted, fxCounter](){
-                (*fxCounter)--;
-                if(*bUpstreamCompleted && (*fxCounter) == 0){
-                  s.on_completed();
-                }
+              [sctl](auto serial) {
+                sctl.sink_completed(serial);
               }
-            });
+            ));
           }
           catch(...){
-            s.on_error(std::current_exception());
+            sctl.sink_error(std::current_exception());
           }
         },
-        [s](std::exception_ptr err){
-          s.on_error(err);
+        [sctl](auto, std::exception_ptr err){
+          sctl.sink_error(err);
         },
-        [s, bUpstreamCompleted, fxCounter](){
-          *bUpstreamCompleted = true;
-          if(*bUpstreamCompleted && (*fxCounter) == 0){
-            s.on_completed();
-          }
+        [sctl](auto serial){
+          sctl.sink_completed(serial);
         }
-      });
+      ));
     });
   };
 }

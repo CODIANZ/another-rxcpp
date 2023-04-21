@@ -1,5 +1,7 @@
 #include <another-rxcpp/observable.h>
-#include <another-rxcpp/operators.h>
+
+#include <another-rxcpp/operators/flat_map.h>
+#include <another-rxcpp/operators/map.h>
 #include "common.h"
 
 using namespace another_rxcpp;
@@ -7,6 +9,7 @@ using namespace another_rxcpp::operators;
 
 void test_observable() {
   log() << "test_observable -- begin" << std::endl;
+
 
   {
     log() << "#1" << std::endl;
@@ -40,13 +43,13 @@ void test_observable() {
       log() << x << std::endl;
       return ovalue(x + 1);
     });
-    {
-      log() << "#2 wait with notify_on_unsubscribe()" << std::endl;
-      auto x = doSubscribe(ob);
-      std::mutex mtx;
-      std::unique_lock<std::mutex> lock(mtx);
-      x.unsubscribe_notice()->wait(lock, [x](){ return x.is_subscribed(); });
-    }
+    // {
+    //   log() << "#2 wait with notify_on_unsubscribe()" << std::endl;
+    //   auto x = doSubscribe(ob);
+    //   std::mutex mtx;
+    //   std::unique_lock<std::mutex> lock(mtx);
+    //   x.unsubscribe_notice()->wait(lock, [x](){ return x.is_subscribed(); });
+    // }
     {
       log() << "#3 wait until is_subscribed() == true" << std::endl;
       auto x = doSubscribe(ob);

@@ -1,6 +1,7 @@
 #if !defined(__another_rxcpp_h_observe_on__)
 #define __another_rxcpp_h_observe_on__
 
+#include "../internal/tools/stream_controller.h"
 #include "../observable.h"
 #include "../scheduler.h"
 
@@ -9,31 +10,29 @@ namespace operators {
 
 inline auto observe_on(scheduler::creator_fn sccr) noexcept
 {
-  return [sccr](auto src){
-    using OUT_OB = decltype(src);
-    using OUT = typename OUT_OB::value_type;
-    return observable<>::create<OUT>([src, sccr](subscriber<OUT> s) {
-      using namespace another_rxcpp::internal;
+  return [sccr](auto source){
+    using Source = decltype(source);
+    using Item = typename Source::value_type;
+    return observable<>::create<Item>([source, sccr](subscriber<Item> s) {
+      auto sctl = internal::stream_controller<Item>(s);
       auto scdl = sccr();
-      auto upstream =private_access::observable::create_source(src);
-      private_access::subscriber::add_upstream(s, upstream);
-      upstream->subscribe({
-        [s, scdl, upstream](const auto& x){
-          scdl.schedule([s, x]() {
-            s.on_next(std::move(x));
+      source.subscribe(sctl.template new_observer<Item>(
+        [sctl, scdl](auto, const Item& x) {
+          scdl.schedule([sctl, x]() mutable {
+            sctl.sink_next(std::move(x));
           });
         },
-        [s, scdl](std::exception_ptr err){
-          scdl.schedule([s, err]() {
-            s.on_error(err);
+        [sctl, scdl](auto, std::exception_ptr err){
+          scdl.schedule([sctl, err]() {
+            sctl.sink_error(err);
           });
         },
-        [s, scdl](){
-          scdl.schedule([s]() {
-            s.on_completed();
+        [sctl, scdl](auto serial){
+          scdl.schedule([sctl, serial]() {
+            sctl.sink_completed(serial);
           });
         }
-      });
+      ));
     });
   };  
 }

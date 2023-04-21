@@ -3,41 +3,40 @@
 
 #include "../observable.h"
 #include "../internal/tools/util.h"
+#include "../internal/tools/stream_controller.h"
 
 namespace another_rxcpp {
 namespace operators {
 
 template <typename F> auto skip_while(F f) noexcept
 {
-  return [f](auto src){
-    using OUT_OB = decltype(src);
-    using OUT = typename OUT_OB::value_type;
-    return observable<>::create<OUT>([src, f](subscriber<OUT> s) {
-      using namespace another_rxcpp::internal;
-      auto upstream = private_access::observable::create_source(src);
-      private_access::subscriber::add_upstream(s, upstream);
+  return [f](auto source){
+    using Source = decltype(source);
+    using Item = typename Source::value_type;
+    return observable<>::create<Item>([source, f](subscriber<Item> s) {
+      auto sctl = internal::stream_controller<Item>(s);
       auto skip = std::make_shared<bool>(true);
-      upstream->subscribe({
-        [s, f, skip](const auto& x){
+      source.subscribe(sctl.template new_observer<Item>(
+        [sctl, f, skip](auto, const Item& x){
           try{
             if(*skip){
               *skip = f(x);
             }
             if(!*skip){
-              s.on_next(x);
+              sctl.sink_next(x);
             }
           }
           catch(...){
-            s.on_error(std::current_exception());
+            sctl.sink_error(std::current_exception());
           }
         },
-        [s](std::exception_ptr err){
-          s.on_error(err);
+        [sctl](auto, std::exception_ptr err){
+          sctl.sink_error(err);
         },
-        [s](){
-          s.on_completed();
+        [sctl](auto serial){
+          sctl.sink_completed(serial);
         }
-      });
+      ));
     });
   };
 }
