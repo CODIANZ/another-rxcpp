@@ -16,7 +16,7 @@ public:
   using serial_type       = int32_t;
   using unsubscriber_map  = std::map<serial_type, internal::fn<void()>>;
   using on_finalize_t     = internal::fn<void()>;
-  using on_finalizes_t    = std::vector<on_finalize_t>;
+  using on_finalizes_t    = std::shared_ptr<on_finalize_t>;
 
 private:
   struct inner {
@@ -48,7 +48,7 @@ public:
 
   void set_on_finalize(on_finalize_t&& f) const noexcept {
     std::lock_guard<std::recursive_mutex> lock(inner_->mtx_);
-    inner_->on_finalizes_.push_back(std::move(f));
+    inner_->on_finalizes_.reset(new on_finalize_t(std::move(f)));
   }
 
   template <typename In> observer<In> new_observer(
@@ -158,10 +158,10 @@ public:
     if(inner_->subscriber_.is_subscribed()){
       inner_->subscriber_.unsubscribe();
     }
-    for(auto it = inner_->on_finalizes_.begin(); it != inner_->on_finalizes_.end(); it++){
-      (*it)();
+    if(inner_->on_finalizes_ && *inner_->on_finalizes_){
+     (*inner_->on_finalizes_)(); 
     }
-    inner_->on_finalizes_.clear();
+    inner_->on_finalizes_.reset();
   }
 
   bool is_subscribed() const noexcept {
