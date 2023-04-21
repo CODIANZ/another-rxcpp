@@ -4,10 +4,10 @@
 #include "../observable.h"
 #include "../subjects/subject.h"
 #include "../operators/take.h"
-#include "../internal/tools/shared_with_will.h"
 #include <algorithm>
 #include <mutex>
 #include <numeric>
+#include <thread>
 
 namespace another_rxcpp {
 namespace observables {
@@ -45,8 +45,6 @@ template <typename T> class blocking : public observable<T> {
 friend class blocking<>;
 public:
   using value_type    = typename observable<T>::value_type;
-  using source_type   = typename observable<T>::source_type;
-  using source_sp     = typename observable<T>::source_sp;
   using observer_type = typename observable<T>::observer_type;
 
 protected:
@@ -56,34 +54,33 @@ protected:
     std::condition_variable cond_;
     subjects::subject<value_type> sbj_;
     subscription            subscription_;
-    source_sp               upstream_;
     bool                    done_ = false;
     std::atomic_bool        started_{false};
+    ~member() {
+      if(started_.exchange(false)){
+        {
+          std::unique_lock<std::mutex> lock(mtx_);
+          done_ = true;
+          cond_.notify_one();
+        }
+        subscription_.unsubscribe();
+      }
+    }
   };
-  internal::shared_with_will<member>  m_;
-  observable<value_type>    src_;
+  std::shared_ptr<member> m_;
+  observable<value_type>  src_;
 
   blocking(observable<T> src) noexcept :
-    m_(std::make_shared<member>(), [](auto x){
-      if(x->started_.exchange(false)){
-        {
-          std::unique_lock<std::mutex> lock(x->mtx_);
-          x->done_ = true;
-          x->cond_.notify_one();
-        }
-        x->subscription_.unsubscribe();
-        x->upstream_->unsubscribe();
-      }
-    }),
+    m_(std::make_shared<member>()),
     src_(src)
   {}
 
   void start_subscribing_if_not() const noexcept {
     if(m_->started_.exchange(true)) return;
-    m_->upstream_ = internal::private_access::observable::create_source(src_);
-    auto m = m_.capture_element();
-    std::thread([m](){
-      m->subscription_ = m->upstream_->subscribe({
+    auto m = m_;
+    auto src = src_;
+    std::thread([m, src](){
+      m->subscription_ = src.subscribe({
         [m](const value_type& x){
           std::unique_lock<std::mutex> lock(m->mtx_);
           m->cond_.wait(lock, [m]{ return m->read_ > 0 || m->done_; });
@@ -165,7 +162,7 @@ protected:
 
 public:
 
-  virtual subscription subscribe(observer_type&& ob) const noexcept override {
+  virtual subscription subscribe(observer_type ob) const noexcept override {
     try{
       auto values = subscribe_all();
       std::for_each(
@@ -179,7 +176,15 @@ public:
     catch(...){
       ob.on_error(std::current_exception());
     }
-    return subscription();
+    return subscription(
+      [ob]{
+        // ob.unsubscribe();
+      },
+      [ob]{
+        return true;
+        // return ob.is_subscribed();
+      }
+    );
   }
 
   value_type first() const noexcept(false) {

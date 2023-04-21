@@ -1,6 +1,7 @@
 #include <another-rxcpp/observable.h>
-#include <another-rxcpp/operators.h>
-#include <another-rxcpp/observables.h>
+#include <another-rxcpp/observables/just.h>
+#include <another-rxcpp/operators/map.h>
+#include <another-rxcpp/operators/flat_map.h>
 #include "common.h"
 
 using namespace another_rxcpp;

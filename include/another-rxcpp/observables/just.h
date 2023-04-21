@@ -3,7 +3,7 @@
 
 #include "../observable.h"
 #include "../internal/tools/util.h"
-#include "../schedulers.h"
+#include "../schedulers/default_scheduler.h"
 
 namespace another_rxcpp {
 namespace observables {

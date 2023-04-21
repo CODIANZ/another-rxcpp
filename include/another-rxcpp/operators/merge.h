@@ -3,7 +3,8 @@
 
 #include "../observable.h"
 #include "../internal/tools/util.h"
-#include "../schedulers.h"
+#include "../internal/tools/stream_controller.h"
+#include "../schedulers/default_scheduler.h"
 #include <algorithm>
 #include <vector>
 
@@ -15,40 +16,41 @@ namespace merge_internal {
   auto merge(scheduler::creator_fn sccr, std::vector<observable<T>>& arr, OB ob) noexcept {
     arr.push_back(ob);
     return [sccr,  arr = internal::to_shared(std::move(arr))](auto src) {
-      return observable<>::create<T>([src, sccr, arr](subscriber<T> s) {
+      arr->push_back(src);
+      return observable<>::create<T>([sccr, arr](subscriber<T> s) {
+        auto sctl = internal::stream_controller<T>(s);
         auto scdl = sccr();
-        scdl.schedule([src, arr, s](){
-          using namespace another_rxcpp::internal;
-          using source_sp = typename OB::source_sp;
-          std::vector<source_sp> sources;
-          sources.push_back(private_access::observable::create_source(src));
-          std::for_each(arr->begin(), arr->end(), [&](auto it){
-            sources.push_back(private_access::observable::create_source(it));
-          });
 
-          std::for_each(sources.begin(), sources.end(), [&](auto it){
-            private_access::subscriber::add_upstream(s, it);
-          });
-
-          auto completed = std::make_shared<std::atomic_size_t>(0);
-
-          std::for_each(sources.begin(), sources.end(), [s, completed, sources](auto it){
-            it->subscribe({
-              [s](const auto& x){
-                s.on_next(x);
-              },
-              [s](std::exception_ptr err){
-                s.on_error(err);
-              },
-              [s, completed, sources](){
-                (*completed)++;
-                if(*completed == sources.size()){
-                  s.on_completed();
+        // prepare subscribers
+        auto subscribers = [sctl, scdl, arr]{
+          auto re = std::vector<subscriber<T>>();
+          for(auto i = 0; i < arr->size(); i++){
+            re.push_back(
+              sctl.template new_observer<T>(
+                [sctl, scdl](auto, const T& x) {
+                  scdl.schedule([sctl, x]{
+                    sctl.sink_next(x);
+                  });
+                },
+                [sctl, scdl](auto, std::exception_ptr err){
+                  scdl.schedule([sctl, err]{
+                    sctl.sink_error(err);
+                  });
+                },
+                [sctl, scdl](auto serial){
+                  scdl.schedule([sctl, serial]{
+                    sctl.sink_completed(serial);
+                  });
                 }
-              }
-            });
-          });
-        });
+              )
+            );
+          }
+          return re;
+        }();
+
+        for(auto i = 0; i < arr->size(); i++){
+          (*arr)[i].subscribe(subscribers[i]);
+        }
       });
     };  
   }

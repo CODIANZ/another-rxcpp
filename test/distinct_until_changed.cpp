@@ -1,7 +1,12 @@
+#if defined(SUPPORTS_OPERATORS_IN_OBSERVABLE) || defined(SUPPORTS_RXCPP_COMPATIBLE)
+  #include <another-rxcpp/observable.h>
+#else
+  #include <another-rxcpp/operators/distinct_until_changed.h>
+  #include <another-rxcpp/observable.h>
+#endif
+
 #include <another-rxcpp/observable.h>
-#include <another-rxcpp/operators.h>
-#include <another-rxcpp/observables.h>
-#include <another-rxcpp/subjects.h>
+#include <another-rxcpp/subjects/behavior.h>
 #include "common.h"
 #include <random>
 

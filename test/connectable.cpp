@@ -1,5 +1,11 @@
+#if defined(SUPPORTS_OPERATORS_IN_OBSERVABLE) || defined(SUPPORTS_RXCPP_COMPATIBLE)
+  #include <another-rxcpp/observable.h>
+#else
+  #include <another-rxcpp/operators/publish.h>
+  #include <another-rxcpp/observable.h>
+#endif
+
 #include <another-rxcpp/observable.h>
-#include <another-rxcpp/operators.h>
 #include "common.h"
 
 using namespace another_rxcpp;
@@ -11,11 +17,12 @@ void test_connectable() {
   auto o = observable<>::create<int>([](subscriber<int> s){
     std::thread([s](){
       for(int i = 0; i < 100; i++){
-        if(!s.is_subscribed()) return;
+        if(!s.is_subscribed()) break;
         std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        log() << "emit " << i <<  std::endl;
         s.on_next(i);
       }
-      s.on_completed();
+      log() << "break!" << std::endl;
     }).detach();
   });
 
@@ -25,7 +32,7 @@ void test_connectable() {
   auto s3 = doSubscribe(oo);
 
   wait(1000);
-  oo.connect();
+  auto cc = oo.connect();
 
   wait(800);
   s1.unsubscribe();
@@ -40,6 +47,10 @@ void test_connectable() {
 
   wait(3000);
   s4.unsubscribe();
+
+  wait(800);
+  cc.unsubscribe();
+  wait(800);
 
   log() << "test_connectable -- end" << std::endl << std::endl;
 }

@@ -1,16 +1,18 @@
 #if !defined(__another_rxcpp_h_scheduler__)
 #define __another_rxcpp_h_scheduler__
 
+#include "internal/tools/fn.h"
 #include <memory>
 #include <queue>
+#include <mutex>
 
 namespace another_rxcpp {
 
 class scheduler_interface {
 public:
   enum class schedule_type {direct, queuing};
-  using function_type = std::function<void()>;
-  using call_in_context_fn_t = std::function<void()>;
+  using function_type = internal::fn<void()>;
+  using call_in_context_fn_t = internal::fn<void()>;
 
 private:
   schedule_type schedule_type_;

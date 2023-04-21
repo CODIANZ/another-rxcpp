@@ -1,9 +1,7 @@
 #if !defined(__another_rxcpp_h_behavior__)
 #define __another_rxcpp_h_behavior__
 
-#include "../internal/source/source.h"
-#include "../internal/tools/shared_with_will.h"
-#include "../observables.h"
+#include "../internal/tools/stream_controller.h"
 #include "../observable.h"
 #include "subject.h"
 
@@ -17,11 +15,14 @@ private:
     std::mutex      mtx_;
     subscription    subscription_;
     member(const T& last) : last_(last) {}
+    ~member() {
+      subscription_.unsubscribe();
+    }
   };
-  internal::shared_with_will<member> m_;
+  std::shared_ptr<member> m_;
 
   void initialize() {
-    auto m = m_.capture_element();
+    auto m = m_;
     m->subscription_ = as_observable().subscribe({
       [m](const T& x){
         std::lock_guard<std::mutex> lock(m->mtx_);
@@ -37,17 +38,13 @@ protected:
 
 public:
   behavior(T&& initial_value) noexcept :
-    m_(std::make_shared<member>(std::move(initial_value)), [](auto x){
-      x->subscription_.unsubscribe();
-    })
+    m_(std::make_shared<member>(std::move(initial_value)))
   {
     initialize();
   }
 
   behavior(const T& initial_value) noexcept :
-    m_(std::make_shared<member>(initial_value), [](auto x){
-      x->subscription_.unsubscribe();
-    })
+    m_(std::make_shared<member>(initial_value))
   {
     initialize();
   }
@@ -56,34 +53,35 @@ public:
 
   virtual observable<T> as_observable() const noexcept override {
     auto src = subject<T>::as_observable();
-    auto m = m_.capture_element();
+    auto m = m_;
     auto base_completed = subject<T>::completed();
     auto base_error = subject<T>::error();
     return observable<>::create<T>([src, m, base_completed, base_error](subscriber<T> s){
+      auto sctl = internal::stream_controller<T>(s);
       if(base_completed){
         if(base_error != nullptr){
-          s.on_error(base_error);
+          sctl.sink_error(base_error);
         }
         else{
-          s.on_completed();
+          sctl.sink_completed_force();
         }
       }
       else{
-        s.on_next([m](){
+        sctl.sink_next([m](){
           std::lock_guard<std::mutex> lock(m->mtx_);
           return m->last_;
         }());
-        src.subscribe({
-          [s](const T& x){
-            s.on_next(x);
+        src.subscribe(sctl.template new_observer<T>(
+          [sctl](auto, const T& x){
+            sctl.sink_next(x);
           },
-          [s](std::exception_ptr err){
-            s.on_error(err);
+          [sctl](auto, std::exception_ptr err){
+            sctl.sink_error(err);
           },
-          [s](){
-            s.on_completed();
+          [sctl](auto serial) {
+            sctl.sink_completed(serial);
           }
-        });
+        ));
       }
     });
   }

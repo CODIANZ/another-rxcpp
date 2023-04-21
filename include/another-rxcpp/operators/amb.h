@@ -3,7 +3,8 @@
 
 #include "../observable.h"
 #include "../internal/tools/util.h"
-#include "../schedulers.h"
+#include "../internal/tools/stream_controller.h"
+#include "../schedulers/default_scheduler.h"
 #include <algorithm>
 #include <vector>
 
@@ -15,58 +16,67 @@ namespace amb_internal {
   auto amb(scheduler::creator_fn sccr, std::vector<observable<T>>& arr, OB ob) noexcept {
     arr.push_back(ob);
     return [sccr, arr = internal::to_shared(std::move(arr))](auto src) {
-      return observable<>::create<T>([src, sccr, arr](subscriber<T> s) {
+      arr->push_back(src);
+      return observable<>::create<T>([sccr, arr](subscriber<T> s) {
+        auto sctl = internal::stream_controller<T>(s);
+        using serial_type = typename internal::stream_controller<T>::serial_type;
+        auto mtx = std::make_shared<std::recursive_mutex>();
+        auto  winner = std::make_shared<std::shared_ptr<serial_type>>();
+        auto is_win_next = [winner, mtx](serial_type serial) {
+          std::lock_guard<std::recursive_mutex> lock(*mtx);
+          if(*winner) {
+            return **winner == serial;
+          }
+          *winner = std::make_shared<serial_type>(serial);
+          return true;
+        };
         auto scdl = sccr();
-        scdl.schedule([src, arr, s](){
-          using namespace another_rxcpp::internal;
-          using source_sp = typename OB::source_sp;
-          using source_type = typename OB::source_type;
 
-          auto mtx = std::make_shared<std::mutex>();
-          auto top = std::make_shared<source_type*>();
-          std::vector<source_sp> sources;
-
-          auto upstream = private_access::observable::create_source(src);
-          sources.push_back(private_access::observable::create_source(src));
-          std::for_each(arr->begin(), arr->end(), [&](auto it){
-            sources.push_back(private_access::observable::create_source(it));
-          });
-
-          std::for_each(sources.begin(), sources.end(), [&](auto it){
-            private_access::subscriber::add_upstream(s, it);
-          });
-
-          auto do_on_next = [sources, s, mtx, top](source_sp sp, const auto& value){
-            {
-              std::lock_guard<std::mutex> lock(*mtx);
-              if(*top == nullptr){
-                *top = sp.get();
-                std::for_each(sources.begin(), sources.end(), [sp](auto it){
-                  if(sp.get() != it.get()){
-                    it->unsubscribe();
+        // prepare subscribers
+        auto subscribers = [sctl, scdl, arr, is_win_next] {
+          auto re = std::vector<subscriber<T>>();
+          for(auto i = 0; i < arr->size(); i++){
+            re.push_back(
+              sctl.template new_observer<T>(
+                [sctl, scdl, is_win_next](auto serial, const T& x) {
+                  if(is_win_next(serial)) {
+                    scdl.schedule([sctl, x]{
+                      sctl.sink_next(x);
+                    });
                   }
-                });
-              }
-            }
-            if(*top && *top == sp.get()){
-              s.on_next(value);
-            }
-          };
+                  else{
+                    sctl.upstream_abort_observe(serial);
+                  }
+                },
+                [sctl, scdl, is_win_next](auto serial, std::exception_ptr err) {
+                  if(is_win_next(serial)) {
+                    scdl.schedule([sctl, err]{
+                      sctl.sink_error(err);
+                    });
+                  }
+                  else{
+                    sctl.upstream_abort_observe(serial);
+                  }
+                },
+                [sctl, scdl, is_win_next](auto serial) {
+                  if(is_win_next(serial)) {
+                    scdl.schedule([sctl, serial]{
+                      sctl.sink_completed(serial);
+                    });
+                  }
+                  else{
+                    sctl.upstream_abort_observe(serial);
+                  }
+                }
+              )
+            );
+          }
+          return re;
+        }();
 
-          std::for_each(sources.begin(), sources.end(), [s, do_on_next](auto it){
-            it->subscribe({
-              [it, s, do_on_next](const auto& x){
-                do_on_next(it, x);
-              },
-              [s](std::exception_ptr err){
-                s.on_error(err);
-              },
-              [s](){
-                s.on_completed();
-              }
-            });
-          });
-        });
+        for(auto i = 0; i < arr->size(); i++){
+          (*arr)[i].subscribe(subscribers[i]);
+        }
       });
     };  
   }

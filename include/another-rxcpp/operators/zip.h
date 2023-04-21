@@ -2,9 +2,10 @@
 #define __another_rxcpp_h_zip__
 
 #include "../observable.h"
+#include "../internal/tools/stream_controller.h"
 #include "../internal/tools/util.h"
-#include "../internal/tools/any_sp_keeper.h"
-#include "../schedulers.h"
+#include "../internal/tools/fn.h"
+#include "../scheduler.h"
 #include <algorithm>
 #include <vector>
 
@@ -62,7 +63,6 @@ namespace zip_internal {
     return create_values_queue_internal(std::tuple<>(), args...);
   }
 
-
   /**
    * variables used for synchronization
    **/
@@ -70,57 +70,76 @@ namespace zip_internal {
     using sp = std::shared_ptr<sync>;
     std::mutex              mtx_;
     std::condition_variable cond_;
-    std::exception_ptr      err_ = nullptr;
-    std::size_t             completed_ = 0;
   };
 
+  /**
+   * prepare subscribers
+   **/
+  template <std::size_t N, typename TPL, typename RTYPE, typename VALQ>
+    auto prepare_subscribers_impl(TPL tpl, sync::sp, internal::stream_controller<RTYPE>, const VALQ&)
+  {
+    return tpl;
+  }
+
+  template <std::size_t N, typename TPL, typename RTYPE, typename VALQ, typename OB, typename... ARGS>
+    auto prepare_subscribers_impl(TPL tpl, sync::sp sync, internal::stream_controller<RTYPE> sctl, const VALQ& valq, OB ob, ARGS...args)
+  {
+    auto values = std::get<N>(valq);
+
+    using Source = decltype(ob);
+    using Item = typename Source::value_type;
+
+    auto tpl2 = std::tuple_cat(
+      tpl,
+      std::make_tuple(
+        sctl.template new_observer<Item>(
+          [values, sync](auto, Item x){
+            std::lock_guard<std::mutex> lock(sync->mtx_);
+            values->push(std::move(x));
+            sync->cond_.notify_one();
+          },
+          [sync, sctl](auto, std::exception_ptr err){
+            sctl.sink_error(err);
+            std::lock_guard<std::mutex> lock(sync->mtx_);
+            sync->cond_.notify_one();
+          },
+          [sync, sctl](auto serial) {
+            sctl.sink_completed(serial);
+            std::lock_guard<std::mutex> lock(sync->mtx_);
+            sync->cond_.notify_one();
+          }
+        )        
+      )
+    );
+
+    return prepare_subscribers_impl<N + 1>(tpl2, sync, sctl, valq, args...);
+
+  }
+
+  template <typename RTYPE, typename VALQ, typename... ARGS>
+    auto prepare_subscribers(sync::sp sync, internal::stream_controller<RTYPE> sctl, const VALQ& valq, ARGS...args)
+  {
+    return prepare_subscribers_impl<0>(std::tuple<>(), sync, sctl, valq, args...);
+  }
 
   /**
    * subscribe each observables
    **/
-  template <std::size_t N, typename VALQ>
-    void subscribe_impl(sync::sp, std::vector<subscription>& sbsc, const VALQ& valq)
+  template <std::size_t N, typename SBS, typename VALQ>
+    void subscribe_impl(const SBS& sbs, const VALQ&)
   { /** nothing to do */ }
 
-  template <std::size_t N, typename VALQ, typename OB, typename... ARGS>
-    void subscribe_impl(sync::sp sync, std::vector<subscription>& sbsc, const VALQ& valq, OB ob, ARGS...args)
+  template <std::size_t N, typename SBS, typename VALQ, typename OB, typename... ARGS>
+    void subscribe_impl(const SBS& sbs, const VALQ& valq, OB ob, ARGS...args)
   {
-    subscribe_impl<N + 1>(sync, sbsc, valq, args...);
-
-    auto values = std::get<N>(valq);
-    auto src = internal::private_access::observable::create_source(ob);
-
-    sbsc.push_back(
-      src->subscribe({
-        [values, sync](const auto& x){
-          {
-            std::lock_guard<std::mutex> lock(sync->mtx_);
-            values->push(x);
-            sync->cond_.notify_one();
-          }
-        },
-        [sync](std::exception_ptr err){
-          {
-            std::lock_guard<std::mutex> lock(sync->mtx_);
-            if(sync->err_ != nullptr) sync->err_ = err;
-            sync->cond_.notify_one();
-          }
-        },
-        [sync](){
-          {
-            std::lock_guard<std::mutex> lock(sync->mtx_);
-            sync->completed_++;
-            sync->cond_.notify_one();
-          }
-        }
-      })
-    );
+    ob.subscribe(std::get<N>(sbs));
+    subscribe_impl<N + 1>(sbs, valq, args...);
   }
 
-  template <typename VALQ, typename... ARGS>
-    void subscribe(sync::sp sync, std::vector<subscription>& sbsc, const VALQ& valq, ARGS...args)
+  template <typename SBS, typename VALQ, typename... ARGS>
+    void subscribe(const SBS& sbs, const VALQ& valq, ARGS...args)
   {
-    subscribe_impl<0>(sync, sbsc, valq, args...);
+    subscribe_impl<0>(sbs, valq, args...);
   }
 
 
@@ -201,31 +220,22 @@ namespace zip_internal {
     return [args...](auto src) {
       using rtype = typename zip_internal::result_type<decltype(src), ARGS...>::type;
       return observable<>::create<rtype>([src, args...](subscriber<rtype> s) {
+        auto sctl = internal::stream_controller<rtype>(s);
         auto valq = zip_internal::create_values_queue(src, args...);
         auto sync = std::make_shared<zip_internal::sync>();
-        auto sbsc = std::vector<subscription>();
-        zip_internal::subscribe(sync, sbsc, valq, src, args...);
+        auto sbs = zip_internal::prepare_subscribers(sync, sctl, valq, src, args...);
 
-        while(s.is_subscribed()){
+        zip_internal::subscribe(sbs, valq, src, args...);
+
+        while(sctl.is_subscribed()){
           std::unique_lock<std::mutex> lock(sync->mtx_);
           sync->cond_.wait(lock, [&](){
-            return sbsc.size() == sync->completed_ || sync->err_ != nullptr || zip_internal::ready_values(valq, src, args...);
+            return !sctl.is_subscribed() || zip_internal::ready_values(valq, src, args...);
           });
-          if(sync->err_){
-            s.on_error(sync->err_);
-            break;
-          }
-          else if(zip_internal::ready_values(valq, src, args...)){
-            s.on_next(zip_internal::get_values(valq, src, args...));
-          }
-          else {
-            if(sbsc.size() == sync->completed_){
-              s.on_completed();
-              break;
-            }
+          if(zip_internal::ready_values(valq, src, args...)){
+            sctl.sink_next(zip_internal::get_values(valq, src, args...));
           }
         }
-        std::for_each(sbsc.begin(), sbsc.end(), [](auto it){ it.unsubscribe(); });
       });
     };
   }
@@ -247,7 +257,7 @@ namespace zip_internal {
 
     /** generate function type */
     template <typename RET>
-      using ftype = std::function<RET(BARGS...)>;
+      using ftype = internal::fn<RET(BARGS...)>;
   };
 
   template <typename ...BARGS, typename OB, typename ...ARGS>
@@ -270,21 +280,24 @@ template <typename X, typename...ARGS, std::enable_if_t<!is_observable<X>::value
   return [x, args...](auto src){
     using FRET = internal::lambda_invoke_result_t<X>;
     return observable<>::create<FRET>([x, args..., src](subscriber<FRET> s){
-      auto ups = internal::private_access::observable::create_source(
-        zip_internal::zip_main(args...)(src)
-      );
-      internal::private_access::subscriber::add_upstream(s, ups);
-      ups->subscribe({
-        [s, x](const auto& r){
-          s.on_next(zip_internal::apply(x, r));
+      auto sctl = internal::stream_controller<FRET>(s);
+      auto obs = zip_internal::zip_main(args...)(src);
+
+      using Source = decltype(obs);
+      using Item = typename Source::value_type;
+
+
+      obs.subscribe(sctl.template new_observer<Item>(
+        [sctl, x](auto, Item r){
+          sctl.sink_next(zip_internal::apply(x, r));
         },
-        [s](std::exception_ptr err){
-          s.on_error(err);
+        [sctl](auto, std::exception_ptr err){
+          sctl.sink_error(err);
         },
-        [s](){
-          s.on_completed();
+        [sctl](auto serial) {
+          sctl.sink_completed(serial);
         }
-      });
+      ));
     });
   };
 }

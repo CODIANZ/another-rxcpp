@@ -2,8 +2,12 @@
 #define __another_rxcpp_h_delay__
 
 #include "../observable.h"
+#include "../scheduler.h"
+#include "../schedulers/default_scheduler.h"
 #include "../internal/tools/util.h"
+#include "../internal/tools/stream_controller.h"
 
+#include <thread>
 #include <chrono>
 
 namespace another_rxcpp {
@@ -11,27 +15,25 @@ namespace operators {
 
 inline auto delay(std::chrono::milliseconds msec, scheduler::creator_fn sccr = schedulers::default_scheduler()) noexcept
 {
-  return [msec, sccr](auto src){
-    using OUT_OB = decltype(src);
-    using OUT = typename OUT_OB::value_type;
-    return observable<>::create<OUT>([src, msec, sccr](subscriber<OUT> s) {
+  return [msec, sccr](auto source){
+    using Source = decltype(source);
+    using Item = typename Source::value_type;
+    return observable<>::create<Item>([source, msec, sccr](subscriber<Item> s) {
+      auto sctl = internal::stream_controller<Item>(s);
       auto scdl = sccr();
-      scdl.schedule([src, msec, s](){
-        using namespace another_rxcpp::internal;
-        auto upstream = private_access::observable::create_source(src);
-        private_access::subscriber::add_upstream(s, upstream);
-        upstream->subscribe({
-          [s, upstream, msec](const auto& x){
+      scdl.schedule([source, msec, sctl](){
+        source.subscribe(sctl.template new_observer<Item>(
+          [sctl, msec](auto, const Item& x){
             std::this_thread::sleep_for(msec);
-            s.on_next(x);
+            sctl.sink_next(x);
           },
-          [s, upstream](std::exception_ptr err){
-            s.on_error(err);
+          [sctl](auto, std::exception_ptr err){
+            sctl.sink_error(err);
           },
-          [s](){
-            s.on_completed();
+          [sctl](auto serial) {
+            sctl.sink_completed(serial);
           }
-        });
+        ));
       });
     });
   };

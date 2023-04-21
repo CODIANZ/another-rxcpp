@@ -1,5 +1,4 @@
 #include "../../operators.h"
-#include "../../observables/connectable.h"
 
 namespace another_rxcpp {
   template <typename T>

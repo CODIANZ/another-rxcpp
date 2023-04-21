@@ -3,6 +3,7 @@
 
 #include "../observable.h"
 #include "../internal/tools/util.h"
+#include "../internal/tools/stream_controller.h"
 
 namespace another_rxcpp {
 namespace operators {
@@ -10,27 +11,25 @@ namespace operators {
 template <typename T>
   auto tap(observer<T> obs) noexcept
 {
-  return [obs](auto src){
-    using OUT_OB = decltype(src);
-    using OUT = typename OUT_OB::value_type;
-    return observable<>::create<OUT>([src, obs](subscriber<OUT> s) {
-      using namespace another_rxcpp::internal;
-      auto upstream = private_access::observable::create_source(src);
-      private_access::subscriber::add_upstream(s, upstream);
-      upstream->subscribe({
-        [s, obs](const auto& x){
-          if(obs.on_next) obs.on_next(x);
-          s.on_next(x);
+  return [obs](auto source){
+    using Source = decltype(source);
+    using Item = typename Source::value_type;
+    return observable<>::create<Item>([source, obs](subscriber<Item> s) {
+      auto sctl = internal::stream_controller<Item>(s);
+      source.subscribe(sctl.template new_observer<Item>(
+        [sctl, obs](auto, const Item& x){
+          obs.on_next(x);
+          sctl.sink_next(x);
         },
-        [s, obs](std::exception_ptr err){
-          if(obs.on_error) obs.on_error(err);
-          s.on_error(err);
+        [sctl, obs](auto, std::exception_ptr err){
+          obs.on_error(err);
+          sctl.sink_error(err);
         },
-        [s, obs](){
-          if(obs.on_completed) obs.on_completed();
-          s.on_completed();
+        [sctl, obs](auto serial) {
+          obs.on_completed();
+          sctl.sink_completed(serial);
         }
-      });
+      ));
     });
   };
 }
@@ -42,27 +41,25 @@ template <typename ON_NEXT>
     observer<>::completed_t c = {}
   ) noexcept
 {
-  return [n, e, c](auto src){
-    using OUT_OB = decltype(src);
-    using OUT = typename OUT_OB::value_type;
-    return observable<>::create<OUT>([src, n, e, c](subscriber<OUT> s) {
-      using namespace another_rxcpp::internal;
-      auto upstream = private_access::observable::create_source(src);
-      private_access::subscriber::add_upstream(s, upstream);
-      upstream->subscribe({
-        [s, n](const auto& x){
+  return [n, e, c](auto source){
+    using Source = decltype(source);
+    using Item = typename Source::value_type;
+    return observable<>::create<Item>([source, n, e, c](subscriber<Item> s) {
+      auto sctl = internal::stream_controller<Item>(s);
+      source.subscribe(sctl.template new_observer<Item>(
+        [sctl, n](auto, const Item& x){
           n(x);
-          s.on_next(x);
+          sctl.sink_next(x);
         },
-        [s, e](std::exception_ptr err){
+        [sctl, e](auto, std::exception_ptr err){
           if(e) e(err);
-          s.on_error(err);
+          sctl.sink_error(err);
         },
-        [s, c](){
+        [sctl, c](auto serial) {
           if(c) c();
-          s.on_completed();
+          sctl.sink_completed(serial);
         }
-      });
+      ));
     });
   };
 }

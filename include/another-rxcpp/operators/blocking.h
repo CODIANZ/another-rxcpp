@@ -1,7 +1,7 @@
 #if !defined(__another_rxcpp_h_blocking__)
 #define __another_rxcpp_h_blocking__
 
-#include "../observables.h"
+#include "../observables/blocking.h"
 
 namespace another_rxcpp {
 namespace operators {

@@ -1,7 +1,10 @@
+#include <another-rxcpp/utils/something.h>
+
 #include <another-rxcpp/observable.h>
-#include <another-rxcpp/operators.h>
-#include <another-rxcpp/observables.h>
-#include <another-rxcpp/utils.h>
+#include <another-rxcpp/observables/range.h>
+#include <another-rxcpp/operators/flat_map.h>
+#include <another-rxcpp/operators/map.h>
+#include <another-rxcpp/operators/retry.h>
 #include "common.h"
 
 using namespace another_rxcpp;

@@ -14,7 +14,8 @@
       "cwd": "${fileDirname}",
       "environment": [],
       "externalConsole": false,
-      "MIMode": "lldb"
+      "MIMode": "lldb",
+      "preLaunchTask": "build"
     },
     {
       "name": "(gdb) 起動",
@@ -26,7 +27,8 @@
       "cwd": "${fileDirname}",
       "environment": [],
       "externalConsole": false,
-      "MIMode": "gdb"
+      "MIMode": "gdb",
+      "preLaunchTask": "build"
     }
   ]
 }

@@ -1,7 +1,11 @@
-#include <another-rxcpp/observable.h>
-#include <another-rxcpp/operators.h>
-#include <another-rxcpp/observables.h>
-#include <another-rxcpp/subjects.h>
+#if defined(SUPPORTS_OPERATORS_IN_OBSERVABLE) || defined(SUPPORTS_RXCPP_COMPATIBLE)
+  #include <another-rxcpp/observable.h>
+#else
+  #include <another-rxcpp/operators/amb.h>
+  #include <another-rxcpp/observable.h>
+#endif
+
+#include <another-rxcpp/operators/map.h>
 #include "common.h"
 #include <random>
 

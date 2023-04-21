@@ -1,6 +1,7 @@
 #if !defined(__another_rxcpp_h_take__)
 #define __another_rxcpp_h_take__
 
+#include "../internal/tools/stream_controller.h"
 #include "../observable.h"
 
 namespace another_rxcpp {
@@ -8,32 +9,32 @@ namespace operators {
 
 inline auto take(std::size_t n) noexcept
 {
-  return [n](auto src){
-    using OUT_OB = decltype(src);
-    using OUT = typename OUT_OB::value_type;
-    return observable<>::create<OUT>([src, n](subscriber<OUT> s) {
-      using namespace another_rxcpp::internal;
+  return [n](auto source){
+    using Source = decltype(source);
+    using Item = typename Source::value_type;
+    return observable<>::create<Item>([source, n](subscriber<Item> s) {
+      auto sctl = internal::stream_controller<Item>(s);
       auto counter = std::make_shared<std::atomic_size_t>(1);
-      auto upstream = private_access::observable::create_source(src);
-      private_access::subscriber::add_upstream(s, upstream);
-      upstream->subscribe({
-        [s, n, upstream, counter](const auto& x){
+
+      source.subscribe(sctl.template new_observer<Item>(
+        [sctl, n, counter](auto serial, const Item& x) {
           const auto now = counter->fetch_add(1);
           if(now == n) {
-            s.on_next(x);
-            s.on_completed();
+            sctl.upstream_abort_observe(serial);
+            sctl.sink_next(x);
+            sctl.sink_completed(serial);
           }
           else if(now < n){
-            s.on_next(x);
+            sctl.sink_next(x);
           }
         },
-        [s](std::exception_ptr err){
-          s.on_error(err);
+        [sctl](auto, std::exception_ptr err){
+          sctl.sink_error(err);
         },
-        [s](){
-          s.on_completed();
+        [sctl](auto serial){
+          sctl.sink_completed(serial);
         }
-      });
+      ));
     });
   };  
 }
