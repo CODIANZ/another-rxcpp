@@ -15,13 +15,14 @@ template <typename T = int>
 {
   return observable<>::create<T>([msec, sccr](subscriber<T> s){
     auto scdl = sccr();
-    scdl.schedule([s, msec](){
+    scdl.schedule([s, msec, scdl](){
       T n = 1;
       while(s.is_subscribed()){
         std::this_thread::sleep_for(msec);
         s.on_next(n);
         n++;
       }
+      scdl.abort();
     });
   });
 }

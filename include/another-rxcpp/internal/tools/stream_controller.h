@@ -48,7 +48,7 @@ public:
 
   void set_on_finalize(on_finalize_t&& f) const noexcept {
     std::lock_guard<std::recursive_mutex> lock(inner_->mtx_);
-    inner_->on_finalizes_.push(std::move(f));
+    inner_->on_finalizes_.push_back(std::move(f));
   }
 
   template <typename In> observer<In> new_observer(

@@ -17,6 +17,9 @@ template <typename F>
   return observable<>::create<Item>([fn, sccr](subscriber<Item> s) {
     auto sctl = internal::stream_controller<Item>(s);
     auto scdl = sccr();
+    sctl.set_on_finalize([scdl]{
+      scdl.abort();
+    });
     scdl.schedule([fn, sctl]() {
       fn().subscribe(sctl.template new_observer<Item>(
         [sctl](auto, const Item& x){

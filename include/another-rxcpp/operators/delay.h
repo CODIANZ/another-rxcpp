@@ -21,6 +21,9 @@ inline auto delay(std::chrono::milliseconds msec, scheduler::creator_fn sccr = s
     return observable<>::create<Item>([source, msec, sccr](subscriber<Item> s) {
       auto sctl = internal::stream_controller<Item>(s);
       auto scdl = sccr();
+      sctl.set_on_finalize([scdl]{
+        scdl.abort();
+      });
       scdl.schedule([source, msec, sctl](){
         source.subscribe(sctl.template new_observer<Item>(
           [sctl, msec](auto, const Item& x){
