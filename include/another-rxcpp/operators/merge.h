@@ -20,6 +20,9 @@ namespace merge_internal {
       return observable<>::create<T>([sccr, arr](subscriber<T> s) {
         auto sctl = internal::stream_controller<T>(s);
         auto scdl = sccr();
+        sctl.set_on_finalize([scdl]{
+          scdl.abort();
+        });
 
         // prepare subscribers
         auto subscribers = [sctl, scdl, arr]{

@@ -16,16 +16,18 @@ inline auto subscribe_on(scheduler::creator_fn sccr) noexcept
     return observable<>::create<Item>([source, sccr](subscriber<Item> s) {
       auto sctl = internal::stream_controller<Item>(s);
       auto scdl = sccr();
-      auto keepalive = scdl;
-      scdl.schedule([sctl, source, keepalive]() {
+      sctl.set_on_finalize([scdl]{
+        scdl.abort();
+      });
+      scdl.schedule([sctl, source]() {
         source.subscribe(sctl.template new_observer<Item>(
-          [sctl, keepalive](auto, const Item& x) {
+          [sctl](auto, const Item& x) {
             sctl.sink_next(x);
           },
-          [sctl, keepalive](auto, std::exception_ptr err){
+          [sctl](auto, std::exception_ptr err){
             sctl.sink_error(err);
           },
-          [sctl, keepalive](auto serial){
+          [sctl](auto serial){
             sctl.sink_completed(serial);
           }
         ));

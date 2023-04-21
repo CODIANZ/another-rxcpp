@@ -16,9 +16,10 @@ template <typename T>
   auto v = std::make_shared<TT>(std::forward<T>(value));
   return observable<>::create<TT>([v, sccr](subscriber<TT> s) {
     auto scdl = sccr();
-    scdl.schedule([v, s]() {
+    scdl.schedule([v, s, scdl]() {
       s.on_next(*v);
       s.on_completed();
+      scdl.abort();
     });
   });
 }

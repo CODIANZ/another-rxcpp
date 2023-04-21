@@ -44,23 +44,9 @@ private:
     std::mutex                mtx_;
     std::condition_variable   cond_;
     std::queue<function_type> queue_;
-    int                       refcount_ = 0;
+    bool                      abort_ = false;
   };
   std::shared_ptr<member>     m_;
-
-  void release() noexcept {
-    if(!m_) return;
-    if(m_->interface_->get_schedule_type() == scheduler_interface::schedule_type::queuing){
-      std::unique_lock<std::mutex> lock(m_->mtx_);
-      m_->refcount_--;
-      if(m_->refcount_ == 0){
-        lock.unlock();
-        m_->cond_.notify_one();
-        m_->interface_->detach();
-      }
-    }
-    m_.reset();
-  }
 
 public:
   template <typename ISP> scheduler(ISP isp) noexcept :
@@ -70,12 +56,14 @@ public:
 
     if(m_->interface_->get_schedule_type() == scheduler_interface::schedule_type::queuing){
       auto m = m_;
-      m->refcount_  = 1;
       m->interface_->run([m](){
         while(true){
           auto q = [m]() -> std::queue<function_type> {
             std::unique_lock<std::mutex> lock(m->mtx_);
-            m->cond_.wait(lock, [m]{ return !m->queue_.empty() || m->refcount_ == 0; });
+            m->cond_.wait(lock, [m]{ return !m->queue_.empty() || m->abort_; });
+            if(m->abort_){
+              return std::queue<function_type>();
+            }
             return std::move(m->queue_);
           }();
           if(q.empty()) break;
@@ -93,17 +81,11 @@ public:
   }
 
   scheduler& operator= (const scheduler& src) noexcept {
-    release();
     m_ = src.m_;
-    if(m_->interface_->get_schedule_type() == scheduler_interface::schedule_type::queuing){
-      std::lock_guard<std::mutex> lock(m_->mtx_);
-      m_->refcount_++;    
-    }
     return *this;
   }
 
   virtual ~scheduler() noexcept {
-    release();
   }
 
   void schedule(const function_type& f) const noexcept {
@@ -128,6 +110,17 @@ public:
       /* m_->interface_->get_schedule_type() == scheduler_interface::schedule_type::direct */
       m_->interface_->schedule(std::move(f));
     }
+  }
+
+  void abort() const noexcept {
+      if(m_->interface_->get_schedule_type() == scheduler_interface::schedule_type::queuing){
+        {
+          std::unique_lock<std::mutex> lock(m_->mtx_);
+          m_->abort_ = true;
+        }
+        m_->cond_.notify_one();
+        m_->interface_->detach();
+      }
   }
 };
 

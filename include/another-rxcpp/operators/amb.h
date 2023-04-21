@@ -31,6 +31,9 @@ namespace amb_internal {
           return true;
         };
         auto scdl = sccr();
+        sctl.set_on_finalize([scdl]{
+          scdl.abort();
+        });
 
         // prepare subscribers
         auto subscribers = [sctl, scdl, arr, is_win_next] {

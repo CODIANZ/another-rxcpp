@@ -16,6 +16,9 @@ inline auto observe_on(scheduler::creator_fn sccr) noexcept
     return observable<>::create<Item>([source, sccr](subscriber<Item> s) {
       auto sctl = internal::stream_controller<Item>(s);
       auto scdl = sccr();
+      sctl.set_on_finalize([scdl]{
+        scdl.abort();
+      });
       source.subscribe(sctl.template new_observer<Item>(
         [sctl, scdl](auto, const Item& x) {
           scdl.schedule([sctl, x]() mutable {
