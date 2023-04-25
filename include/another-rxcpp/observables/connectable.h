@@ -100,21 +100,21 @@ public:
     };
 
     auto sbsc = m->source_.subscribe(
-      [collect](value_type x) {
+      [collect, m](value_type x) {
         auto obs = collect(false);
-        std::for_each(obs.begin(), obs.end(), [&](auto ob){
+        std::for_each(obs.begin(), obs.end(), [m, &x](auto ob){
           ob.on_next(x);
         });
       },
-      [collect](std::exception_ptr err){
+      [collect, m](std::exception_ptr err){
         auto obs = collect(true);
-        std::for_each(obs.begin(), obs.end(), [&](auto ob){
+        std::for_each(obs.begin(), obs.end(), [m, &err](auto ob){
           ob.on_error(err);
         });
       },
-      [collect](){
+      [collect, m](){
         auto obs = collect(true);
-        std::for_each(obs.begin(), obs.end(), [&](auto ob){
+        std::for_each(obs.begin(), obs.end(), [m](auto ob){
           ob.on_completed();
         });
       }
