@@ -34,8 +34,8 @@ private:
     std::recursive_mutex  mtx_;
     serial_type           serial_;
     subscription          subscription_;
-    member(source_observable&& source): source_(std::move(source)) {}
-    member(const source_observable& source): source_(source) {}
+    member(source_observable&& source): source_(std::move(source)), serial_(0) {}
+    member(const source_observable& source): source_(source), serial_(0) {}
   };
   std::shared_ptr<member> m_;
 
@@ -90,31 +90,30 @@ public:
 
     auto collect = [m](bool clear){
       std::lock_guard<std::recursive_mutex> lock(m->mtx_);
-      std::vector<observer_type> ret(m->observers_.size());
-      auto ret_it = ret.begin();
-      for(auto it = m->observers_.begin(); it != m->observers_.end(); it++, ret_it++){
-        *ret_it = it->second;
-      }
+      std::vector<observer_type> ret;
+      std::for_each(m->observers_.begin(), m->observers_.end(), [&ret](auto& it){
+        ret.push_back(it.second);
+      });
       if(clear) m->observers_.clear();
       return ret;
     };
 
     auto sbsc = m->source_.subscribe(
-      [collect, m](value_type x) {
+      [collect](const value_type& x) {
         auto obs = collect(false);
-        std::for_each(obs.begin(), obs.end(), [m, &x](auto ob){
+        std::for_each(obs.begin(), obs.end(), [&x](auto& ob){
           ob.on_next(x);
         });
       },
-      [collect, m](std::exception_ptr err){
+      [collect](std::exception_ptr err){
         auto obs = collect(true);
-        std::for_each(obs.begin(), obs.end(), [m, &err](auto ob){
+        std::for_each(obs.begin(), obs.end(), [&err](auto& ob){
           ob.on_error(err);
         });
       },
-      [collect, m](){
+      [collect](){
         auto obs = collect(true);
-        std::for_each(obs.begin(), obs.end(), [m](auto ob){
+        std::for_each(obs.begin(), obs.end(), [](auto& ob){
           ob.on_completed();
         });
       }
