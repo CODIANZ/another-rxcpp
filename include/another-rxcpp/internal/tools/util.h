@@ -41,12 +41,8 @@ template <typename SP>
 
 template <typename T>
   auto to_shared(T&& value) noexcept {
-    return std::make_shared<T>(std::forward<T>(value));
-  }
-
-template <typename T>
-  auto to_shared(const T& value) noexcept {
-    return std::make_shared<T>(value);
+    using TT = typename strip_const_reference<T>::type;
+    return std::make_shared<TT>(std::forward<T>(value));
   }
 
 }} /* namespace another_rxcpp::internal */
