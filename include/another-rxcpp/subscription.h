@@ -10,27 +10,25 @@ private:
   struct member {
     const internal::fn<void()> unsubscribe_;
     const internal::fn<bool()> is_subscribed_;
+    template <typename Unsb, typename Issb>
+      member(Unsb&& unsb, Issb&& issb) noexcept :
+        unsubscribe_(std::forward<Unsb>(unsb)),
+        is_subscribed_(std::forward<Issb>(issb)) {}
   };
 
   std::shared_ptr<member> m_;
 
 public:
-  subscription() = default;
-  subscription(
-    const internal::fn<void()>& unsubscribe,
-    const internal::fn<bool()>& is_subscribed
-  ) noexcept : m_(std::make_shared<member>(member{
-    .unsubscribe_   = unsubscribe,
-    .is_subscribed_ = is_subscribed
-  })) {}
-  subscription(
-    internal::fn<void()>&& unsubscribe,
-    internal::fn<bool()>&& is_subscribed
-  ) noexcept : m_(std::make_shared<member>(member{
-    .unsubscribe_   = std::move(unsubscribe),
-    .is_subscribed_ = std::move(is_subscribed)
-  })) {}
-  subscription(const subscription& src): m_(src.m_){}
+  subscription() noexcept = default;
+  
+  template <typename Unsb, typename Issb>
+    subscription(Unsb&& unsb, Issb&& issb) noexcept :
+      m_(std::make_shared<member>(
+        std::forward<Unsb>(unsb),
+        std::forward<Issb>(issb)
+      )){}
+
+  subscription(const subscription& src) noexcept : m_(src.m_){}
 
   const subscription& operator = (const subscription& src) {
     m_ = src.m_;
