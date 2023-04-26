@@ -3,7 +3,7 @@
 
 #include <functional>
 #include <memory>
-#include <optional>
+#include <mutex>
 #include "internal/tools/fn.h"
 #include "internal/tools/util.h"
 
@@ -36,6 +36,7 @@ template <typename T> struct observer {
 
 private:
   struct inner {
+    std::recursive_mutex  mtx_;
     next_sp        next_;
     error_sp       error_;
     completed_sp   completed_;
@@ -50,11 +51,16 @@ private:
     inner_->unsubscribe_ = std::make_shared<unsubscribe_t>(std::forward<Unsb>(f));
   }
 
-  void reset_all() const noexcept {
+  auto fetch_and_reset_all() const noexcept {
+    std::lock_guard<std::recursive_mutex> lock(inner_->mtx_);
+    auto e = inner_->error_;
+    auto c = inner_->completed_;
+    auto u = inner_->unsubscribe_;
     inner_->next_.reset();
     inner_->error_.reset();
     inner_->completed_.reset();
     inner_->unsubscribe_.reset();
+    return std::make_tuple(e, c, u);
   }
 
 public:
@@ -72,16 +78,6 @@ public:
     if(c) inner_->completed_  = std::make_shared<completed_t>(c);
   }
 
-  void unsubscribe() const noexcept {
-    auto u = inner_->unsubscribe_;
-    reset_all();
-    if(u && *u) (*u)();
-  }
-
-  bool is_subscribed() const noexcept {
-    return inner_->next_ && inner_->error_ && inner_->completed_;
-  }
-
   void on_next(const value_type& value) const noexcept {
     auto n = inner_->next_;
     if(n && *n) (*n)(value);
@@ -93,19 +89,29 @@ public:
   }
 
   void on_error(std::exception_ptr err) const noexcept {
-    auto e = inner_->error_;
-    auto u = inner_->unsubscribe_;
-    reset_all();
+    auto ecu = fetch_and_reset_all();
+    auto e = std::get<0>(ecu);
+    auto u = std::get<2>(ecu);
     if(e && *e) (*e)(err);
     if(u && *u) (*u)();
   }
 
   void on_completed() const noexcept {
-    auto c = inner_->completed_;
-    auto u = inner_->unsubscribe_;
-    reset_all();
+    auto ecu = fetch_and_reset_all();
+    auto c = std::get<1>(ecu);
+    auto u = std::get<2>(ecu);
     if(c && *c) (*c)();
     if(u && *u) (*u)();
+  }
+
+  void unsubscribe() const noexcept {
+    auto ecu = fetch_and_reset_all();
+    auto u = std::get<2>(ecu);
+    if(u && *u) (*u)();
+  }
+
+  bool is_subscribed() const noexcept {
+    return inner_->next_ && inner_->error_ && inner_->completed_;
   }
 };
 
