@@ -64,13 +64,13 @@ public:
 
     auto ob = observer<In>(
       [n, serial](const In& value) {
-        n(serial, value);
+        if(n) n(serial, value);
       },
       [e, serial](std::exception_ptr err) {
-        e(serial, err);
+        if(e) e(serial, err);
       },
       [c, serial]() {
-        c(serial);
+        if(c) c(serial);
       }
     );
 
