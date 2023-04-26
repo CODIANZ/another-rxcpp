@@ -50,6 +50,13 @@ private:
     inner_->unsubscribe_ = std::make_shared<unsubscribe_t>(std::forward<Unsb>(f));
   }
 
+  void reset_all() const noexcept {
+    inner_->next_.reset();
+    inner_->error_.reset();
+    inner_->completed_.reset();
+    inner_->unsubscribe_.reset();
+  }
+
 public:
   template<typename N, typename E, typename C> observer(N&& n, E&& e, C&& c) noexcept {
     inner_ = std::make_shared<inner>();
@@ -66,16 +73,9 @@ public:
   }
 
   void unsubscribe() const noexcept {
-    auto unsb = inner_->unsubscribe_;
-
-    inner_->next_.reset();
-    inner_->error_.reset();
-    inner_->completed_.reset();
-    inner_->unsubscribe_.reset();
-    
-    if(unsb && *unsb) {
-      (*unsb)();
-    }
+    auto u = inner_->unsubscribe_;
+    reset_all();
+    if(u && *u) (*u)();
   }
 
   bool is_subscribed() const noexcept {
@@ -95,7 +95,7 @@ public:
   void on_error(std::exception_ptr err) const noexcept {
     auto e = inner_->error_;
     auto u = inner_->unsubscribe_;
-    unsubscribe();
+    reset_all();
     if(e && *e) (*e)(err);
     if(u && *u) (*u)();
   }
@@ -103,7 +103,7 @@ public:
   void on_completed() const noexcept {
     auto c = inner_->completed_;
     auto u = inner_->unsubscribe_;
-    unsubscribe();
+    reset_all();
     if(c && *c) (*c)();
     if(u && *u) (*u)();
   }
