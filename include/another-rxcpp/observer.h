@@ -46,28 +46,23 @@ private:
 
   friend class internal::stream_controller<T>;
 
-  void set_on_unsubscribe(const unsubscribe_t& f) const noexcept {
-    inner_->unsubscribe_ = internal::to_shared(f);
+  template <typename Unsb> void set_on_unsubscribe(Unsb&& f) const noexcept {
+    inner_->unsubscribe_ = std::make_shared<unsubscribe_t>(std::forward<Unsb>(f));
   }
-
-  void set_on_unsubscribe(unsubscribe_t&& f) const noexcept {
-    inner_->unsubscribe_ = internal::to_shared(std::move(f));
-  }
-
 
 public:
-  observer(const next_t& n = {}, const error_t& e = {}, const completed_t& c = {}) noexcept {
+  template<typename N, typename E, typename C> observer(N&& n, E&& e, C&& c) noexcept {
     inner_ = std::make_shared<inner>();
-    inner_->next_       = internal::to_shared(n);
-    inner_->error_      = internal::to_shared(e);
-    inner_->completed_  = internal::to_shared(c);
+    inner_->next_       = std::make_shared<next_t>(std::forward<N>(n));
+    inner_->error_      = std::make_shared<error_t>(std::forward<E>(e));
+    inner_->completed_  = std::make_shared<completed_t>(std::forward<C>(c));
   }
 
-  observer(next_t&& n, error_t&& e, completed_t&& c) noexcept {
+  observer(const next_t& n = {}, const error_t& e = {}, const completed_t& c = {}) noexcept {
     inner_ = std::make_shared<inner>();
-    inner_->next_       = internal::to_shared(std::move(n));
-    inner_->error_      = internal::to_shared(std::move(e));
-    inner_->completed_  = internal::to_shared(std::move(c));
+    if(n) inner_->next_       = std::make_shared<next_t>(n);
+    if(e) inner_->error_      = std::make_shared<error_t>(e);
+    if(c) inner_->completed_  = std::make_shared<completed_t>(c);
   }
 
   void unsubscribe() const noexcept {
