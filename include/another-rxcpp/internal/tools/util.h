@@ -39,12 +39,6 @@ template <typename SP>
     return std::weak_ptr<typename SP::element_type>(sp);
   }
 
-template <typename T>
-  auto to_shared(T&& value) noexcept {
-    using TT = typename strip_const_reference<T>::type;
-    return std::make_shared<TT>(std::forward<T>(value));
-  }
-
 }} /* namespace another_rxcpp::internal */
 
 #endif /* !defined(__another_rxcpp_h_util__) */
