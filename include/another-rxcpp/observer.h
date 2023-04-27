@@ -73,9 +73,9 @@ public:
 
   observer(const next_t& n = {}, const error_t& e = {}, const completed_t& c = {}) noexcept {
     inner_ = std::make_shared<inner>();
-    if(n) inner_->next_       = std::make_shared<next_t>(n);
-    if(e) inner_->error_      = std::make_shared<error_t>(e);
-    if(c) inner_->completed_  = std::make_shared<completed_t>(c);
+    inner_->next_       = std::make_shared<next_t>(n);
+    inner_->error_      = std::make_shared<error_t>(e);
+    inner_->completed_  = std::make_shared<completed_t>(c);
   }
 
   void on_next(const value_type& value) const noexcept {
