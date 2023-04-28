@@ -5,6 +5,7 @@
 #include <memory>
 #include <queue>
 #include <mutex>
+#include <condition_variable>
 
 namespace another_rxcpp {
 

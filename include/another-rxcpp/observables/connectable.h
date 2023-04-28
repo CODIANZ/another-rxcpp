@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include <mutex>
 #include <vector>
+#include <algorithm>
 
 namespace another_rxcpp {
 namespace observables {

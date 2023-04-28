@@ -8,6 +8,8 @@
 #include <mutex>
 #include <numeric>
 #include <thread>
+#include <condition_variable>
+#include <atomic>
 
 namespace another_rxcpp {
 namespace observables {
