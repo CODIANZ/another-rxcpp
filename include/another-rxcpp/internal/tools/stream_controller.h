@@ -25,13 +25,15 @@ private:
     serial_type           serial_;
     unsubscriber_map      unsubscribers_;
     on_finalizes_t        on_finalizes_;
-    inner(const subscriber_type& sbsc) : subscriber_(sbsc) {}
+    inner(const subscriber_type& sbsc) noexcept : subscriber_(sbsc), serial_(0) {}
   };
 
   mutable std::shared_ptr<inner> inner_;
 
   stream_controller(std::shared_ptr<inner> inner) noexcept
   : inner_(inner) {}
+
+  stream_controller() = delete;
 
 public:
   stream_controller(const subscriber_type& subscriber) noexcept {
@@ -41,14 +43,9 @@ public:
     });
   }
 
-  void set_on_finalize(const on_finalize_t& f) const noexcept {
+  template <typename F> void set_on_finalize(F&& f) const noexcept {
     std::lock_guard<std::recursive_mutex> lock(inner_->mtx_);
-    inner_->on_finalizes_.push(f);
-  }
-
-  void set_on_finalize(on_finalize_t&& f) const noexcept {
-    std::lock_guard<std::recursive_mutex> lock(inner_->mtx_);
-    inner_->on_finalizes_.reset(new on_finalize_t(std::move(f)));
+    inner_->on_finalizes_ = std::make_shared<on_finalize_t>(std::forward<F>(f));
   }
 
   template <typename In> observer<In> new_observer(

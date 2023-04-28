@@ -15,7 +15,7 @@ namespace amb_internal {
   template <typename T, typename OB>
   auto amb(scheduler::creator_fn sccr, std::vector<observable<T>>& arr, OB ob) noexcept {
     arr.push_back(ob);
-    return [sccr, arr = internal::to_shared(std::move(arr))](auto src) {
+    return [sccr, arr = std::make_shared<std::vector<observable<T>>>(std::move(arr))](auto src) {
       arr->push_back(src);
       return observable<>::create<T>([sccr, arr](subscriber<T> s) {
         auto sctl = internal::stream_controller<T>(s);

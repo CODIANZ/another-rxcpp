@@ -1,9 +1,6 @@
 #if !defined(__another_rxcpp_h_subscriber__)
 #define __another_rxcpp_h_subscriber__
 
-#include <functional>
-#include <memory>
-#include <optional>
 #include "observer.h"
 
 namespace another_rxcpp {

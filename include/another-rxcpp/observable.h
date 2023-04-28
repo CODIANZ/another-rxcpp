@@ -80,15 +80,13 @@ public:
     return subscribe(observer<value_type>(n, e, c));
   }
 
-  subscription subscribe(
-    next_t&&       n = {},
-    error_t&&      e = {},
-    completed_t&&  c = {}
-  ) const noexcept {
+  template <typename N, typename E, typename C>
+    subscription subscribe(N&& n, E&& e, C&& c) const noexcept
+  {
     return subscribe(observer<value_type>(
-      std::move(n),
-      std::move(e),
-      std::move(c)
+      std::forward<N>(n),
+      std::forward<E>(e),
+      std::forward<C>(c)
     ));
   }
 
