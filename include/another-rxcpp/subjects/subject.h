@@ -68,25 +68,27 @@ public:
   virtual observable<T> as_observable() const noexcept {
     auto m = m_;
     return observable<>::create<value_type>([m](subscriber_type s) {
-      auto sctl = internal::stream_controller<value_type>(s);
       if(m->error_){
-        sctl.sink_error(m->error_);
+        s.on_error(m->error_);
+        return;
       }
       else if(!m->subscription_.is_subscribed()){
-        sctl.sink_completed_force();
+        s.on_completed();
+        return;
       }
+      auto sctl = internal::stream_controller<value_type>(s);
       {
         std::lock_guard<std::recursive_mutex> lock(m->mtx_);
         m->sctls_.push_back(sctl);
       }
       m->source_.subscribe(sctl.template new_observer<value_type>(
-        [sctl](auto, const value_type& x){
+        [sctl, m](auto, const value_type& x){
           sctl.sink_next(x);
         },
-        [sctl](auto, std::exception_ptr err){
+        [sctl, m](auto, std::exception_ptr err){
           sctl.sink_error(err);
         },
-        [sctl](auto serial) {
+        [sctl, m](auto serial) {
           sctl.sink_completed(serial);
         }
       ));
