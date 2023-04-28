@@ -6,6 +6,8 @@
 #include "../observables/error.h"
 #include "../operators/on_error_resume_next.h"
 #include "../operators/publish.h"
+#include <algorithm>
+#include <mutex>
 
 namespace another_rxcpp {
 namespace subjects {
@@ -23,8 +25,14 @@ private:
     subscriber_type     subscriber_;
     std::exception_ptr  error_ = nullptr;
     subscription        subscription_;
+    std::recursive_mutex  mtx_;
+    std::vector<internal::stream_controller<value_type>> sctls_;
     ~member() {
       subscription_.unsubscribe();
+      std::lock_guard<std::recursive_mutex> lock(mtx_);
+      std::for_each(sctls_.begin(), sctls_.end(), [](auto& sctl){
+        sctl.finalize();
+      });
     }
   };
   std::shared_ptr<member> m_;
@@ -37,12 +45,14 @@ public:
   subject() noexcept :
     m_(std::make_shared<member>())
   {
-    auto m = m_;
+    std::weak_ptr<member> m = m_;
     m_->source_ = observable<>::create<value_type>([m](subscriber_type s){
-      m->subscriber_ = s;
+      auto mm = m.lock();
+      if(mm) mm->subscriber_ = s;
     })
     | operators::on_error_resume_next([m](std::exception_ptr err){
-      m->error_ = err;
+      auto mm = m.lock();
+      if(mm) mm->error_ = err;
       return observables::error<value_type>(err);
     })
     | operators::publish();
@@ -64,6 +74,10 @@ public:
       }
       else if(!m->subscription_.is_subscribed()){
         sctl.sink_completed_force();
+      }
+      {
+        std::lock_guard<std::recursive_mutex> lock(m->mtx_);
+        m->sctls_.push_back(sctl);
       }
       m->source_.subscribe(sctl.template new_observer<value_type>(
         [sctl](auto, const value_type& x){
