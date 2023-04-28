@@ -18,10 +18,11 @@
     {
       "label": "build",
       "type": "shell",
-      "command": "make",
-      "options": {
-        "cwd": "${workspaceFolder}/build"
-      },
+      "command": "cmake",
+      "args": [
+        "--build",
+        "./build"
+      ],
       "problemMatcher": [
         "$gcc"
       ]
