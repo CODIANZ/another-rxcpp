@@ -66,8 +66,5 @@ int main() {
   #endif /* defined(SUPPORTS_RXCPP_COMPATIBLE) */
 
   log() << "**** finish ****" << std::endl;
-
-  std::cout << "wait for some worker threads destruct objects (eg: sources in subscription)" << std::endl;
-  wait(100);
 }
 

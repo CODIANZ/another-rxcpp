@@ -30,7 +30,5 @@ void test_async_scheduler() {
   
   while(x.is_subscribed()) {}
 
-  wait(1000);
-
   log() << "test_async_scheduler -- end" << std::endl << std::endl;
 }
