@@ -43,13 +43,6 @@ void test_observable() {
       log() << x << std::endl;
       return ovalue(x + 1);
     });
-    // {
-    //   log() << "#2 wait with notify_on_unsubscribe()" << std::endl;
-    //   auto x = doSubscribe(ob);
-    //   std::mutex mtx;
-    //   std::unique_lock<std::mutex> lock(mtx);
-    //   x.unsubscribe_notice()->wait(lock, [x](){ return x.is_subscribed(); });
-    // }
     {
       log() << "#3 wait until is_subscribed() == true" << std::endl;
       auto x = doSubscribe(ob);

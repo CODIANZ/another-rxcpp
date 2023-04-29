@@ -9,7 +9,7 @@
       "command": "valgrind",
       "args": [
         "--leak-check=full",
-        "--show-possibly-lost=no", // see scheduler::detach()
+        "--num-callers=500",
         "${workspaceFolder}/build/another-rxcpp"
       ],
       "problemMatcher": [
