@@ -101,27 +101,16 @@ public:
   virtual ~scheduler() noexcept {
   }
 
-  void schedule(const function_type& f) const noexcept {
-    if(m_->interface_->get_schedule_type() == scheduler_interface::schedule_type::queuing){
-      auto cpf = f;
-      schedule(std::move(f));
-    }
-    else{
-      /* m_->interface_->get_schedule_type() == scheduler_interface::schedule_type::direct */
-      m_->interface_->schedule(f);
-    }
-  }
-
-  void schedule(function_type&& f) const noexcept {
+  template <typename F> void schedule(F&& f) const noexcept {
     if(m_->interface_->get_schedule_type() == scheduler_interface::schedule_type::queuing){
       std::unique_lock<std::mutex> lock(m_->mtx_);
-      m_->queue_.push(std::move(f));
+      m_->queue_.push(std::forward<F>(f));
       lock.unlock();
       m_->cond_.notify_one();
     }
     else{
       /* m_->interface_->get_schedule_type() == scheduler_interface::schedule_type::direct */
-      m_->interface_->schedule(std::move(f));
+      m_->interface_->schedule(std::forward<F>(f));
     }
   }
 
