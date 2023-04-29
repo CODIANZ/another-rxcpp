@@ -14,7 +14,7 @@ template <typename T>
   using TT = typename T::value_type;
   return observable<>::create<TT>([arr](subscriber<TT> s){
     for(auto it = std::cbegin(arr); it != std::cend(arr); it++) {
-      if(!s.is_subscribed()) break;
+      if(!s.is_subscribed()) return;
       s.on_next(*it);
     }
     s.on_completed();
