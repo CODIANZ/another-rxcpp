@@ -39,7 +39,6 @@ void test_case_5() {
   );
 
   while(sbsc.is_subscribed()) {}
-  wait(1000);
 
   log() << "test_case_5 -- end" << std::endl << std::endl;
 }

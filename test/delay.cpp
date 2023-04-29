@@ -38,7 +38,5 @@ void test_delay() {
 
   while(x.is_subscribed()) {}
 
-  wait(1000);
-
   log() << "test_delay -- end" << std::endl << std::endl;
 }
