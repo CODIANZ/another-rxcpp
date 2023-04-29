@@ -27,8 +27,14 @@ public:
   schedule_type get_schedule_type() const noexcept { return schedule_type_; }
 
   virtual void run(call_in_context_fn_t call_in_context) noexcept = 0;
-  virtual void detach() noexcept = 0;
   virtual void schedule(const function_type& f) noexcept = 0;
+
+  /**
+   * `detach()` is called in the same thread as the scheduler's `run()`.
+   * Derived schedulers must therefore be prepared to safely dispose of the execution context.
+   * (This causes 'valgrind' to detect 'possibly-lost'.)
+  */
+  virtual void detach() noexcept = 0;
 };
 
 class scheduler {
