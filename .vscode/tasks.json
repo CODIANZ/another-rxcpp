@@ -9,6 +9,7 @@
       "command": "valgrind",
       "args": [
         "--leak-check=full",
+        "--show-possibly-lost=no", // see scheduler::detach()
         "${workspaceFolder}/build/another-rxcpp"
       ],
       "problemMatcher": [
