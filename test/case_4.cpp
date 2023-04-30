@@ -107,5 +107,7 @@ void test_case_4() {
     log() << "emitters.run = " << *emitters.run <<  std::endl;
   }
 
+  wait(2000);
+
   log() << "test_case_4 -- end" << std::endl << std::endl;
 }

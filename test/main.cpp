@@ -21,6 +21,7 @@ int main() {
   DO(test_empty)
   DO(test_on_error_resume_next)
   DO(test_retry)
+  DO(test_observe_on)
   DO(test_subscribe_on)
   DO(test_new_thread_scheduler)
   DO(test_take_until)
