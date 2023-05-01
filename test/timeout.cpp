@@ -19,18 +19,24 @@ using namespace another_rxcpp::operators;
 void test_timeout() {
   log() << "test_timeout -- begin" << std::endl;
 
-  auto o = observables::range(1, 10)
-  | tap<int>({
-    [](const int& x){
-    }
-  })
-  | flat_map([](int x){
-    return observables::just(x)
-    | delay(std::chrono::milliseconds(x * 100));
-  })
-  | tap<int>({
-    [](const int& x){
-    }
+  auto o = observable<>::create<int>([](subscriber<int> s){
+    std::thread([s]{
+      for(int i = 1; i <= 10; i++){
+        if(!s.is_subscribed()){
+          log() << "interval_range break" << std::endl;
+          return;
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(i * 100));
+        if(!s.is_subscribed()){
+          log() << "interval_range break" << std::endl;
+          return;
+        }
+        log() << "interval_range emit " << i << std::endl;
+        s.on_next(i);
+      }
+      log() << "interval_range complete" << std::endl;
+      s.on_completed();
+    }).detach();
   })
   | timeout(std::chrono::milliseconds(500));
 

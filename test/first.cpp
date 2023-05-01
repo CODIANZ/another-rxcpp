@@ -16,15 +16,10 @@ using namespace another_rxcpp::operators;
 void test_first() {
   log() << "test_first -- begin" << std::endl;
 
-  auto o = observables::range(1, 100);
-
-  doSubscribe(o | first());
+  doSubscribe(observables::range(1, 100) | first());
 
   auto x = doSubscribe(
-    o
-    | flat_map([](int x){
-      return ovalue(x, 100);
-    })
+    interval_range(1, 100, 100)
     | first()
   );
   while(x.is_subscribed()) {}

@@ -9,7 +9,8 @@
       "command": "valgrind",
       "args": [
         "--leak-check=full",
-        "--num-callers=500",
+        // "--num-callers=500",
+        // "--max-threads=5000",
         "${workspaceFolder}/build/another-rxcpp"
       ],
       "problemMatcher": [

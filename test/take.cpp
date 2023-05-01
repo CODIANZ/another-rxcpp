@@ -23,10 +23,7 @@ void test_take() {
   doSubscribe(o | take(5));
 
   auto x = doSubscribe(
-    o
-    | flat_map([](int x){
-      return ovalue(x, 100);
-    })
+    interval_range(1, 10, 100)
     | take(2)
   );
   while(x.is_subscribed()) {}

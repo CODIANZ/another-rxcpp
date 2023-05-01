@@ -18,13 +18,10 @@ void test_last() {
 
   auto o = observables::range(1, 100);
 
-  doSubscribe(o | last());
+  doSubscribe(observables::range(1, 100) | last());
 
   auto x = doSubscribe(
-    o
-    | flat_map([](int x){
-      return ovalue(x, 100);
-    })
+    interval_range(1, 10, 100)
     | last()
   );
   while(x.is_subscribed()) {}

@@ -31,8 +31,8 @@ inline void wait(int ms) {
 }
 
 
-template <typename T, typename TT = typename std::remove_const<typename std::remove_reference<T>::type>::type>
-auto ovalue(T&& value, int delay = 0) -> observable<TT> {
+template <typename T>
+auto ovalue(T&& value, int delay = 0) {
   if(delay == 0){
     return observables::just(std::forward<T>(value));
   }
@@ -41,6 +41,28 @@ auto ovalue(T&& value, int delay = 0) -> observable<TT> {
     .observe_on(schedulers::new_thread_scheduler())
     .delay(std::chrono::milliseconds(delay));
   }
+}
+
+inline auto interval_range(int from, int to, int msec) {
+  return observable<>::create<int>([from, to, msec](subscriber<int> s){
+    std::thread([from, to, msec, s]{
+      for(int i = from; i <= to; i++){
+        if(!s.is_subscribed()){
+          log() << "interval_range break" << std::endl;
+          return;
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(msec));
+        if(!s.is_subscribed()){
+          log() << "interval_range break" << std::endl;
+          return;
+        }
+        log() << "interval_range emit " << i << std::endl;
+        s.on_next(i);
+      }
+      log() << "interval_range complete" << std::endl;
+      s.on_completed();
+    }).detach();
+  });
 }
 
 template <typename T> auto doSubscribe(T&& source) {
