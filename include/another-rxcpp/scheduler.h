@@ -56,26 +56,20 @@ public:
     m_->interface_ = std::dynamic_pointer_cast<scheduler_interface>(isp);
 
     if(m_->interface_->get_schedule_type() == scheduler_interface::schedule_type::queuing){
-      std::weak_ptr<member> m = m_;
+      auto m = m_;
       m_->interface_->run([m](){
         while(true){
           auto q = [m]() -> std::queue<function_type> {
-            auto mm = m.lock();
-            if(!mm) {
+            std::unique_lock<std::mutex> lock(m->mtx_);
+            m->cond_.wait(lock, [m]{ return !m->queue_.empty() || m->abort_; });
+            if(m->abort_){
               return std::queue<function_type>();
             }
-            std::unique_lock<std::mutex> lock(mm->mtx_);
-            mm->cond_.wait(lock, [mm]{ return !mm->queue_.empty() || mm->abort_; });
-            if(mm->abort_){
-              return std::queue<function_type>();
-            }
-            return std::move(mm->queue_);
+            return std::move(m->queue_);
           }();
           if(q.empty()) break;
           while(!q.empty()){
-            auto mm = m.lock();
-            if(!mm) break;
-            mm->interface_->schedule(q.front());
+            m->interface_->schedule(q.front());
             q.pop();
           }
         }
