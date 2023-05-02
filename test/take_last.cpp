@@ -22,11 +22,14 @@ void test_take_last() {
   doSubscribe(o | take_last(1));
   doSubscribe(o | take_last(5));
 
+  thread_group threads;
+
   auto x = doSubscribe(
-    interval_range(1, 10, 10)
+    interval_range(1, 10, 10, threads)
     | take_last(5)
   );
   while(x.is_subscribed()) {}
+  threads.join_all();
 
   log() << "test_take_last -- end" << std::endl << std::endl;
 }

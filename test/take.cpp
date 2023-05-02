@@ -22,11 +22,14 @@ void test_take() {
   doSubscribe(o | take(1));
   doSubscribe(o | take(5));
 
+  thread_group threads;
+
   auto x = doSubscribe(
-    interval_range(1, 10, 100)
+    interval_range(1, 10, 100, threads)
     | take(2)
   );
   while(x.is_subscribed()) {}
+  threads.join_all();
 
   log() << "test_take -- end" << std::endl << std::endl;
 }
