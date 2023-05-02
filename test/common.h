@@ -4,12 +4,32 @@
 #include <functional>
 #include <thread>
 #include <iostream>
+#include <vector>
+#include <memory>
+#include <algorithm>
 #include <another-rxcpp/observable.h>
 #include <another-rxcpp/schedulers/new_thread_scheduler.h>
 #include <another-rxcpp/operators/subscribe.h>
 
 using namespace another_rxcpp;
 using namespace another_rxcpp::operators;
+
+class thread_group {
+  mutable std::shared_ptr<std::vector<std::thread>> threads_;
+
+public:
+  thread_group() noexcept :
+    threads_(std::make_shared<std::vector<std::thread>>()) {}
+
+  template <typename F> void push(F&& f) const noexcept {
+    threads_->push_back(std::thread(std::forward<F>(f)));
+  }
+
+  void join_all() const noexcept {
+    std::for_each(threads_->begin(), threads_->end(), [](auto& t){ t.join(); });
+    threads_->clear();
+  }
+};
 
 inline void setTimeout(std::function<void()> f, int x) {
   observables::just(0)
@@ -43,9 +63,9 @@ auto ovalue(T&& value, int delay = 0) {
   }
 }
 
-inline auto interval_range(int from, int to, int msec) {
-  return observable<>::create<int>([from, to, msec](subscriber<int> s){
-    std::thread([from, to, msec, s]{
+inline auto interval_range(int from, int to, int msec, thread_group threads) {
+  return observable<>::create<int>([from, to, msec, threads](subscriber<int> s){
+    threads.push([from, to, msec, s]{
       for(int i = from; i <= to; i++){
         if(!s.is_subscribed()){
           log() << "interval_range break" << std::endl;
@@ -61,7 +81,7 @@ inline auto interval_range(int from, int to, int msec) {
       }
       log() << "interval_range complete" << std::endl;
       s.on_completed();
-    }).detach();
+    });
   });
 }
 

@@ -19,17 +19,18 @@ void test_amb() {
   std::random_device seed_gen;
   std::mt19937 engine(seed_gen());      
   std::uniform_real_distribution<> rand(0.1, 0.5);
+  thread_group threads;
 
-  auto emitter = [](int sleep_time) {
-    return observable<>::create<int>([sleep_time](subscriber<int> s){
-      std::thread([s, sleep_time](){
+  auto emitter = [threads](int sleep_time) {
+    return observable<>::create<int>([sleep_time, threads](subscriber<int> s){
+      threads.push([s, sleep_time](){
         for(int i = 0; i < 10; i++){
           if(!s.is_subscribed()) break;
           std::this_thread::sleep_for(std::chrono::milliseconds(sleep_time));
           s.on_next(i);
         }
         s.on_completed();
-      }).detach();
+      });
     });
   };
 
@@ -48,6 +49,8 @@ void test_amb() {
   auto x = doSubscribe(o);
 
   while(x.is_subscribed()) {}
+
+  threads.join_all();
 
   log() << "test_amb -- end" << std::endl << std::endl;
 }

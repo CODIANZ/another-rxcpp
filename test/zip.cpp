@@ -18,15 +18,17 @@ void test_zip() {
 
   log() << "test_zip -- begin" << std::endl;
 
-  auto emitter = observable<>::create<int>([](subscriber<int> s){
-    std::thread([s](){
+  thread_group threads;
+
+  auto emitter = observable<>::create<int>([threads](subscriber<int> s){
+    threads.push([s](){
       for(int i = 0; i < 10; i++){
         if(!s.is_subscribed()) break;
         std::this_thread::sleep_for(std::chrono::milliseconds(300));
         s.on_next(i);
       }
       s.on_completed();
-    }).detach();
+    });
   });
 
   auto emitter2 = emitter
@@ -52,6 +54,7 @@ void test_zip() {
     });
     auto x = doSubscribe(o);
     while(x.is_subscribed()) {}
+    threads.join_all();
   }
 
   {
@@ -64,6 +67,7 @@ void test_zip() {
 
     auto x = doSubscribe(o);
     while(x.is_subscribed()) {}
+    threads.join_all();
   }
 
   log() << "test_zip -- end" << std::endl << std::endl;

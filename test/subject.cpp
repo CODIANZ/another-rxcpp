@@ -14,16 +14,17 @@ using namespace another_rxcpp::operators;
 void test_subject() {
   log() << "test_subject -- begin" << std::endl;
 
+  thread_group threads;
   subjects::subject<int>  sbj;
 
-  std::thread([sbj]() mutable {
+  threads.push([sbj]() mutable {
     int i = 0;
     while(sbj.as_subscriber().is_subscribed()){
       std::this_thread::sleep_for(std::chrono::seconds(1));
       sbj.as_subscriber().on_next(i++);
     }
     log() << "emit done" << std::endl;
-  }).detach();
+  });
 
   wait(2500);
   auto s1 = doSubscribe(sbj.as_observable());
@@ -53,6 +54,8 @@ void test_subject() {
   subjects::subject<int> sbj2;
   sbj2.as_subscriber().on_error(std::make_exception_ptr(std::exception()));
   doSubscribe(sbj2.as_observable());
+
+  threads.join_all();
 
   log() << "test_subject -- end" << std::endl << std::endl;
 }
