@@ -14,7 +14,7 @@ template <typename T>
   using TT = typename internal::strip_const_reference<T>::type;
   return observable<>::create<TT>([start, end](subscriber<TT> s){
     for(TT i = start; i <= end; i++) {
-      if(!s.is_subscribed()) break;
+      if(!s.is_subscribed()) return;
       s.on_next(i);
     }
     s.on_completed();

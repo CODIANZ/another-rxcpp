@@ -26,6 +26,7 @@ public:
   }
 
   virtual void detach() noexcept override {
+    while(future_.valid()) {}
   }
 
   virtual void schedule(const function_type& f) noexcept override {

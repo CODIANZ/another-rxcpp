@@ -5,17 +5,19 @@
 #include <thread>
 #include <iostream>
 #include <another-rxcpp/observable.h>
+#include <another-rxcpp/schedulers/new_thread_scheduler.h>
 #include <another-rxcpp/operators/subscribe.h>
 
 using namespace another_rxcpp;
 using namespace another_rxcpp::operators;
 
 inline void setTimeout(std::function<void()> f, int x) {
-  auto t = std::thread([f, x]{
-    std::this_thread::sleep_for(std::chrono::milliseconds(x));
+  observables::just(0)
+  .observe_on(schedulers::new_thread_scheduler())
+  .delay(std::chrono::milliseconds(x))
+  .subscribe([f](auto){
     f();
   });
-  t.detach();
 }
 
 inline std::ostream& log() {
@@ -29,20 +31,37 @@ inline void wait(int ms) {
 }
 
 
-template <typename T, typename TT = typename std::remove_const<typename std::remove_reference<T>::type>::type>
-auto ovalue(T&& value, int delay = 0) -> observable<TT> {
-  auto v = std::make_shared<TT>(std::forward<T>(value));
-  return observable<>::create<TT>([v, delay](subscriber<TT> s) {
-    if(delay == 0){
-      s.on_next(*v);
+template <typename T>
+auto ovalue(T&& value, int delay = 0) {
+  if(delay == 0){
+    return observables::just(std::forward<T>(value));
+  }
+  else{
+    return observables::just(std::forward<T>(value))
+    .observe_on(schedulers::new_thread_scheduler())
+    .delay(std::chrono::milliseconds(delay));
+  }
+}
+
+inline auto interval_range(int from, int to, int msec) {
+  return observable<>::create<int>([from, to, msec](subscriber<int> s){
+    std::thread([from, to, msec, s]{
+      for(int i = from; i <= to; i++){
+        if(!s.is_subscribed()){
+          log() << "interval_range break" << std::endl;
+          return;
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(msec));
+        if(!s.is_subscribed()){
+          log() << "interval_range break" << std::endl;
+          return;
+        }
+        log() << "interval_range emit " << i << std::endl;
+        s.on_next(i);
+      }
+      log() << "interval_range complete" << std::endl;
       s.on_completed();
-    }
-    else{
-      setTimeout([s, v](){
-        s.on_next(*v);
-        s.on_completed();
-      }, delay);
-    }
+    }).detach();
   });
 }
 

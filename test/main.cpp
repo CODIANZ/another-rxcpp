@@ -21,6 +21,7 @@ int main() {
   DO(test_empty)
   DO(test_on_error_resume_next)
   DO(test_retry)
+  DO(test_observe_on)
   DO(test_subscribe_on)
   DO(test_new_thread_scheduler)
   DO(test_take_until)
@@ -66,8 +67,5 @@ int main() {
   #endif /* defined(SUPPORTS_RXCPP_COMPATIBLE) */
 
   log() << "**** finish ****" << std::endl;
-
-  std::cout << "wait for some worker threads destruct objects (eg: sources in subscription)" << std::endl;
-  wait(100);
 }
 

@@ -50,8 +50,6 @@ void test_subject() {
   sbj.as_subscriber().on_completed();
   doSubscribe(sbj.as_observable());
 
-  wait(1000);
-
   subjects::subject<int> sbj2;
   sbj2.as_subscriber().on_error(std::make_exception_ptr(std::exception()));
   doSubscribe(sbj2.as_observable());

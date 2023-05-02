@@ -9,6 +9,8 @@
       "command": "valgrind",
       "args": [
         "--leak-check=full",
+        // "--num-callers=500",
+        // "--max-threads=5000",
         "${workspaceFolder}/build/another-rxcpp"
       ],
       "problemMatcher": [
@@ -18,10 +20,11 @@
     {
       "label": "build",
       "type": "shell",
-      "command": "make",
-      "options": {
-        "cwd": "${workspaceFolder}/build"
-      },
+      "command": "cmake",
+      "args": [
+        "--build",
+        "./build"
+      ],
       "problemMatcher": [
         "$gcc"
       ]

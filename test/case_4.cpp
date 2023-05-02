@@ -104,11 +104,10 @@ void test_case_4() {
 
     while(sbsc.is_subscribed()) {}
 
-    log() << "final wait" << std::endl;
-    std::this_thread::sleep_for(std::chrono::milliseconds(2000));
-
     log() << "emitters.run = " << *emitters.run <<  std::endl;
   }
+
+  wait(2000);
 
   log() << "test_case_4 -- end" << std::endl << std::endl;
 }

@@ -88,7 +88,5 @@ void test_blocking() {
     }
   }
 
-  wait(1000);
-
   log() << "test_blocking -- end" << std::endl << std::endl;
 }
