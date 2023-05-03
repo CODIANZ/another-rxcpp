@@ -16,17 +16,22 @@ using namespace another_rxcpp::operators;
 
 class thread_group {
   mutable std::shared_ptr<std::vector<std::thread>> threads_;
+  mutable std::shared_ptr<std::mutex> mtx_;
 
 public:
   thread_group() noexcept :
-    threads_(std::make_shared<std::vector<std::thread>>()) {}
+    threads_(std::make_shared<std::vector<std::thread>>()),
+    mtx_(std::make_shared<std::mutex>())
+    {}
 
   template <typename F> void push(F&& f) const noexcept {
+    std::unique_lock<std::mutex> lock(*mtx_);
     threads_->push_back(std::thread(std::forward<F>(f)));
   }
 
   void join_all() const noexcept {
-    std::for_each(threads_->begin(), threads_->end(), [](auto& t){ t.join(); });
+    std::unique_lock<std::mutex> lock(*mtx_);
+    std::for_each(threads_->begin(), threads_->end(), [](auto&& t){ t.join(); });
     threads_->clear();
   }
 };
