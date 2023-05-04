@@ -48,162 +48,89 @@ friend class blocking<>;
 public:
   using value_type    = typename observable<T>::value_type;
   using observer_type = typename observable<T>::observer_type;
+  using this_type     = blocking<value_type>;
 
 protected:
-  struct member {
-    std::mutex              mtx_;
-    std::size_t             read_ = 0;
-    std::condition_variable cond_;
-    subjects::subject<value_type> sbj_;
-    subscription            subscription_;
-    bool                    done_ = false;
-    std::atomic_bool        started_{false};
-    ~member() {
-      if(started_.exchange(false)){
-        {
-          std::unique_lock<std::mutex> lock(mtx_);
-          done_ = true;
-          cond_.notify_one();
-        }
-        subscription_.unsubscribe();
-      }
-    }
-  };
-  std::shared_ptr<member> m_;
-  observable<value_type>  src_;
+  mutable observable<value_type>  src_;
+  mutable std::deque<value_type>  queue_;
+  mutable std::exception_ptr      error_;
+  mutable bool                    subscribed_;
 
-  blocking(observable<T> src) noexcept :
-    m_(std::make_shared<member>()),
-    src_(src)
-  {}
+  blocking(observable<value_type> src) noexcept :
+    src_(src), error_(nullptr), subscribed_(false) {}
 
-  void start_subscribing_if_not() const noexcept {
-    if(m_->started_.exchange(true)) return;
-    auto m = m_;
-    auto src = src_;
-    std::thread([m, src](){
-      m->subscription_ = src.subscribe({
-        [m](const value_type& x){
-          std::unique_lock<std::mutex> lock(m->mtx_);
-          m->cond_.wait(lock, [m]{ return m->read_ > 0 || m->done_; });
-          if(m->done_) return;
-          m->read_--;
-          m->sbj_.as_subscriber().on_next(x);
-        },
-        [m](std::exception_ptr err){
-          std::unique_lock<std::mutex> lock(m->mtx_);
-          m->cond_.wait(lock, [m]{ return m->read_ > 0; });
-          if(m->done_) return;
-          m->read_--;
-          m->sbj_.as_subscriber().on_error(err);
-        },
-        [m]() {
-          std::unique_lock<std::mutex> lock(m->mtx_);
-          m->cond_.wait(lock, [m]{ return m->read_ > 0; });
-          if(m->done_) return;
-          m->read_--;
-          m->sbj_.as_subscriber().on_completed();
-        }
-      });
-    }).detach();
-  }
-
-  bool subscribe_one(value_type& value) const noexcept(false) {
-    struct _result {
-      std::exception_ptr          err = nullptr;
-      std::shared_ptr<value_type> pvalue;
-      bool                        bDone = false;
-      std::mutex                  mtx;
-      std::condition_variable     cond;
-    };
-    auto result = std::make_shared<_result>();
-    auto o = m_->sbj_.as_observable() | operators::take(1);
-    auto sbsc = o.subscribe({
-      [result](const value_type& x){
-        std::lock_guard<std::mutex> lock(result->mtx);
-        result->pvalue = std::make_shared<value_type>(x);
-        result->bDone = true;
-        result->cond.notify_one();
+  void  subscribe_all() const {
+    if(subscribed_) return;
+    subscribed_ = true;
+    src_.subscribe(
+      [&](const value_type& x){
+        queue_.push_back(x);
       },
-      [result](std::exception_ptr e){
-        result->err = e;
-        std::lock_guard<std::mutex> lock(result->mtx);
-        result->bDone = true;
-        result->cond.notify_one();
+      [&](std::exception_ptr err){
+        error_ = err;
       },
-      [result](){
-        std::lock_guard<std::mutex> lock(result->mtx);
-        result->bDone = true;
-        result->cond.notify_one();
-      }
-    });
-    {
-      std::lock_guard<std::mutex> lock(m_->mtx_);
-      m_->read_++;
-      m_->cond_.notify_one();
-    }
-    start_subscribing_if_not();
-    {
-      std::unique_lock<std::mutex> lock(result->mtx);
-      result->cond.wait(lock, [result]{ return result->bDone; });
-    }
-    if(result->err) std::rethrow_exception(result->err);
-    if(!result->pvalue) return false;
-    value = std::move(*result->pvalue);
-    return true;
-  }
-
-  auto subscribe_all() const noexcept(false) {
-    std::vector<value_type> values;
-    value_type value;
-    while(subscribe_one(value)){
-      values.push_back(std::move(value));
-    }
-    return values;
+      []{}
+    );
   }
 
 public:
 
   virtual subscription subscribe(observer_type ob) const noexcept override {
-    try{
-      auto values = subscribe_all();
-      std::for_each(
-        std::cbegin(values),
-        std::cend(values),
-        [&ob](const auto& it){
-          ob.on_next(it);
-        });
+    subscribe_all();
+    std::for_each(std::begin(queue_), std::end(queue_), [ob](auto&& x){
+      ob.on_next(x);
+    });
+    if(error_){
+      ob.on_error(error_);
+    }
+    else{
       ob.on_completed();
     }
-    catch(...){
-      ob.on_error(std::current_exception());
-    }
     return subscription(
-      [ob]{
-        // ob.unsubscribe();
-      },
-      [ob]{
-        return true;
-        // return ob.is_subscribed();
+      []{},
+      []{
+        return false;
       }
     );
   }
 
   value_type first() const noexcept(false) {
-    value_type value;
-    if(!subscribe_one(value)) throw empty_error("empty");
-    return value;
+    subscribe_all();
+    if(queue_.size() == 0){
+      if(error_){
+        std::rethrow_exception(error_);
+      }
+      else{
+        throw empty_error("empty");
+      }
+    }
+    else{
+      auto x = queue_.front();
+      queue_.pop_front();
+      return x;
+    }
   }
 
   value_type last() const noexcept(false) {
-    auto  values = subscribe_all();
-    if(values.empty()) throw empty_error("empty");
-    return values.back();
+    subscribe_all();
+    if(queue_.empty()){
+      if(error_){
+        std::rethrow_exception(error_);
+      }
+      else{
+        throw empty_error("empty");
+      }
+    }
+    else{
+      auto x = queue_.back();
+      queue_.pop_back();
+      return x;
+    }
   }
 
   std::size_t count() const noexcept(false) {
-    auto  values = subscribe_all();
-    return values.size();
+    subscribe_all();
+    return queue_.size();
   }
 };
 
@@ -221,28 +148,32 @@ private:
 
 public:
   value_type sum() const noexcept(false) {
-    auto  values = base::subscribe_all();
-    if(values.empty()) throw empty_error("empty");
-    return std::accumulate(std::cbegin(values), std::cend(values), 0);
+    base::subscribe_all();
+    if(base::error_) std::rethrow_exception(base::error_);
+    else if(base::queue_.empty()) throw empty_error("empty");
+    return std::accumulate(std::cbegin(base::queue_), std::cend(base::queue_), 0);
   }
 
   double average() const noexcept(false) {
-    auto  values = base::subscribe_all();
-    if(values.empty()) throw empty_error("empty");
-    auto sum = std::accumulate(std::cbegin(values), std::cend(values), 0);
-    return static_cast<double>(sum) / static_cast<double>(values.size());
+    base::subscribe_all();
+    if(base::error_) std::rethrow_exception(base::error_);
+    else if(base::queue_.empty()) throw empty_error("empty");
+    auto sum = std::accumulate(std::cbegin(base::queue_), std::cend(base::queue_), 0);
+    return static_cast<double>(sum) / static_cast<double>(base::queue_.size());
   }
 
   value_type max() const noexcept(false) {
-    auto  values = base::subscribe_all();
-    if(values.empty()) throw empty_error("empty");
-    return *std::max_element(std::cbegin(values), std::cend(values));
+    base::subscribe_all();
+    if(base::error_) std::rethrow_exception(base::error_);
+    else if(base::queue_.empty()) throw empty_error("empty");
+    return *std::max_element(std::cbegin(base::queue_), std::cend(base::queue_));
   }
 
   value_type min() const noexcept(false) {
-    auto  values = base::subscribe_all();
-    if(values.empty()) throw empty_error("empty");
-    return *std::min_element(std::cbegin(values), std::cend(values));
+    base::subscribe_all();
+    if(base::error_) std::rethrow_exception(base::error_);
+    else if(base::queue_.empty()) throw empty_error("empty");
+    return *std::min_element(std::cbegin(base::queue_), std::cend(base::queue_));
   }
 };
 

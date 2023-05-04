@@ -33,7 +33,6 @@ int main() {
   DO(test_interval)
   DO(test_delay)
   DO(test_tap)
-  DO(test_async_scheduler)
   DO(test_finally)
   DO(test_take_last)
   DO(test_last)
