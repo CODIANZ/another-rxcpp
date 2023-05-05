@@ -14,13 +14,8 @@
 using namespace another_rxcpp;
 using namespace another_rxcpp::operators;
 
-void test_zip() {
-
-  log() << "test_zip -- begin" << std::endl;
-
-  thread_group threads;
-
-  auto emitter = observable<>::create<int>([threads](subscriber<int> s){
+static auto emitter(thread_group threads) {
+  return observable<>::create<int>([threads](subscriber<int> s){
     threads.push([s](){
       for(int i = 0; i < 10; i++){
         if(!s.is_subscribed()) break;
@@ -30,22 +25,32 @@ void test_zip() {
       s.on_completed();
     });
   });
+}
 
-  auto emitter2 = emitter
+static auto emitter2(thread_group threads) {
+  return emitter(threads)
   | map([](int x){
     return double(x + 11.1);
   });
+}
 
-  auto emitter3 = emitter
+static auto emitter3(thread_group threads) {
+  return emitter(threads)
   | map([](int x){
     std::stringstream ss;
     ss << "s" << x;
     return ss.str();
   });
+}
+
+void test_zip() {
+
+  log() << "test_zip -- begin" << std::endl;
 
   {
-    auto o = emitter
-    | zip(emitter2, emitter3)
+    thread_group threads;
+    auto o = emitter(threads)
+    | zip(emitter2(threads), emitter3(threads))
     | map([](std::tuple<int, double, std::string> tp){
       log() << "[0] " << std::get<0>(tp) << std::endl;
       log() << "[1] " << std::get<1>(tp) << std::endl;
@@ -58,12 +63,13 @@ void test_zip() {
   }
 
   {
-    auto o = emitter
+    thread_group threads;
+    auto o = emitter(threads)
     | zip([](int a, double b, std::string c){
       std::stringstream ss;
       ss << a << ", " << b << ", " << c;
       return ss.str();
-    }, emitter2, emitter3);
+    }, emitter2(threads), emitter3(threads));
 
     auto x = doSubscribe(o);
     while(x.is_subscribed()) {}

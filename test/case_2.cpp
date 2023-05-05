@@ -53,10 +53,9 @@ static observable<int> _subject_error() {
 void test_case_2() {
   log() << "test_case_2 -- begin" << std::endl;
 
-  thread_group threads;
-
   {
     log() << "_subject" << std::endl;
+    thread_group threads;
     auto x = doSubscribe(_subject(threads));
     while(x.is_subscribed()) {}
     threads.join_all();
@@ -64,6 +63,7 @@ void test_case_2() {
 
   {
     log() << "_behavior" << std::endl;
+    thread_group threads;
     auto x = doSubscribe(_behavior(threads));
     while(x.is_subscribed()) {}
     threads.join_all();

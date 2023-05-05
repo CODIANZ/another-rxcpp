@@ -16,10 +16,9 @@ using namespace another_rxcpp;
 using namespace another_rxcpp::operators;
 
 struct emitters {
-  std::shared_ptr<std::atomic<int>> run = std::make_shared<std::atomic<int>>(0);
+  mutable std::shared_ptr<std::atomic<int>> run = std::make_shared<std::atomic<int>>(0);
 
-
-  auto loop(thread_group threads) {
+  auto loop(thread_group threads) const {
     return observable<>::create<int>([run = run, threads](auto s){
       threads.push([s, run]{
         (*run)++;
@@ -34,7 +33,7 @@ struct emitters {
     });
   }
 
-  auto defer_error(thread_group threads) {
+  auto defer_error(thread_group threads) const {
     return observable<>::create<int>([run = run, threads](auto s){
       threads.push([s, run]{
         s.on_next(0);
@@ -52,10 +51,10 @@ struct emitters {
 void test_case_4() {
   log() << "test_case_4 -- begin" << std::endl;
 
-  thread_group threads;
-
   {
+    log() << "case 4-1" <<  std::endl;
     emitters emitters;
+    thread_group threads;
     auto sbj = subjects::subject<int>();
     auto sbsc = emitters.loop(threads)
     | take_until(sbj.as_observable())
@@ -76,18 +75,21 @@ void test_case_4() {
   }
 
   {
+    log() << "case 4-2" <<  std::endl;
     emitters emitters;
+    thread_group threads;
     auto sbj = subjects::subject<int>();
+    auto looper = emitters.loop(threads);
     auto sbsc = emitters.defer_error(threads)
-    | flat_map([&](int){
-      return emitters.loop(threads);
+    | flat_map([looper](int){
+      return looper;
     })
-    | flat_map([&](int x){
+    | flat_map([](int x){
       if(x == 5){
         log() << "!!!error!!!" << std::endl;
         return observables::error<int>(std::make_exception_ptr(std::exception()));
       }
-      return emitters.loop(threads); 
+      return observables::just(x); 
     })
     | retry(1)
     | take_until(sbj.as_observable())
@@ -95,6 +97,48 @@ void test_case_4() {
       if(x == 4) {
         log() << "subject next!!" << std::endl;
         sbj.as_subscriber().on_next(1);
+        return observables::just(x);
+      }
+      return observables::never<int>();
+    })
+    | take(1)
+    | subscribe(
+      [](auto x){ log() << "next: " << x << std::endl; },
+      [](auto e){ log() << "error" << std::endl; },
+      [](){ log() << "complete" << std::endl; }
+    );
+
+    while(sbsc.is_subscribed()) {}
+    threads.join_all();
+
+    log() << "emitters.run = " << *emitters.run <<  std::endl;
+  }
+
+
+  {
+    log() << "case 4-3" <<  std::endl;
+    emitters emitters;
+    thread_group threads;
+    auto sbj = subjects::subject<int>();
+    auto looper = emitters.loop(threads);
+    auto sbsc = emitters.defer_error(threads)
+    | flat_map([looper](int){
+      return looper;
+    })
+    | flat_map([](int x){
+      if(x == 5){
+        log() << "!!!error!!!" << std::endl;
+        return observables::error<int>(std::make_exception_ptr(std::exception()));
+      }
+      return observables::just(x); 
+    })
+    | retry(1)
+    | take_until(sbj.as_observable())
+    | flat_map([sbj](int x){
+      if(x == 4) {
+        log() << "subject next!!" << std::endl;
+        sbj.as_subscriber().on_next(1);
+        return observables::just(x);
       }
       return observables::empty<int>();
     })
