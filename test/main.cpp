@@ -6,7 +6,6 @@
 #define DO(f) { extern void f(); f(); }
 
 int main() {
-while(true){
   log() << "**** start ****" << std::endl;
 
   DO(test_observable)
@@ -67,7 +66,5 @@ while(true){
   #endif /* defined(SUPPORTS_RXCPP_COMPATIBLE) */
 
   log() << "**** finish ****" << std::endl;
-
-}
 }
 
