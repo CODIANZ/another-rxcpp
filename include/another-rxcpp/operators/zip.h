@@ -64,25 +64,16 @@ namespace zip_internal {
   }
 
   /**
-   * variables used for synchronization
-   **/
-  struct sync {
-    using sp = std::shared_ptr<sync>;
-    std::mutex              mtx_;
-    std::condition_variable cond_;
-  };
-
-  /**
    * prepare subscribers
    **/
   template <std::size_t N, typename TPL, typename RTYPE, typename VALQ>
-    auto prepare_subscribers_impl(TPL tpl, sync::sp, internal::stream_controller<RTYPE>, const VALQ&)
+    auto prepare_subscribers_impl(TPL tpl, std::function<void()> nextfn, std::shared_ptr<std::mutex> mtx, internal::stream_controller<RTYPE>, const VALQ&)
   {
     return tpl;
   }
 
   template <std::size_t N, typename TPL, typename RTYPE, typename VALQ, typename OB, typename... ARGS>
-    auto prepare_subscribers_impl(TPL tpl, sync::sp sync, internal::stream_controller<RTYPE> sctl, const VALQ& valq, OB ob, ARGS...args)
+    auto prepare_subscribers_impl(TPL tpl, std::function<void()> nextfn, std::shared_ptr<std::mutex> mtx, internal::stream_controller<RTYPE> sctl, const VALQ& valq, OB ob, ARGS...args)
   {
     auto values = std::get<N>(valq);
 
@@ -93,33 +84,30 @@ namespace zip_internal {
       tpl,
       std::make_tuple(
         sctl.template new_observer<Item>(
-          [values, sync](auto, Item x){
-            std::lock_guard<std::mutex> lock(sync->mtx_);
-            values->push(std::move(x));
-            sync->cond_.notify_one();
+          [values, nextfn, mtx](auto, Item x){
+            {
+              std::unique_lock<std::mutex> lock(*mtx);
+              values->push(std::move(x));
+            }
+            nextfn();
           },
-          [sync, sctl](auto, std::exception_ptr err){
+          [sctl](auto, std::exception_ptr err){
             sctl.sink_error(err);
-            std::lock_guard<std::mutex> lock(sync->mtx_);
-            sync->cond_.notify_one();
           },
-          [sync, sctl](auto serial) {
+          [sctl](auto serial) {
             sctl.sink_completed(serial);
-            std::lock_guard<std::mutex> lock(sync->mtx_);
-            sync->cond_.notify_one();
           }
         )        
       )
     );
 
-    return prepare_subscribers_impl<N + 1>(tpl2, sync, sctl, valq, args...);
-
+    return prepare_subscribers_impl<N + 1>(tpl2, nextfn, mtx, sctl, valq, args...);
   }
 
   template <typename RTYPE, typename VALQ, typename... ARGS>
-    auto prepare_subscribers(sync::sp sync, internal::stream_controller<RTYPE> sctl, const VALQ& valq, ARGS...args)
+    auto prepare_subscribers(std::function<void()> nextfn, std::shared_ptr<std::mutex> mtx, internal::stream_controller<RTYPE> sctl, const VALQ& valq, ARGS...args)
   {
-    return prepare_subscribers_impl<0>(std::tuple<>(), sync, sctl, valq, args...);
+    return prepare_subscribers_impl<0>(std::tuple<>(), nextfn, mtx, sctl, valq, args...);
   }
 
   /**
@@ -222,20 +210,15 @@ namespace zip_internal {
       return observable<>::create<rtype>([src, args...](subscriber<rtype> s) {
         auto sctl = internal::stream_controller<rtype>(s);
         auto valq = zip_internal::create_values_queue(src, args...);
-        auto sync = std::make_shared<zip_internal::sync>();
-        auto sbs = zip_internal::prepare_subscribers(sync, sctl, valq, src, args...);
-
-        zip_internal::subscribe(sbs, valq, src, args...);
-
-        while(sctl.is_subscribed()){
-          std::unique_lock<std::mutex> lock(sync->mtx_);
-          sync->cond_.wait(lock, [&](){
-            return !sctl.is_subscribed() || zip_internal::ready_values(valq, src, args...);
-          });
-          if(zip_internal::ready_values(valq, src, args...)){
+        auto mtx  = std::make_shared<std::mutex>();
+        auto nextfn = [sctl, valq, mtx, src, args...]{
+          std::unique_lock<std::mutex> lock(*mtx);
+          while(zip_internal::ready_values(valq, src, args...)){
             sctl.sink_next(zip_internal::get_values(valq, src, args...));
           }
-        }
+        };
+        auto sbs = zip_internal::prepare_subscribers(nextfn, mtx, sctl, valq, src, args...);
+        zip_internal::subscribe(sbs, valq, src, args...);
       });
     };
   }

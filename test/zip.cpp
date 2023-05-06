@@ -48,6 +48,19 @@ void test_zip() {
   log() << "test_zip -- begin" << std::endl;
 
   {
+    auto o = observables::range(0, 9)
+    | zip(observables::range(10, 19), observables::range(20, 29))
+    | map([](std::tuple<int, int, int> tp){
+      log() << "[0] " << std::get<0>(tp) << std::endl;
+      log() << "[1] " << std::get<1>(tp) << std::endl;
+      log() << "[2] " << std::get<2>(tp) << std::endl;
+      return std::get<0>(tp);
+    });
+    auto x = doSubscribe(o);
+    while(x.is_subscribed()) {}
+  }
+
+  {
     thread_group threads;
     auto o = emitter(threads)
     | zip(emitter2(threads), emitter3(threads))
