@@ -19,8 +19,9 @@ using namespace another_rxcpp::operators;
 void test_timeout() {
   log() << "test_timeout -- begin" << std::endl;
 
-  auto o = observable<>::create<int>([](subscriber<int> s){
-    std::thread([s]{
+  thread_group threads;
+  auto o = observable<>::create<int>([threads](subscriber<int> s){
+    threads.push([s]{
       for(int i = 1; i <= 10; i++){
         if(!s.is_subscribed()){
           log() << "interval_range break" << std::endl;
@@ -36,13 +37,14 @@ void test_timeout() {
       }
       log() << "interval_range complete" << std::endl;
       s.on_completed();
-    }).detach();
+    });
   })
   | timeout(std::chrono::milliseconds(500));
 
   auto x = doSubscribe(o);
   
   while(x.is_subscribed()) {}
+  threads.join_all();
 
   log() << "test_timeout -- end" << std::endl << std::endl;
 }

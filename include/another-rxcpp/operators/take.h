@@ -4,7 +4,6 @@
 #include "../internal/tools/stream_controller.h"
 #include "../observable.h"
 #include <atomic>
-#include <condition_variable>
 
 namespace another_rxcpp {
 namespace operators {

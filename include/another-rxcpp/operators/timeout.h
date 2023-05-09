@@ -7,6 +7,7 @@
 #include <chrono>
 #include <exception>
 #include <thread>
+#include <condition_variable>
 
 namespace another_rxcpp {
 namespace operators {

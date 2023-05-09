@@ -17,8 +17,10 @@ void test_delay() {
 
   log() << "test_delay -- begin" << std::endl;
 
-  auto emitter = observable<>::create<int>([](subscriber<int> s){
-    std::thread([s](){
+  thread_group threads;
+
+  auto emitter = observable<>::create<int>([threads](subscriber<int> s){
+    threads.push([s](){
       for(int i = 0; i <= 5; i++){
         if(!s.is_subscribed()) break;
         std::this_thread::sleep_for(std::chrono::milliseconds(200));
@@ -26,7 +28,7 @@ void test_delay() {
         s.on_next(i);
       }
       s.on_completed();
-    }).detach();
+    });
   });
 
 
@@ -37,6 +39,7 @@ void test_delay() {
   auto x = doSubscribe(o);
 
   while(x.is_subscribed()) {}
+  threads.join_all();
 
   log() << "test_delay -- end" << std::endl << std::endl;
 }

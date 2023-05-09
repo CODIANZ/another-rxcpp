@@ -4,12 +4,52 @@
 #include <functional>
 #include <thread>
 #include <iostream>
+#include <vector>
+#include <memory>
+#include <algorithm>
 #include <another-rxcpp/observable.h>
 #include <another-rxcpp/schedulers/new_thread_scheduler.h>
 #include <another-rxcpp/operators/subscribe.h>
 
 using namespace another_rxcpp;
 using namespace another_rxcpp::operators;
+
+inline std::ostream& log() {
+  return std::cout << "(" << std::hex << std::this_thread::get_id() << ") " << std::dec;
+}
+
+class thread_group {
+  mutable std::shared_ptr<std::vector<std::thread>> threads_;
+  mutable std::shared_ptr<std::mutex> mtx_;
+  mutable bool closed_;
+
+public:
+  thread_group() noexcept :
+    threads_(std::make_shared<std::vector<std::thread>>()),
+    mtx_(std::make_shared<std::mutex>()),
+    closed_(false)
+    {}
+
+  template <typename F> void push(F&& f) const noexcept {
+    std::unique_lock<std::mutex> lock(*mtx_);
+    if(closed_) {
+      log() << "thread_group closed" << std::endl;
+      return;
+    }
+    threads_->push_back(std::thread(std::forward<F>(f)));
+  }
+
+  void join_all() const noexcept {
+    auto&& threads = [&](){
+      std::unique_lock<std::mutex> lock(*mtx_);
+      closed_ = true;
+      std::vector<std::thread> threads;
+      std::move(threads_->begin(), threads_->end(), std::back_inserter(threads));
+      return threads;
+    }();
+    std::for_each(threads.begin(), threads.end(), [](auto&& t){ t.join(); });
+  }
+};
 
 inline void setTimeout(std::function<void()> f, int x) {
   observables::just(0)
@@ -18,10 +58,6 @@ inline void setTimeout(std::function<void()> f, int x) {
   .subscribe([f](auto){
     f();
   });
-}
-
-inline std::ostream& log() {
-  return std::cout << "(" << std::hex << std::this_thread::get_id() << ") " << std::dec;
 }
 
 inline void wait(int ms) {
@@ -43,9 +79,9 @@ auto ovalue(T&& value, int delay = 0) {
   }
 }
 
-inline auto interval_range(int from, int to, int msec) {
-  return observable<>::create<int>([from, to, msec](subscriber<int> s){
-    std::thread([from, to, msec, s]{
+inline auto interval_range(int from, int to, int msec, thread_group threads) {
+  return observable<>::create<int>([from, to, msec, threads](subscriber<int> s){
+    threads.push([from, to, msec, s]{
       for(int i = from; i <= to; i++){
         if(!s.is_subscribed()){
           log() << "interval_range break" << std::endl;
@@ -61,7 +97,7 @@ inline auto interval_range(int from, int to, int msec) {
       }
       log() << "interval_range complete" << std::endl;
       s.on_completed();
-    }).detach();
+    });
   });
 }
 

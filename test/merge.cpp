@@ -56,15 +56,18 @@ void test_merge() {
 
   {
     log() << "multi thread #1" << std::endl;
-    auto emitter = observable<>::create<int>([](subscriber<int> s){
-      std::thread([s](){
+
+    thread_group threads;
+
+    auto emitter = observable<>::create<int>([threads](subscriber<int> s){
+      threads.push([s](){
         for(int i = 0; i < 10; i++){
           if(!s.is_subscribed()) break;
           std::this_thread::sleep_for(std::chrono::milliseconds(300));
           s.on_next(i);
         }
         s.on_completed();
-      }).detach();
+      });
     });
 
     auto emitter2 = emitter
@@ -82,11 +85,15 @@ void test_merge() {
     auto x = doSubscribe(o);
 
     while(x.is_subscribed()) {}
+    threads.join_all();
   }
 
 
   {
     log() << "multi thread #2" << std::endl;
+
+    thread_group threads;
+
     auto sbj1 = subjects::subject<int>();
     auto sbj2 = subjects::subject<int>();
     auto sbj3 = subjects::subject<int>();
@@ -95,32 +102,32 @@ void test_merge() {
 
     auto x = doSubscribe(o);
 
-
-    std::thread([sbj1](){
+    threads.push([sbj1](){
       for(int i = 100; i < 110; i++){
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
         sbj1.as_subscriber().on_next(i);
       }
       sbj1.as_subscriber().on_completed();
-    }).detach();
+    });
 
-    std::thread([sbj2](){
+    threads.push([sbj2](){
       for(int i = 200; i < 210; i++){
         std::this_thread::sleep_for(std::chrono::milliseconds(120));
         sbj2.as_subscriber().on_next(i);
       }
       sbj2.as_subscriber().on_completed();
-    }).detach();
+    });
 
-    std::thread([sbj3](){
+    threads.push([sbj3](){
       for(int i = 300; i < 310; i++){
         std::this_thread::sleep_for(std::chrono::milliseconds(140));
         sbj3.as_subscriber().on_next(i);
       }
       sbj3.as_subscriber().on_completed();
-    }).detach();
+    });
 
     while(x.is_subscribed()) {}
+    threads.join_all();
   }
 
 

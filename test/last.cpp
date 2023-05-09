@@ -20,11 +20,14 @@ void test_last() {
 
   doSubscribe(observables::range(1, 100) | last());
 
+  thread_group threads;
+
   auto x = doSubscribe(
-    interval_range(1, 10, 100)
+    interval_range(1, 10, 100, threads)
     | last()
   );
   while(x.is_subscribed()) {}
+  threads.join_all();
 
   log() << "test_last -- end" << std::endl << std::endl;
 }

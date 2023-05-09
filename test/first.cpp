@@ -18,11 +18,14 @@ void test_first() {
 
   doSubscribe(observables::range(1, 100) | first());
 
+  thread_group threads;
+
   auto x = doSubscribe(
-    interval_range(1, 100, 100)
+    interval_range(1, 100, 100, threads)
     | first()
   );
   while(x.is_subscribed()) {}
+  threads.join_all();
 
   log() << "test_first -- end" << std::endl << std::endl;
 }

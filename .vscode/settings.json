@@ -81,6 +81,8 @@
     "__functional_03": "cpp",
     "memory_resource": "cpp",
     "__functional_base_03": "cpp",
-    "*.tcc": "cpp"
+    "*.tcc": "cpp",
+    "__bits": "cpp",
+    "*.inc": "cpp"
   }
 }

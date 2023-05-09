@@ -7,35 +7,35 @@
 using namespace another_rxcpp;
 using namespace another_rxcpp::operators;
 
-static observable<int> _subject() {
+static observable<int> _subject(thread_group threads) {
   auto t = [](){
     subjects::subject<int> sbj;
     return std::make_tuple(sbj.as_subscriber(), sbj.as_observable());
   }();
   auto s = std::get<0>(t);
   auto o = std::get<1>(t);
-  return utils::ready_set_go([s](){
-    std::thread([s](){
+  return utils::ready_set_go([s, threads](){
+    threads.push([s](){
       std::this_thread::sleep_for(std::chrono::seconds(1));
       s.on_next(1);
       s.on_completed();
-    }).detach();
+    });
   }, o);
 }
 
-static observable<int> _behavior() {
+static observable<int> _behavior(thread_group threads) {
   auto t = [](){
     subjects::behavior<int> sbj(99);
     return std::make_tuple(sbj.as_subscriber(), sbj.as_observable());
   }();
   auto s = std::get<0>(t);
   auto o = std::get<1>(t);
-  return utils::ready_set_go([s](){
-    std::thread([s](){
+  return utils::ready_set_go([s, threads](){
+    threads.push([s](){
       std::this_thread::sleep_for(std::chrono::seconds(1));
       s.on_next(1);
       s.on_completed();
-    }).detach();
+    });
   }, o);
 }
 
@@ -55,16 +55,18 @@ void test_case_2() {
 
   {
     log() << "_subject" << std::endl;
-    auto x = doSubscribe(_subject());
+    thread_group threads;
+    auto x = doSubscribe(_subject(threads));
     while(x.is_subscribed()) {}
-    wait(1000);
+    threads.join_all();
   }
 
   {
     log() << "_behavior" << std::endl;
-    auto x = doSubscribe(_behavior());
+    thread_group threads;
+    auto x = doSubscribe(_behavior(threads));
     while(x.is_subscribed()) {}
-    wait(1000);
+    threads.join_all();
   }
 
   {
