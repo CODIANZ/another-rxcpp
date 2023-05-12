@@ -25,7 +25,7 @@ private:
     serial_type           serial_;
     unsubscriber_map      unsubscribers_;
     on_finalizes_t        on_finalizes_;
-    inner(const subscriber_type& sbsc) noexcept : subscriber_(sbsc), serial_(0) {}
+    inner(subscriber_type sbsc) noexcept : subscriber_(sbsc), serial_(0) {}
   };
 
   mutable std::shared_ptr<inner> inner_;
@@ -36,7 +36,7 @@ private:
   stream_controller() = delete;
 
 public:
-  stream_controller(const subscriber_type& subscriber) noexcept {
+  stream_controller(subscriber_type subscriber) noexcept {
     inner_ = std::make_shared<inner>(subscriber);
     subscriber.set_on_unsubscribe([inner = inner_]{
       stream_controller(inner).finalize();
