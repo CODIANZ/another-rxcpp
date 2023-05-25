@@ -19,7 +19,8 @@ template <typename NEXT_FN> auto on_error_resume_next(NEXT_FN f) noexcept
         [sctl](auto, const Item& x) {
           sctl.sink_next(x);
         },
-        [sctl, f](auto, std::exception_ptr err){
+        [sctl, f](auto serial, std::exception_ptr err){
+          sctl.upstream_abort_observe(serial);
           try{
             f(err).subscribe(sctl.template new_observer<Item>(
               [sctl](auto, const Item& x){
