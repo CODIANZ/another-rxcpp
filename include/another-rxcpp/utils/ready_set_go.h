@@ -4,6 +4,7 @@
 #include "../observable.h"
 #include "../internal/tools/fn.h"
 #include "../internal/tools/stream_controller.h"
+#include <exception>
 
 namespace another_rxcpp {
 namespace utils {
@@ -25,7 +26,12 @@ template <typename OB>
         sctl.sink_completed(serial);
       }
     ));
-    f();
+    try{
+      f();
+    }
+    catch(...){
+      sctl.sink_error(std::current_exception());
+    }
   });
 }
 
