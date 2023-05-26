@@ -3,6 +3,8 @@
 
 #include "../observable.h"
 #include "../internal/tools/fn.h"
+#include "../internal/tools/stream_controller.h"
+#include <exception>
 
 namespace another_rxcpp {
 namespace utils {
@@ -12,18 +14,24 @@ template <typename OB>
 {
   using T = typename OB::value_type;
   return observable<>::create<T>([f, o](subscriber<T> s){
-    o.subscribe({
-      [s](const T& x) {
-        s.on_next(x);
+    auto sctl = internal::stream_controller<T>(s);
+    o.subscribe(sctl.template new_observer<T>(
+      [sctl](auto, const T& x) {
+        sctl.sink_next(x);
       },
-      [s](std::exception_ptr err){
-        s.on_error(err);
+      [sctl](auto, std::exception_ptr err){
+        sctl.sink_error(err);
       },
-      [s](){
-        s.on_completed();
+      [sctl](auto serial){
+        sctl.sink_completed(serial);
       }
-    });
-    f();
+    ));
+    try{
+      f();
+    }
+    catch(...){
+      sctl.sink_error(std::current_exception());
+    }
   });
 }
 

@@ -10,17 +10,50 @@ using namespace another_rxcpp::operators;
 void test_ready_set_go() {
   log() << "test_ready_set_go -- begin" << std::endl;
 
-  subjects::subject<int> sbj;
-  auto s = sbj.as_subscriber();
-  auto o = utils::ready_set_go([=](){
-    s.on_next(1);
-  }, sbj.as_observable());
+  {
+    subjects::subject<int> sbj;
+    auto s = sbj.as_subscriber();
+    auto o = utils::ready_set_go([=](){
+      s.on_next(1);
+    }, sbj.as_observable());
 
-  auto x = doSubscribe(o);
+    auto x = doSubscribe(o);
 
-  s.on_next(2);
-  s.on_next(3);
-  s.on_completed();
+    s.on_next(2);
+    s.on_next(3);
+    s.on_completed();
+    while(x.is_subscribed()) {}
+  }
+
+  {
+    subjects::subject<int> sbj;
+    auto s = sbj.as_subscriber();
+    auto o = utils::ready_set_go([=](){
+      s.on_next(1);
+    }, sbj.as_observable());
+
+    auto x = doSubscribe(o);
+
+    s.on_next(2);
+    s.on_next(3);
+    x.unsubscribe();
+  }
+
+  {
+    subjects::subject<int> sbj;
+    auto s = sbj.as_subscriber();
+    auto o = utils::ready_set_go([=](){
+      s.on_next(1);
+      throw std::exception();
+    }, sbj.as_observable());
+
+    auto x = doSubscribe(o);
+
+    s.on_next(2);
+    s.on_next(3);
+    s.on_completed();
+    while(x.is_subscribed()) {}
+  }
 
   log() << "test_ready_set_go -- end" << std::endl << std::endl;
 }
