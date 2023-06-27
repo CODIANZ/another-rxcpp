@@ -1,5 +1,6 @@
 {
   "files.associations": {
+    "*.inc": "cpp",
     "atomic": "cpp",
     "iostream": "cpp",
     "ostream": "cpp",
@@ -83,6 +84,7 @@
     "__functional_base_03": "cpp",
     "*.tcc": "cpp",
     "__bits": "cpp",
-    "*.inc": "cpp"
+    "compare": "cpp",
+    "concepts": "cpp"
   }
 }
