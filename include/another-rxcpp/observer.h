@@ -4,6 +4,7 @@
 #include <functional>
 #include <memory>
 #include <mutex>
+#include <atomic>
 #include "internal/tools/fn.h"
 #include "internal/tools/util.h"
 
@@ -41,6 +42,8 @@ private:
     error_sp       error_;
     completed_sp   completed_;
     unsubscribe_sp unsubscribe_;
+    std::atomic_bool  is_subscribed_;
+    inner() : is_subscribed_(true) {}
   };
 
   mutable std::shared_ptr<inner> inner_;
@@ -61,6 +64,10 @@ private:
     inner_->completed_.reset();
     inner_->unsubscribe_.reset();
     return std::make_tuple(e, c, u);
+  }
+
+  void set_unsubscribed() const noexcept {
+    inner_->is_subscribed_ = false;
   }
 
 public:
@@ -94,6 +101,7 @@ public:
     auto u = std::get<2>(ecu);
     if(e && *e) (*e)(err);
     if(u && *u) (*u)();
+    set_unsubscribed();
   }
 
   void on_completed() const noexcept {
@@ -102,16 +110,18 @@ public:
     auto u = std::get<2>(ecu);
     if(c && *c) (*c)();
     if(u && *u) (*u)();
+    set_unsubscribed();
   }
 
   void unsubscribe() const noexcept {
     auto ecu = fetch_and_reset_all();
     auto u = std::get<2>(ecu);
     if(u && *u) (*u)();
+    set_unsubscribed();
   }
 
   bool is_subscribed() const noexcept {
-    return inner_->next_ && inner_->error_ && inner_->completed_;
+    return inner_->is_subscribed_;
   }
 };
 

@@ -55,6 +55,7 @@ int main() {
   DO(test_case_4)
   DO(test_case_5)
   DO(test_case_6)
+  DO(test_case_7)
 
   DO(move_check)
 
