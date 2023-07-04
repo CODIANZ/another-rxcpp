@@ -2,6 +2,7 @@
 #define __another_rxcpp_h_inflow_restriction__
 
 #include "../observable.h"
+#include "../internal/tools/stream_controller.h"
 #include "sem.h"
 
 namespace another_rxcpp {
@@ -24,20 +25,28 @@ public:
   {
     auto sem = sem_;
     return observable<>::create<T>([sem, o](subscriber<T> s){
+      auto sctl = internal::stream_controller<T>(s);
+      sctl.set_on_finalize([sem](){
+        sem->unlock();
+      });
       sem->lock();
-      o.subscribe({
-        [s](const T& v){
-          s.on_next(v);
+      if(!sctl.is_subscribed()) {
+        sem->unlock();
+        return;
+      }
+      o.subscribe(sctl.template new_observer<T>(
+        [sctl](auto, const T& v){
+          sctl.sink_next(v);
         },
-        [s, sem](std::exception_ptr e){
-            s.on_error(e);
+        [sctl, sem](auto, std::exception_ptr e){
+          sctl.sink_error(e);
           sem->unlock();
         },
-        [s, sem](){
-          s.on_completed();
+        [sctl, sem](auto serial){
+          sctl.sink_completed(serial);
           sem->unlock();
         }
-      });
+      ));
     });
   }
 };
